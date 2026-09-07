@@ -1,0 +1,90 @@
+-- ============================================
+-- CONFIGURACIÓN MÍNIMA DE HYPRLAND EN LUA
+-- ============================================
+
+local autostart = require("autostart")
+
+
+-- Variables
+local mainMod = "SUPER"
+require("keybinds.basic")
+
+hl.monitor({
+    output = "eDP-1",
+    mode = "1920x1080@60",
+    position = "0x0",
+    scale = 1,
+})
+-- Lanzar el DAEMON de pyprland al inicio (con guarda anti-duplicado)
+hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
+hl.env("XDG_SESSION_TYPE", "wayland")
+hl.env("XDG_SESSION_DESKTOP", "Hyprland")
+
+hl.on('hyprland.start', function()
+    autostart.start()
+end)
+
+-- ============================================
+-- CONFIG GENERAL (efectos apagados para tus 8GB + Vega)
+-- ============================================
+hl.config({
+    dwindle = {
+        force_split = 2,
+        preserve_split = true,
+    },
+    general = {
+        gaps_in = 5,
+        gaps_out = 4,
+        border_size = 0,
+        layout = "dwindle",
+    },
+    decoration = {
+        rounding = 12,
+        blur = { enabled = false },   -- blur come GPU/RAM
+        shadow = { enabled = false }, -- sombras fuera
+    },
+    animations = {
+        enabled = false, -- sin animaciones = más ligero
+    },
+    input = {
+        follow_mouse = false,
+        kb_layout = "latam", -- tu teclado (la-latin1 → latam en XKB)
+    },
+    misc = {
+        disable_hyprland_logo = true,
+        --vfr = true,                   -- variable refresh, ahorra batería
+    },
+})
+
+-- ============================================
+-- KEYBINDS
+-- ============================================
+-- Keybinds para cambiar (opcional, además del clic)
+
+-- dynamic island
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima wallpaper \"\""))
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima clipboard \"\""))
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima launcher \"\""))
+
+-- Cada app se maximiza al abrirse (modo tablet)
+hl.window_rule({ "maximize", "class:.*" })
+
+-- ============================================
+-- MODO TABLET: ocultar/mostrar apps
+-- ============================================
+-- Mandar ventana actual al stash (special workspace)
+hl.bind(mainMod .. " + W", hl.dsp.window.move({ workspace = "special:stash" }))
+
+-- Ver/ocultar el stash
+hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("stash"))
+
+-- ============================================
+-- CAMBIAR ENTRE VENTANAS
+-- ============================================
+hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
+hl.bind("ALT + SHIFT + Tab", hl.dsp.window.cycle_next({ prev = true }))
+
+-- ============================================
+-- MAXIMIZE (entrar/salir de pantalla completa)
+-- ============================================
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
