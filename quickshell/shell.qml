@@ -14,15 +14,28 @@ PanelWindow {
         right: true
     }
 
-    implicitHeight: 320   // altura máxima (pill expandido + margen)
-    exclusiveZone: 40     // solo la barra reserva espacio
+    // altura máxima (pill expandido + margen)
+    implicitHeight: bar.screen ? bar.screen.height : 0
+    // solo la barra reserva espacio
+    exclusiveZone: 40
     color: "transparent"
 
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.keyboardFocus: {
-        if (clockPill.expanded) return WlrKeyboardFocus.OnDemand
+        if (clockPill.expanded) return WlrKeyboardFocus.Exclusive
 
         return WlrKeyboardFocus.None
+    }
+
+    MouseArea {
+        id: clickOutsideCatcher
+        anchors.fill: parent
+        visible: clockPill.expanded
+        z: -1
+
+        onClicked: {
+            if (clockPill.expanded) clockPill.expanded = false
+        }
     }
 
     // ══ MASK: solo barra + pill capturan clics ══

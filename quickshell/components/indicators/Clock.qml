@@ -9,8 +9,8 @@ import "./../../components/widgets/applist" as A
 Base.Island {
     id: root
 
-    expandedHeight: 800
-    expandedWidth: 360
+    expandedHeight: 600
+    expandedWidth: 480
     radiusExpanded: 32
 
     preventFocus: true
@@ -52,6 +52,12 @@ Base.Island {
                         running: true
                     }
                 `, root)
+            }
+            IpcHandler {
+                target: "stixshell@launcher"
+                function toggle(mon: string): void {
+                    root.open()
+                }
             }
         }
     }

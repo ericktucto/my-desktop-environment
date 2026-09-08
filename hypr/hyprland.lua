@@ -61,22 +61,11 @@ hl.config({
 -- ============================================
 -- Keybinds para cambiar (opcional, además del clic)
 
--- dynamic island
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima wallpaper \"\""))
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima clipboard \"\""))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("qs -p /home/erick/apps/Ukishima ipc call ukishima launcher \"\""))
-
--- Cada app se maximiza al abrirse (modo tablet)
 hl.window_rule({ "maximize", "class:.*" })
 
 -- ============================================
 -- MODO TABLET: ocultar/mostrar apps
 -- ============================================
--- Mandar ventana actual al stash (special workspace)
-hl.bind(mainMod .. " + W", hl.dsp.window.move({ workspace = "special:stash" }))
-
--- Ver/ocultar el stash
-hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("stash"))
 
 -- ============================================
 -- CAMBIAR ENTRE VENTANAS
