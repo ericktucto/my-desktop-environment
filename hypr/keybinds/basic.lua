@@ -38,3 +38,5 @@ map.add({ map.SUPER, "S" }, hl.dsp.workspace.toggle_special("stash"), nil, "Ver/
 
 -- launcher
 map.add({ map.SUPER, "R" }, hl.dsp.exec_cmd("qs ipc call stixshell@launcher toggle \"\""), nil, "Abrir el launcher")
+map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper toggle \"\""), nil,
+    "Abrir el selector de wallpapers")
