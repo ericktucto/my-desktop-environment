@@ -16,9 +16,6 @@ function M.start()
     hl.exec_cmd('pipewire-pulse')
     hl.exec_cmd('wireplumber')
 
-    -- ══ WALLPAPER ══
-    hl.exec_cmd("swaybg -i /home/erick/Pictures/Wallpapers/wallpaper.jpg -m fill")
-
     -- ══ NOTIFICACIONES ══
     hl.exec_cmd('mako')
 
