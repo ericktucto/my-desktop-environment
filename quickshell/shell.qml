@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import "./components/layouts/" as L
-import "./components/base/" as B
+import "./components/widgets/" as W
 import "./components/indicators/" as I
 
 ShellRoot {
@@ -19,13 +19,7 @@ ShellRoot {
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
 
-        Image {
-            anchors.fill: parent
-            source: Wallpaper.current ? `file://${Wallpaper.current}` : ""
-            fillMode: Image.PreserveAspectCrop
-            smooth: true
-            asynchronous: true
-        }
+        W.WallpaperTransition {}
     }
 
     PanelWindow {

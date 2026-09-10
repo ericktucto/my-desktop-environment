@@ -33,9 +33,9 @@ hl.config({
         preserve_split = true,
     },
     general = {
-        gaps_in = 5,
-        gaps_out = 4,
-        border_size = 0,
+        gaps_in = 4,
+        gaps_out = 8,
+        border_size = 1,
         layout = "dwindle",
     },
     decoration = {
