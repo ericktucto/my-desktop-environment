@@ -34,7 +34,7 @@ ShellRoot {
         // altura máxima (pill expandido + margen)
         implicitHeight: bar.screen ? bar.screen.height : 0
         // solo la barra reserva espacio
-        exclusiveZone: 40
+        exclusiveZone: 42
         color: "transparent"
 
         WlrLayershell.layer: WlrLayer.Top
@@ -82,7 +82,7 @@ ShellRoot {
         Row {
             id: leftPill
             anchors.left: parent.left
-            anchors.leftMargin: 12
+            anchors.leftMargin: 8
             I.Workspaces {}
         }
         Row {

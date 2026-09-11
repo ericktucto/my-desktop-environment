@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "../../" as App
 
 Item {
@@ -8,6 +9,8 @@ Item {
     property int duration: 600
     // Cuál capa muestra el wallpaper actual: false = A visible, true = B visible
     property bool showingB: false
+    readonly property int radiusImage: 16
+    readonly property color backgroundColor: App.Theme.black
 
     // ── Capa A ──
     Image {
@@ -23,6 +26,20 @@ Item {
             NumberAnimation {
                 duration: root.duration
                 easing.type: Easing.InOutQuad
+            }
+        }
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskThresholdMin: 0.5
+            maskSource: ShaderEffectSource {
+                sourceItem: Rectangle {
+                    width: layerA.width
+                    height: layerA.height
+                    radius: root.radiusImage
+                    color: App.Theme.black
+                }
             }
         }
     }
@@ -41,6 +58,20 @@ Item {
             NumberAnimation {
                 duration: root.duration
                 easing.type: Easing.InOutQuad
+            }
+        }
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskThresholdMin: 0.5
+            maskSource: ShaderEffectSource {
+                sourceItem: Rectangle {
+                    width: layerB.width
+                    height: layerB.height
+                    radius: root.radiusImage
+                    color: App.Theme.black
+                }
             }
         }
     }

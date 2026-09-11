@@ -7,7 +7,7 @@ local autostart = require("autostart")
 
 -- Variables
 local mainMod = "SUPER"
-require("keybinds.basic")
+require("keybinds")
 
 hl.monitor({
     output = "eDP-1",
@@ -34,7 +34,12 @@ hl.config({
     },
     general = {
         gaps_in = 4,
-        gaps_out = 8,
+        gaps_out = {
+            left = 8,
+            right = 8,
+            bottom = 8,
+            top = 0,
+        },
         border_size = 1,
         layout = "dwindle",
     },
