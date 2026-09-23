@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import "./components/layouts/" as L
 import "./components/widgets/" as W
 import "./components/indicators/" as I
+import "./components/pills/islandcenter/" as IC
 
 ShellRoot {
 
@@ -39,7 +40,7 @@ ShellRoot {
 
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: {
-            if (clockPill.expanded)
+            if (clockPill.expanded || batteryPill.expanded)
                 return WlrKeyboardFocus.Exclusive;
 
             return WlrKeyboardFocus.None;
@@ -48,12 +49,15 @@ ShellRoot {
         MouseArea {
             id: clickOutsideCatcher
             anchors.fill: parent
-            visible: clockPill.expanded
+            visible: clockPill.expanded || batteryPill.expanded
             z: -1
 
             onClicked: {
+                console.log("click fuera");
                 if (clockPill.expanded)
                     clockPill.expanded = false;
+                if (batteryPill.expanded)
+                    batteryPill.expanded = false;
             }
         }
 
@@ -88,7 +92,7 @@ ShellRoot {
         Row {
             id: centerPill
             anchors.horizontalCenter: parent.horizontalCenter
-            I.Clock {
+            IC.IslandCenter {
                 id: clockPill
             }
         }
@@ -96,7 +100,9 @@ ShellRoot {
             id: rightPill
             anchors.right: parent.right
             anchors.rightMargin: 12
-            I.Battery {}
+            I.Battery {
+                id: batteryPill
+            }
         }
     }
 }

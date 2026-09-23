@@ -7,6 +7,14 @@ local autostart = require("autostart")
 
 -- Variables
 local mainMod = "SUPER"
+
+local CURSOR_THEME="Future-cursors"
+local CURSOR_SIZE="24"
+hl.env("XCURSOR_THEME", CURSOR_THEME)
+hl.env("XCURSOR_SIZE", CURSOR_SIZE)
+hl.env("HYPRCURSOR_THEME", CURSOR_THEME)
+hl.env("HYPRCURSOR_SIZE", CURSOR_SIZE)
+
 require("keybinds")
 
 hl.monitor({
@@ -19,6 +27,8 @@ hl.monitor({
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
+hl.env("XDG_CACHE_HOME", os.getenv("HOME") .. "/.cache/hypr")
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
 hl.on('hyprland.start', function()
     autostart.start()

@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import '../../' as Root
+import "../../" as Root
 
 Rectangle {
     id: p
@@ -13,61 +13,90 @@ Rectangle {
     property int expandedHeight: 180
     property int radiusExpanded: 0
     property bool preventFocus: false
+    property int paddingContainer: 16
 
     default property alias content: contentContainer.data
     property alias body: pillContainer.data
     readonly property bool hasBody: pillContainer.children.length > 0
 
-    signal opened()
-    signal closed()
+    signal opened
+    signal closed
 
     onExpandedChanged: expanded ? opened() : closed()
 
-    function open()  { expanded = true }
-    function close() { expanded = false }
+    function open() {
+        expanded = true;
+    }
+    function close() {
+        expanded = false;
+    }
 
-    y: 6
+    y: 8
     width: expanded ? expandedWidth : collapsedWidth
     height: expanded ? expandedHeight : collapsedHeight
     radius: expanded ? radiusExpanded || 16 : height / 2
     color: Root.Theme.island
     clip: true
 
-    Behavior on width  { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
-    Behavior on height { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
-    Behavior on radius { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+    Behavior on width {
+        NumberAnimation {
+            duration: 280
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on height {
+        NumberAnimation {
+            duration: 280
+            easing.type: Easing.OutCubic
+        }
+    }
+    Behavior on radius {
+        NumberAnimation {
+            duration: 280
+            easing.type: Easing.OutCubic
+        }
+    }
 
     Row {
         id: contentContainer
         anchors.centerIn: parent
         opacity: p.expanded ? 0 : 1
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 120 } }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 120
+            }
+        }
     }
 
     Item {
         id: pillContainer
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: paddingContainer
         opacity: p.expanded ? 1 : 0
         visible: opacity > 0
         focus: true
 
         onVisibleChanged: {
             if (visible && !preventFocus) {
-                forceActiveFocus()
+                forceActiveFocus();
             }
         }
 
-        Keys.onPressed: function(event) {
-            if (event.key == Qt.Key_Escape) p.expanded = false
-            event.accepted = true
+        Keys.onPressed: function (event) {
+            if (event.key == Qt.Key_Escape)
+                p.expanded = false;
+            event.accepted = true;
         }
 
         Behavior on opacity {
             SequentialAnimation {
-                PauseAnimation { duration: p.expanded ? 100 : 0 }
-                NumberAnimation { duration: 200 }
+                PauseAnimation {
+                    duration: p.expanded ? 100 : 0
+                }
+                NumberAnimation {
+                    duration: 200
+                }
             }
         }
     }
@@ -82,4 +111,3 @@ Rectangle {
         onClicked: p.expanded = true
     }
 }
-
