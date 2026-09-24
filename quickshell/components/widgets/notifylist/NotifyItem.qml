@@ -82,6 +82,7 @@ Rectangle {
             color: App.Theme.grayDark
             opacity: 0.5
             radius: 12
+            z: 100
 
             Text {
                 anchors.fill: parent
@@ -92,10 +93,13 @@ Rectangle {
             }
             MouseArea {
                 id: mouseClose
-                z: 10
                 anchors.fill: parent
                 hoverEnabled: true
-                onClicked: N.NotificationStore.dismiss(root.modelData)
+                propagateComposedEvents: false
+                onClicked: mouse => {
+                    mouse.accepted = true;
+                    N.NotificationStore.dismiss(root.modelData);
+                }
             }
         }
     }

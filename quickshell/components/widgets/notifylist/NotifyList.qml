@@ -17,6 +17,12 @@ Rectangle {
         visible: !hasNotifications
     }
 
+    MouseArea {
+        id: disable
+        anchors.fill: parent
+        onClicked: console.log("click en card notificacione")
+    }
+
     ListView {
         id: list
         anchors.fill: parent
@@ -30,11 +36,5 @@ Rectangle {
         delegate: NotifyItem {
             totalCount: list.count
         }
-    }
-
-    MouseArea {
-        id: disable
-        anchors.fill: parent
-        onClicked: console.log("click en card notificacione")
     }
 }
