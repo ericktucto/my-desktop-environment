@@ -50,14 +50,16 @@ Column {
         onMoved: v => S.AudioStore.setVolume(root.node, v)
     }
 
-    // ── Acciones en texto ──
+    // ── Acciones ──
     Row {
         spacing: 16
+        height: 24
 
         Text {
             text: root.muted ? "Activar" : "Silenciar"
             color: App.Theme.primary
             font.pixelSize: 12
+            anchors.verticalCenter: parent.verticalCenter
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
@@ -65,14 +67,26 @@ Column {
             }
         }
 
-        Text {
-            text: (root.boost ? "[x]" : "[ ]") + " Permitir 150%"
-            color: root.boost ? App.Theme.primary : App.Theme.gray
-            font.pixelSize: 12
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: S.AudioStore.setAllowOver(root.isSink, !root.boost)
+        Row {
+            spacing: 8
+            anchors.verticalCenter: parent.verticalCenter
+
+            C.Switch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: root.boost
+                onToggled: on => S.AudioStore.setAllowOver(root.isSink, on)
+            }
+            Text {
+                text: "Permitir 150%"
+                color: root.boost ? App.Theme.white : App.Theme.gray
+                font.pixelSize: 12
+                anchors.verticalCenter: parent.verticalCenter
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: S.AudioStore.setAllowOver(root.isSink, !root.boost)
+                }
             }
         }
     }

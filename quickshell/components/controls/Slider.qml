@@ -1,6 +1,8 @@
 import QtQuick
 import "../../" as App
 
+// Slider estilo Material 3: tramo activo + barra vertical (handle) + tramo inactivo,
+// con un hueco a cada lado del handle y un punto al final del tramo inactivo.
 Item {
     id: root
 
@@ -10,47 +12,94 @@ Item {
 
     signal moved(real value)
 
-    implicitWidth: 200
-    implicitHeight: 18
-
     readonly property real ratio: to > 0 ? Math.max(0, Math.min(1, value / to)) : 0
+    readonly property int trackHeight: 12
+    readonly property int handleWidth: 4
+    readonly property int handleHeight: 22
+    readonly property int gap: 4
+    readonly property color inactiveColor: Qt.rgba(1, 1, 1, 0.14)
 
-    // Pista
-    Rectangle {
-        id: track
+    implicitWidth: 200
+    implicitHeight: 24
+
+    // Posición del handle (0 .. width - handleWidth)
+    readonly property real handleX: (width - handleWidth) * ratio
+
+    // Tramo activo (izquierda redondeada, derecha casi recta)
+    Item {
+        id: active
+        height: root.trackHeight
+        width: Math.max(0, root.handleX - root.gap)
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width
-        height: 4
-        radius: 2
-        color: App.Theme.grayDark
+        visible: width > 0
 
-        // Relleno
         Rectangle {
-            width: parent.width * root.ratio
-            height: parent.height
-            radius: parent.radius
+            anchors.fill: parent
+            radius: height / 2
             color: App.Theme.primary
         }
-
-        // Marca del 100% cuando el rango llega a 150%
         Rectangle {
-            visible: root.to > 1.0
-            x: parent.width * (1.0 / root.to) - width / 2
-            anchors.verticalCenter: parent.verticalCenter
-            width: 2
-            height: 10
-            color: App.Theme.gray
+            anchors.right: parent.right
+            width: Math.min(parent.width, parent.height / 2)
+            height: parent.height
+            radius: 2
+            color: App.Theme.primary
         }
     }
 
-    // Tirador
-    Rectangle {
-        width: 12
-        height: 12
-        radius: 6
-        color: App.Theme.white
+    // Tramo inactivo (izquierda casi recta, derecha redondeada)
+    Item {
+        id: inactive
+        height: root.trackHeight
+        x: root.handleX + root.handleWidth + root.gap
+        width: Math.max(0, root.width - x)
         anchors.verticalCenter: parent.verticalCenter
-        x: (root.width - width) * root.ratio
+        visible: width > 0
+
+        Rectangle {
+            anchors.fill: parent
+            radius: height / 2
+            color: root.inactiveColor
+        }
+        Rectangle {
+            anchors.left: parent.left
+            width: Math.min(parent.width, parent.height / 2)
+            height: parent.height
+            radius: 2
+            color: root.inactiveColor
+        }
+        // Punto al final del tramo
+        Rectangle {
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            width: 3
+            height: 3
+            radius: 1.5
+            color: App.Theme.primary
+        }
+    }
+
+    // Marca del 100% cuando el rango llega a 150%
+    Rectangle {
+        visible: root.to > 1.0
+        x: root.handleWidth / 2 + (root.width - root.handleWidth) / root.to - width / 2
+        anchors.verticalCenter: parent.verticalCenter
+        width: 3
+        height: 3
+        radius: 1.5
+        color: App.Theme.white
+        opacity: 0.8
+    }
+
+    // Handle
+    Rectangle {
+        x: root.handleX
+        width: root.handleWidth
+        height: root.handleHeight
+        radius: width / 2
+        color: App.Theme.primary
+        anchors.verticalCenter: parent.verticalCenter
     }
 
     MouseArea {
@@ -59,7 +108,8 @@ Item {
         cursorShape: Qt.PointingHandCursor
 
         function update(mouseX) {
-            const r = Math.max(0, Math.min(1, mouseX / width));
+            const usable = root.width - root.handleWidth;
+            const r = usable > 0 ? Math.max(0, Math.min(1, (mouseX - root.handleWidth / 2) / usable)) : 0;
             root.moved(r * root.to);
         }
 
