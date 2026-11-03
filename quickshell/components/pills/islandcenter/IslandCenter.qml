@@ -33,6 +33,10 @@ Base.Island {
         root: root
     }
 
+    onClicked: {
+        current = 'applist';
+    }
+
     onOpened: {
         console.log("Island abierta, wallpaper actual", App.Wallpaper.current);
     }

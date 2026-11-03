@@ -19,6 +19,7 @@ Rectangle {
     property alias body: pillContainer.data
     readonly property bool hasBody: pillContainer.children.length > 0
 
+    signal clicked
     signal opened
     signal closed
 
@@ -108,6 +109,9 @@ Rectangle {
         // disabled cuando esta expandido
         enabled: p.hasBody && !p.expanded
 
-        onClicked: p.expanded = true
+        onClicked: {
+            p.clicked();
+            p.expanded = true;
+        }
     }
 }

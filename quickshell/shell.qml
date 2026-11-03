@@ -35,12 +35,12 @@ ShellRoot {
         // altura máxima (pill expandido + margen)
         implicitHeight: bar.screen ? bar.screen.height : 0
         // solo la barra reserva espacio
-        exclusiveZone: 42
+        exclusiveZone: 44
         color: "transparent"
 
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: {
-            if (clockPill.expanded || batteryPill.expanded)
+            if (clockPill.expanded || batteryPill.expanded || audioPill.expanded)
                 return WlrKeyboardFocus.Exclusive;
 
             return WlrKeyboardFocus.None;
@@ -49,11 +49,13 @@ ShellRoot {
         MouseArea {
             id: clickOutsideCatcher
             anchors.fill: parent
-            visible: clockPill.expanded || batteryPill.expanded
+            visible: clockPill.expanded || batteryPill.expanded || audioPill.expanded
             z: -1
 
             onClicked: {
                 console.log("click fuera");
+                if (audioPill.expanded)
+                    audioPill.expanded = false;
                 if (clockPill.expanded)
                     clockPill.expanded = false;
                 if (batteryPill.expanded)
@@ -87,7 +89,9 @@ ShellRoot {
             id: leftPill
             anchors.left: parent.left
             anchors.leftMargin: 8
+            spacing: 8
             I.Workspaces {}
+            I.Zoom {}
         }
         Row {
             id: centerPill
@@ -100,6 +104,13 @@ ShellRoot {
             id: rightPill
             anchors.right: parent.right
             anchors.rightMargin: 12
+
+            spacing: 8
+
+            I.Audio {
+                id: audioPill
+            }
+
             I.Battery {
                 id: batteryPill
             }

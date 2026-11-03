@@ -8,11 +8,10 @@ Rectangle {
     anchors.fill: parent
     color: "transparent"
 
-    property string current: 'applist'
     property var root
 
     A.AppList {
-        visible: current == 'applist'
+        visible: root.current == 'applist'
         anchors.fill: parent
         anchors.margins: 8
         apps: DesktopEntries.applications.values.filter(a => !a.noDisplay && !a.hidden)
@@ -40,19 +39,19 @@ Rectangle {
         IpcHandler {
             target: "stixshell@launcher"
             function toggle(mon: string): void {
-                current = 'applist';
+                root.current = 'applist';
                 root.open();
             }
         }
     }
     W.Wallpapers {
         id: wallpapers
-        visible: current == 'wallpapers'
+        visible: root.current == 'wallpapers'
         onClosed: root.close()
         IpcHandler {
             target: "stixshell@wallpaper"
             function toggle(mon: string): void {
-                current = 'wallpapers';
+                root.current = 'wallpapers';
                 wallpapers.scanWallpapers();
                 wallpapers.giveFocus();
                 root.open();
