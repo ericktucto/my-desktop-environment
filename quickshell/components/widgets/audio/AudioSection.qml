@@ -41,31 +41,40 @@ Column {
         }
     }
 
-    // ── Slider ──
-    C.Slider {
-        width: parent.width
-        to: S.AudioStore.maxFor(root.node)
-        value: root.node && root.node.audio ? root.node.audio.volume : 0
-        enabled: root.node !== null
-        onMoved: v => S.AudioStore.setVolume(root.node, v)
-    }
-
-    // ── Acciones ──
+    // ── Ícono (mute) + slider ──
     Row {
-        spacing: 16
-        height: 24
+        width: parent.width
+        spacing: 12
 
-        Text {
-            text: root.muted ? "Activar" : "Silenciar"
-            color: App.Theme.primary
-            font.pixelSize: App.Config.fontSize.sm
+        C.IconSvg {
+            id: muteIcon
+            size: 18
             anchors.verticalCenter: parent.verticalCenter
+            source: Qt.resolvedUrl("../../../assets/svg/" + (root.isSink ? S.AudioStore.volumeIcon(root.node) : S.AudioStore.micIcon(root.node)) + ".svg")
+            color: root.muted ? App.Theme.orange : App.Theme.white
+
             MouseArea {
                 anchors.fill: parent
+                anchors.margins: -4
                 cursorShape: Qt.PointingHandCursor
                 onClicked: S.AudioStore.toggleMute(root.node)
             }
         }
+
+        C.Slider {
+            width: parent.width - muteIcon.width - parent.spacing
+            anchors.verticalCenter: parent.verticalCenter
+            to: S.AudioStore.maxFor(root.node)
+            value: root.node && root.node.audio ? root.node.audio.volume : 0
+            enabled: root.node !== null
+            onMoved: v => S.AudioStore.setVolume(root.node, v)
+        }
+    }
+
+    // ── Switch 150% ──
+    Row {
+        spacing: 16
+        height: 24
 
         Row {
             spacing: 8

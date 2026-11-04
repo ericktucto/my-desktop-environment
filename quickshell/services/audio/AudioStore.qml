@@ -67,6 +67,22 @@ Singleton {
         return Math.round(node.audio.volume * 100);
     }
 
+    // Ícono del parlante: off = mute, none = 0, low = hasta 50%, on = más de 50%
+    function volumeIcon(node) {
+        if (!node || !node.audio)
+            return "volumen-none";
+        if (node.audio.muted)
+            return "volumen-off";
+        if (node.audio.volume <= 0.001)
+            return "volumen-none";
+        return node.audio.volume <= 0.5 ? "volumen-low" : "volumen-on";
+    }
+
+    // Ícono del micrófono: off si está silenciado
+    function micIcon(node) {
+        return node && node.audio && node.audio.muted ? "microphone-off" : "microphone-on";
+    }
+
     // ── Acciones ──
     function setVolume(node, v) {
         if (!node || !node.audio)

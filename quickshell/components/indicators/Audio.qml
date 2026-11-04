@@ -20,7 +20,7 @@ Base.Island {
     Row {
         spacing: App.Config.pill.contentSpacing
         C.IconSvg {
-            source: "./assets/svg/volumen-on.svg"
+            source: Qt.resolvedUrl("../../assets/svg/" + S.AudioStore.volumeIcon(root.sink) + ".svg")
             size: 16
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter
