@@ -58,6 +58,15 @@ Rectangle {
         }
     }
 
+    // Absorbe los clics sobre la pill expandida (zonas sin control propio) para que no
+    // lleguen al "clic fuera" de la ventana y la cierren. Va al fondo: los controles
+    // del cuerpo, declarados después, siguen recibiendo sus clics.
+    MouseArea {
+        anchors.fill: parent
+        enabled: p.expanded
+        acceptedButtons: Qt.AllButtons
+    }
+
     Row {
         id: contentContainer
         anchors.centerIn: parent
