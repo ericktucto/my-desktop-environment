@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import "../../../" as App
 
 Rectangle {
     id: root
@@ -15,14 +16,14 @@ Rectangle {
     property color hoverColor: "#3a3f4a"
     property color textColor: "#cdd6f4"
     property color subtextColor: "#8a93a5"
-    property int fontSize: 13
+    property int fontSize: App.Config.fontSize.md
 
     // Tamaño
     implicitHeight: 52
     implicitWidth: parent ? parent.width : 300
 
     color: isCurrent ? "#3a3f4a" : "transparent"
-    radius: 8
+    radius: App.Config.radius.md
 
     // ── Resolver el tipo de icono ──
     function resolveIcon(iconStr) {
@@ -63,13 +64,13 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 color: root.hoverColor
-                radius: 6
+                radius: App.Config.radius.sm
                 visible: parent.status !== Image.Ready
                 Text {
                     anchors.centerIn: parent
                     text: "󰩉" // icono genérico NF
                     color: root.subtextColor
-                    font.pixelSize: 18
+                    font.pixelSize: App.Config.fontSize.iconLg
                 }
             }
         }

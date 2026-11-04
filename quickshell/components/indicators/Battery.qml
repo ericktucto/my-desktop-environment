@@ -5,12 +5,11 @@ import "../../components/widgets/notifylist" as N
 
 Base.Island {
     id: root
-    collapsedWidth: 115
-    expandedWidth: 340
+    expandedWidth: App.Config.panel.notificationsWidth
     expandedHeight: list.implicitHeight + 16
 
     color: expanded ? "transparent" : App.Theme.island
-    paddingContainer: expanded ? 0 : 16
+    paddingContainer: expanded ? 0 : App.Config.pill.padding
 
     BatteryText {}
 

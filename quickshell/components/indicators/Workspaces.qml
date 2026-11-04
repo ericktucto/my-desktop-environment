@@ -5,9 +5,8 @@ import "../base" as Base
 import "../../" as App
 
 Base.Island {
-    expandedHeight: 80
-    expandedWidth: 360
-    radiusExpanded: 32
+    expandedHeight: App.Config.panel.workspacesHeight
+    expandedWidth: App.Config.panel.workspacesWidth
 
     Row {
         anchors.verticalCenter: parent.verticalCenter
@@ -27,7 +26,7 @@ Base.Island {
                 border.width: active ? 0 : 1
                 radius: 10
 
-                Behavior on width  { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                Behavior on width  { NumberAnimation { duration: App.Config.anim.pill; easing.type: Easing.OutCubic } }
             }
         }
     }

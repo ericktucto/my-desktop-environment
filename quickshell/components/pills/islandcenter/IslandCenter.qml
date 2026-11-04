@@ -10,20 +10,18 @@ Base.Island {
 
     expandedHeight: {
         if (current == 'applist')
-            return 600;
+            return App.Config.panel.launcherHeight;
         if (current == 'wallpapers')
-            return App.Config.imgHeight * 2 + App.Config.spacingCell * 2 + 32;
+            return App.Config.wallpaperPicker.imgHeight * 2 + App.Config.wallpaperPicker.spacingCell * 2 + 2 * App.Config.pill.padding;
         return 300;
     }
     expandedWidth: {
         if (current == 'applist')
-            return 480;
+            return App.Config.panel.launcherWidth;
         if (current == 'wallpapers')
-            return 800;
+            return App.Config.panel.wallpapersWidth;
         return 400;
     }
-
-    radiusExpanded: 32
 
     preventFocus: true
 

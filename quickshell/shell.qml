@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import "./" as App
 import "./components/layouts/" as L
 import "./components/widgets/" as W
 import "./components/indicators/" as I
@@ -18,7 +19,7 @@ ShellRoot {
         }
         WlrLayershell.layer: WlrLayer.Background
         exclusionMode: ExclusionMode.Ignore
-        color: "transparent"
+        color: App.Theme.black
 
         W.WallpaperTransition {}
     }
@@ -35,7 +36,7 @@ ShellRoot {
         // altura máxima (pill expandido + margen)
         implicitHeight: bar.screen ? bar.screen.height : 0
         // solo la barra reserva espacio
-        exclusiveZone: 44
+        exclusiveZone: App.Config.bar.exclusiveZone
         color: "transparent"
 
         WlrLayershell.layer: WlrLayer.Top
@@ -88,8 +89,8 @@ ShellRoot {
         Row {
             id: leftPill
             anchors.left: parent.left
-            anchors.leftMargin: 8
-            spacing: 8
+            anchors.leftMargin: App.Config.bar.marginLeft
+            spacing: App.Config.bar.spacing
             I.Workspaces {}
             I.Zoom {}
         }
@@ -103,9 +104,9 @@ ShellRoot {
         Row {
             id: rightPill
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: App.Config.bar.marginRight
 
-            spacing: 8
+            spacing: App.Config.bar.spacing
 
             I.Audio {
                 id: audioPill

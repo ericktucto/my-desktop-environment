@@ -21,7 +21,7 @@ Item {
         border.width: root.checked ? 0 : 2
         border.color: App.Theme.grayDark
 
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: App.Config.anim.control } }
     }
 
     Rectangle {
@@ -34,9 +34,9 @@ Item {
         x: root.checked ? root.width - width - 3 : 7 + (10 - width) / 2
         color: root.checked ? App.Theme.white : App.Theme.grayDark
 
-        Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-        Behavior on size { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on x { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }
+        Behavior on size { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }
+        Behavior on color { ColorAnimation { duration: App.Config.anim.control } }
 
         Text {
             anchors.centerIn: parent
@@ -46,7 +46,7 @@ Item {
             color: App.Theme.primary
             opacity: root.checked ? 1 : 0
 
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+            Behavior on opacity { NumberAnimation { duration: App.Config.anim.control } }
         }
     }
 

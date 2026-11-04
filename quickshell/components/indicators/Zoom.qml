@@ -8,9 +8,6 @@ import "../../" as App
 Base.Island {
     id: root
 
-    // margen lateral (12) x2 + icono (16) + separación (6) + texto
-    collapsedWidth: 12 * 2 + 16 + 6 + label.implicitWidth
-
     readonly property string appId: "us.zoom.Zoom"
     readonly property string fallbackIcon: "file:///var/lib/flatpak/exports/share/icons/hicolor/64x64/apps/us.zoom.Zoom.png"
     // Entrada .desktop exportada por el flatpak (la misma que usa el launcher)
@@ -55,10 +52,9 @@ Base.Island {
     Text {
         id: label
         text: "Zoom"
-        leftPadding: 6
         height: 16
         verticalAlignment: Text.AlignVCenter
-        font.pixelSize: 12
+        font.pixelSize: App.Config.fontSize.sm
         color: App.Theme.white
         opacity: mouse.containsMouse ? 1 : 0.85
 

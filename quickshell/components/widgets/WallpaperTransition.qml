@@ -5,11 +5,15 @@ import "../../" as App
 Item {
     id: root
     anchors.fill: parent
+    anchors.topMargin: App.Config.wallpaper.marginTop
+    anchors.rightMargin: App.Config.wallpaper.marginRight
+    anchors.bottomMargin: App.Config.wallpaper.marginBottom
+    anchors.leftMargin: App.Config.wallpaper.marginLeft
 
-    property int duration: 600
+    property int duration: App.Config.anim.wallpaper
     // Cuál capa muestra el wallpaper actual: false = A visible, true = B visible
     property bool showingB: false
-    readonly property int radiusImage: 16
+    readonly property int radiusImage: App.Config.wallpaper.radius
     readonly property color backgroundColor: App.Theme.black
 
     // ── Capa A ──

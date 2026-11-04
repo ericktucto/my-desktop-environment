@@ -30,14 +30,14 @@ Row {
         return Root.Theme.white;
     }
 
-    spacing: 10
+    spacing: Root.Config.pill.contentSpacing
 
     // Contenido de la pill: ícono + porcentaje
     Text {
         visible: charging
         text: String.fromCodePoint(0xf140b)
         font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: 16
+        font.pixelSize: Root.Config.fontSize.icon
         color: Root.Theme.yellow
         anchors.verticalCenter: parent.verticalCenter
     }
@@ -45,7 +45,7 @@ Row {
     Text {
         text: batteryIcon
         font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: 16
+        font.pixelSize: Root.Config.fontSize.icon
         color: iconColor
         anchors.verticalCenter: parent.verticalCenter
     }
@@ -53,7 +53,7 @@ Row {
     Text {
         text: percent + "%"
         font.family: "Inter"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: 12
+        font.pixelSize: Root.Config.fontSize.sm
         font.weight: Font.DemiBold
         font.letterSpacing: -1
 

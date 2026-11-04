@@ -26,7 +26,7 @@ Column {
         Text {
             text: root.title
             color: App.Theme.gray
-            font.pixelSize: 11
+            font.pixelSize: App.Config.fontSize.xs
             font.weight: Font.DemiBold
             font.letterSpacing: 1
             anchors.verticalCenter: parent.verticalCenter
@@ -36,7 +36,7 @@ Column {
             anchors.verticalCenter: parent.verticalCenter
             text: root.muted ? "Mute" : S.AudioStore.percent(root.node) + "%"
             color: root.muted ? App.Theme.orange : App.Theme.white
-            font.pixelSize: 12
+            font.pixelSize: App.Config.fontSize.sm
             font.weight: Font.DemiBold
         }
     }
@@ -58,7 +58,7 @@ Column {
         Text {
             text: root.muted ? "Activar" : "Silenciar"
             color: App.Theme.primary
-            font.pixelSize: 12
+            font.pixelSize: App.Config.fontSize.sm
             anchors.verticalCenter: parent.verticalCenter
             MouseArea {
                 anchors.fill: parent
@@ -79,7 +79,7 @@ Column {
             Text {
                 text: "Permitir 150%"
                 color: root.boost ? App.Theme.white : App.Theme.gray
-                font.pixelSize: 12
+                font.pixelSize: App.Config.fontSize.sm
                 anchors.verticalCenter: parent.verticalCenter
 
                 MouseArea {
@@ -107,7 +107,7 @@ Column {
                 text: (active ? "● " : "   ") + S.AudioStore.label(modelData)
                 elide: Text.ElideRight
                 color: active ? App.Theme.primary : App.Theme.gray
-                font.pixelSize: 12
+                font.pixelSize: App.Config.fontSize.sm
                 font.weight: active ? Font.Bold : Font.Normal
                 topPadding: 3
                 bottomPadding: 3

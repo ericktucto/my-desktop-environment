@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import './../../controls/' as Controls
+import '../../../' as App
 
 Item {
     id: root
@@ -43,7 +44,6 @@ Item {
         Column {
             id: column
             anchors.fill: parent
-            anchors.margins: 12
             spacing: 10
             Controls.TextField {
                 id: searchInput
@@ -79,7 +79,7 @@ Item {
 
                 highlight: Rectangle {
                     color: "#3a3f4a"
-                    radius: 8
+                    radius: App.Config.radius.md
                 }
                 highlightMoveDuration: 100
                 highlightResizeDuration: 0

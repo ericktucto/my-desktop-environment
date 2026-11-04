@@ -13,7 +13,7 @@ Rectangle {
 
     width: parent?.width ?? 340
     height: 80
-    radius: 8
+    radius: App.Config.radius.md
 
     border.color: App.Theme.grayDark
 
@@ -48,7 +48,7 @@ Rectangle {
             visible: false
             layer.enabled: true
             anchors.fill: img
-            radius: 8
+            radius: App.Config.radius.md
         }
 
         Column {
@@ -67,7 +67,7 @@ Rectangle {
             Text {
                 text: root.modelData?.body ?? ''
                 color: App.Theme.white
-                font.pixelSize: 11
+                font.pixelSize: App.Config.fontSize.xs
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 width: parent.width

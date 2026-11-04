@@ -9,7 +9,7 @@ Rectangle {
 
     width: parent?.width ?? 340
     height: 80
-    radius: 8
+    radius: App.Config.radius.md
 
     border.color: App.Theme.grayDark
 

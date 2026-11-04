@@ -6,7 +6,7 @@ Text {
     text: Qt.formatDateTime(clock.date, "hh:mm AP")
     color: App.Theme.white
     font.family: "JetBrains Mono"
-    font.pixelSize: 13
+    font.pixelSize: App.Config.fontSize.md
     font.weight: Font.Medium
     anchors.verticalCenter: parent.verticalCenter
 

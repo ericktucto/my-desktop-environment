@@ -13,7 +13,6 @@ Rectangle {
     A.AppList {
         visible: root.current == 'applist'
         anchors.fill: parent
-        anchors.margins: 8
         apps: DesktopEntries.applications.values.filter(a => !a.noDisplay && !a.hidden)
         onAppLaunched: function (app) {
             root.expanded = false;

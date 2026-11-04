@@ -13,14 +13,14 @@ Rectangle {
     color: "transparent"
     border.color: input.activeFocus ? Root.Theme.primary : "#3a3f4a"
     border.width: 1
-    radius: 6
+    radius: Root.Config.radius.sm
 
     TextInput {
         id: input
         anchors.fill: parent
         anchors.margins: 10
         color: "white"
-        font.pixelSize: 14
+        font.pixelSize: Root.Config.fontSize.lg
         verticalAlignment: TextInput.AlignVCenter
         clip: true
 
@@ -41,7 +41,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         text: root.placeholder
         color: "#888888"
-        font.pixelSize: 14
+        font.pixelSize: Root.Config.fontSize.lg
         visible: input.text === "" && !input.activeFocus
     }
 

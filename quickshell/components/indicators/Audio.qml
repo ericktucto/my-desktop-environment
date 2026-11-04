@@ -9,11 +9,8 @@ import "../../" as App
 Base.Island {
     id: root
 
-    collapsedWidth: 90
     expandedHeight: panel.implicitHeight + 2 * paddingContainer
-    expandedWidth: 360
-
-    radiusExpanded: 32
+    expandedWidth: App.Config.panel.audioWidth
 
     preventFocus: true
 
@@ -21,9 +18,9 @@ Base.Island {
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
 
     Row {
-        spacing: 8
+        spacing: App.Config.pill.contentSpacing
         C.IconSvg {
-            source: "/home/erick/Descargas/svg/volumen-on.svg"
+            source: "./assets/svg/volumen-on.svg"
             size: 16
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter
@@ -31,7 +28,7 @@ Base.Island {
         Text {
             text: root.muted ? "Mute" : S.AudioStore.percent(root.sink) + "%"
             font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
-            font.pixelSize: 12
+            font.pixelSize: App.Config.fontSize.sm
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter
         }

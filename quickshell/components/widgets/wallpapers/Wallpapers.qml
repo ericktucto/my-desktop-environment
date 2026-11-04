@@ -62,9 +62,9 @@ Item {
         flow: GridView.FlowTopToBottom
         height: cellHeight * 2
 
-        readonly property int spacing: App.Config.spacingCell
-        readonly property int imgWidth: App.Config.imgWidth
-        readonly property int imgHeight: App.Config.imgHeight
+        readonly property int spacing: App.Config.wallpaperPicker.spacingCell
+        readonly property int imgWidth: App.Config.wallpaperPicker.imgWidth
+        readonly property int imgHeight: App.Config.wallpaperPicker.imgHeight
 
         cellWidth: imgWidth + spacing
         cellHeight: imgHeight + spacing
@@ -89,14 +89,14 @@ Item {
         delegate: Rectangle {
             width: gridView.imgWidth
             height: gridView.imgHeight
-            radius: 8
+            radius: App.Config.wallpaperPicker.radius
             // Borde azul si está seleccionado, transparente si no
             color: GridView.isCurrentItem ? App.Theme.blue : "transparent"
 
             Image {
                 id: thumb
                 anchors.fill: parent
-                anchors.margins: App.Config.borderImg
+                anchors.margins: App.Config.wallpaperPicker.borderImg
                 source: `file://${modelData}`
                 fillMode: Image.PreserveAspectCrop
                 smooth: true
@@ -112,7 +112,7 @@ Item {
                         sourceItem: Rectangle {
                             width: thumb.width
                             height: thumb.height
-                            radius: 8
+                            radius: App.Config.wallpaperPicker.radius
                         }
                     }
                 }
