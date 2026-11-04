@@ -13,6 +13,8 @@ Rectangle {
     property int expandedHeight: 180
     property int radiusExpanded: Root.Config.pill.radiusExpanded
     property bool preventFocus: false
+    // false = el ancho sigue al contenido sin animación propia (el contenido ya se anima)
+    property bool animateWidth: true
     property int paddingContainer: Root.Config.pill.padding
 
     default property alias content: contentContainer.data
@@ -40,6 +42,7 @@ Rectangle {
     clip: true
 
     Behavior on width {
+        enabled: p.animateWidth
         NumberAnimation {
             duration: Root.Config.anim.pill
             easing.type: Easing.OutCubic

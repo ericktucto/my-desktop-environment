@@ -108,6 +108,8 @@ ShellRoot {
 
             spacing: App.Config.bar.spacing
 
+            I.Tray {}
+
             I.Audio {
                 id: audioPill
             }

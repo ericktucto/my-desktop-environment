@@ -70,6 +70,16 @@ Singleton {
         readonly property int md: 8
     }
 
+    // ===== System tray =====
+    readonly property QtObject tray: QtObject {
+        readonly property int iconSize: 16
+        // Menú contextual
+        readonly property int menuMinWidth: 200
+        readonly property int menuItemHeight: 28
+        readonly property int menuPadding: 6
+        readonly property int menuIndent: 12        // sangría de los submenús
+    }
+
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
         readonly property int pill: 280
