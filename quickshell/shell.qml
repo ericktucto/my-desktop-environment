@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import "./" as App
 import "./components/layouts/" as L
 import "./components/widgets/" as W
+import "./components/widgets/notifylist/" as N
 import "./components/indicators/" as I
 import "./components/pills/islandcenter/" as IC
 
@@ -24,6 +25,11 @@ ShellRoot {
         W.WallpaperTransition {}
     }
 
+    // ── Popups de notificaciones ──
+    N.NotifyPopups {
+        suppressed: notifPill.expanded || audioPill.expanded
+    }
+
     PanelWindow {
         id: bar
 
@@ -41,7 +47,7 @@ ShellRoot {
 
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: {
-            if (clockPill.expanded || batteryPill.expanded || audioPill.expanded)
+            if (clockPill.expanded || notifPill.expanded || audioPill.expanded)
                 return WlrKeyboardFocus.Exclusive;
 
             return WlrKeyboardFocus.None;
@@ -50,7 +56,7 @@ ShellRoot {
         MouseArea {
             id: clickOutsideCatcher
             anchors.fill: parent
-            visible: clockPill.expanded || batteryPill.expanded || audioPill.expanded
+            visible: clockPill.expanded || notifPill.expanded || audioPill.expanded
             z: -1
 
             onClicked: {
@@ -59,8 +65,8 @@ ShellRoot {
                     audioPill.expanded = false;
                 if (clockPill.expanded)
                     clockPill.expanded = false;
-                if (batteryPill.expanded)
-                    batteryPill.expanded = false;
+                if (notifPill.expanded)
+                    notifPill.expanded = false;
             }
         }
 
@@ -114,8 +120,10 @@ ShellRoot {
                 id: audioPill
             }
 
-            I.Battery {
-                id: batteryPill
+            I.Battery {}
+
+            I.Notifications {
+                id: notifPill
             }
         }
     }

@@ -49,7 +49,7 @@ Singleton {
         readonly property int launcherHeight: 600
         readonly property int wallpapersWidth: 800
         readonly property int audioWidth: 360
-        readonly property int notificationsWidth: 340
+        readonly property int notificationsWidth: 420
         readonly property int workspacesWidth: 360
         readonly property int workspacesHeight: 80
     }
@@ -78,6 +78,27 @@ Singleton {
         readonly property int menuItemHeight: 28
         readonly property int menuPadding: 6
         readonly property int menuIndent: 12        // sangría de los submenús
+    }
+
+    // ===== Notificaciones =====
+    readonly property QtObject notifications: QtObject {
+        readonly property int popupWidth: 380
+        readonly property int popupTimeout: 5000     // ms, si la app no indica uno
+        readonly property int maxPopups: 3           // popups simultáneos (el resto solo va al historial)
+        readonly property int spacing: 8             // entre tarjetas
+        readonly property int imageSize: 40          // círculo de imagen/ícono de la tarjeta
+        readonly property int appIconSize: 22        // ícono de app dentro del círculo
+        readonly property int cardRadius: 20         // radio de las tarjetas
+        readonly property int cardPadding: 14        // padding interno de la tarjeta
+        readonly property int closeSize: 24          // botón cerrar de la tarjeta
+        readonly property int headerHeight: 40       // alto de la fila de botones del panel
+        readonly property int headerIconSize: 18     // ícono de los botones del encabezado
+        readonly property int summaryLines: 1        // título plegado
+        readonly property int bodyLines: 3           // cuerpo plegado en el historial
+        readonly property int popupBodyLines: 2      // cuerpo plegado en los popups
+        readonly property int expandedMaxHeight: 240 // alto máx. del cuerpo expandido (luego scroll)
+        readonly property int listMaxHeight: 560     // alto máx. de la lista del panel (luego scroll)
+        readonly property int clearConfirm: 3000     // ms que el botón Limpiar espera el segundo clic
     }
 
     // ===== Animaciones (ms) =====

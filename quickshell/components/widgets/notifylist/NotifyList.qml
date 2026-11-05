@@ -1,40 +1,28 @@
 import QtQuick
-import "../../../services/notify/" as N
+import Quickshell
+import "../../../services/notify/" as S
+import "../../../" as App
 
-Rectangle {
-    id: container
-    color: "transparent"
+// Historial: una tarjeta por notificación, la más nueva arriba.
+// El modelo son las keys (strings), así que solo se crean/borran los delegates que cambian.
+ListView {
+    id: list
 
-    readonly property int maxHeight: Screen.height - 160
-    readonly property bool hasNotifications: list.count > 0
-
-    implicitWidth: 340
-    implicitHeight: hasNotifications ? Math.min(list.contentHeight, container.maxHeight) : 80
+    implicitHeight: Math.min(contentHeight, App.Config.notifications.listMaxHeight)
 
     clip: true
+    spacing: App.Config.notifications.spacing
+    interactive: contentHeight > height
+    boundsBehavior: Flickable.StopAtBounds
 
-    NotifyItemEmpty {
-        visible: !hasNotifications
+    model: ScriptModel {
+        values: S.NotificationStore.history.map(e => e.key)
     }
 
-    MouseArea {
-        id: disable
-        anchors.fill: parent
-        onClicked: console.log("click en card notificacione")
-    }
-
-    ListView {
-        id: list
-        anchors.fill: parent
-        spacing: 8
-        model: N.NotificationStore.history
-
-        interactive: contentHeight > height
-
-        boundsBehavior: Flickable.StopAtBounds
-
-        delegate: NotifyItem {
-            totalCount: list.count
-        }
+    delegate: NotifyItem {
+        id: card
+        width: ListView.view.width
+        onCloseRequested: S.NotificationStore.remove(modelData)
+        onActivated: S.NotificationStore.activate(modelData)
     }
 }
