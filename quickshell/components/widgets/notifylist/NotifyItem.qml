@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell.Services.Notifications
 import "../../controls/" as C
 import "../../../services/notify/" as S
 import "../../../" as App
@@ -15,7 +16,7 @@ Rectangle {
     readonly property var cfg: App.Config.notifications
     readonly property var entry: S.NotificationStore.entry(modelData)
     readonly property var iconInfo: S.NotificationStore.iconFor(entry)
-    readonly property bool critical: entry ? entry.urgency === 2 : false
+    readonly property bool critical: entry ? entry.urgency === NotificationUrgency.Critical : false
     readonly property string appName: entry ? entry.appName : ""
 
     // Estado visual (no se guarda): título y cuerpo completos
@@ -41,7 +42,7 @@ Rectangle {
         }
     }
 
-    color: popup ? App.Theme.island : Qt.rgba(1, 1, 1, 0.06)
+    color: popup ? App.Theme.island : App.Theme.surface
     border.width: popup || critical ? 1 : 0
     border.color: critical ? App.Theme.red : App.Theme.islandEdge
 
@@ -74,6 +75,7 @@ Rectangle {
         }
 
         Image {
+            id: appImg
             anchors.centerIn: parent
             width: root.cfg.appIconSize
             height: width
@@ -91,15 +93,6 @@ Rectangle {
             color: App.Theme.white
             font.pixelSize: App.Config.fontSize.lg
             font.weight: Font.DemiBold
-        }
-
-        // Para saber si el ícono de la app cargó (sin duplicar la lógica de arriba)
-        Image {
-            id: appImg
-            visible: false
-            source: root.iconInfo.app
-            sourceSize: Qt.size(root.cfg.appIconSize, root.cfg.appIconSize)
-            asynchronous: true
         }
 
         Image {
@@ -174,7 +167,7 @@ Rectangle {
                 width: root.cfg.closeSize
                 height: width
                 radius: width / 2
-                color: Qt.rgba(1, 1, 1, expandMouse.containsMouse ? 0.16 : 0.08)
+                color: expandMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surfaceHover
 
                 Behavior on color {
                     ColorAnimation {
@@ -212,7 +205,7 @@ Rectangle {
                 width: root.cfg.closeSize
                 height: width
                 radius: width / 2
-                color: Qt.rgba(1, 1, 1, closeMouse.containsMouse ? 0.16 : 0.08)
+                color: closeMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surfaceHover
 
                 Behavior on color {
                     ColorAnimation {
@@ -303,7 +296,7 @@ Rectangle {
                     width: actionText.implicitWidth + 20
                     height: 26
                     radius: height / 2
-                    color: Qt.rgba(1, 1, 1, actionMouse.containsMouse ? 0.16 : 0.08)
+                    color: actionMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surfaceHover
 
                     Behavior on color {
                         ColorAnimation {

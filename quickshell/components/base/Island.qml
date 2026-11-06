@@ -1,21 +1,22 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../../" as Root
+import "../../" as App
+import "../../services/panels/" as P
 
 Rectangle {
     id: p
 
     property bool expanded: false
-    property int collapsedWidth: Math.ceil(contentContainer.implicitWidth) + 2 * Root.Config.pill.paddingX
-    property int collapsedHeight: Root.Config.pill.height
+    property int collapsedWidth: Math.ceil(contentContainer.implicitWidth) + 2 * App.Config.pill.paddingX
+    property int collapsedHeight: App.Config.pill.height
     property int expandedWidth: 320
     property int expandedHeight: 180
-    property int radiusExpanded: Root.Config.pill.radiusExpanded
+    property int radiusExpanded: App.Config.pill.radiusExpanded
     property bool preventFocus: false
     // false = el ancho sigue al contenido sin animación propia (el contenido ya se anima)
     property bool animateWidth: true
-    property int paddingContainer: Root.Config.pill.padding
+    property int paddingContainer: App.Config.pill.padding
 
     default property alias content: contentContainer.data
     property alias body: pillContainer.data
@@ -27,6 +28,17 @@ Rectangle {
 
     onExpandedChanged: expanded ? opened() : closed()
 
+    // Las pills con panel se registran solas (ver PanelStore)
+    function syncRegistry() {
+        if (hasBody)
+            P.PanelStore.add(p);
+        else
+            P.PanelStore.remove(p);
+    }
+    onHasBodyChanged: syncRegistry()
+    Component.onCompleted: syncRegistry()
+    Component.onDestruction: P.PanelStore.remove(p)
+
     function open() {
         expanded = true;
     }
@@ -34,29 +46,29 @@ Rectangle {
         expanded = false;
     }
 
-    y: Root.Config.pill.top
+    y: App.Config.pill.top
     width: expanded ? expandedWidth : collapsedWidth
     height: expanded ? expandedHeight : collapsedHeight
     radius: expanded ? radiusExpanded : height / 2
-    color: Root.Theme.island
+    color: App.Theme.island
     clip: true
 
     Behavior on width {
         enabled: p.animateWidth
         NumberAnimation {
-            duration: Root.Config.anim.pill
+            duration: App.Config.anim.pill
             easing.type: Easing.OutCubic
         }
     }
     Behavior on height {
         NumberAnimation {
-            duration: Root.Config.anim.pill
+            duration: App.Config.anim.pill
             easing.type: Easing.OutCubic
         }
     }
     Behavior on radius {
         NumberAnimation {
-            duration: Root.Config.anim.pill
+            duration: App.Config.anim.pill
             easing.type: Easing.OutCubic
         }
     }
@@ -73,12 +85,12 @@ Rectangle {
     Row {
         id: contentContainer
         anchors.centerIn: parent
-        spacing: Root.Config.pill.contentSpacing
+        spacing: App.Config.pill.contentSpacing
         opacity: p.expanded ? 0 : 1
         visible: opacity > 0
         Behavior on opacity {
             NumberAnimation {
-                duration: Root.Config.anim.fadeOut
+                duration: App.Config.anim.fadeOut
             }
         }
     }
@@ -106,10 +118,10 @@ Rectangle {
         Behavior on opacity {
             SequentialAnimation {
                 PauseAnimation {
-                    duration: p.expanded ? Root.Config.anim.fadeDelay : 0
+                    duration: p.expanded ? App.Config.anim.fadeDelay : 0
                 }
                 NumberAnimation {
-                    duration: Root.Config.anim.fadeIn
+                    duration: App.Config.anim.fadeIn
                 }
             }
         }

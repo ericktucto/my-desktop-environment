@@ -9,16 +9,16 @@ Base.Island {
     property string current: 'applist'
 
     expandedHeight: {
-        if (current == 'applist')
+        if (current === 'applist')
             return App.Config.panel.launcherHeight;
-        if (current == 'wallpapers')
+        if (current === 'wallpapers')
             return App.Config.wallpaperPicker.imgHeight * 2 + App.Config.wallpaperPicker.spacingCell * 2 + 2 * App.Config.pill.padding;
         return 300;
     }
     expandedWidth: {
-        if (current == 'applist')
+        if (current === 'applist')
             return App.Config.panel.launcherWidth;
-        if (current == 'wallpapers')
+        if (current === 'wallpapers')
             return App.Config.panel.wallpapersWidth;
         return 400;
     }
@@ -33,9 +33,5 @@ Base.Island {
 
     onClicked: {
         current = 'applist';
-    }
-
-    onOpened: {
-        console.log("Island abierta, wallpaper actual", App.Wallpaper.current);
     }
 }

@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell.Services.Notifications
 import "../../../services/notify/" as S
 import "../../../" as App
 
@@ -11,7 +12,7 @@ Item {
 
     readonly property var cfg: App.Config.notifications
     readonly property var entry: S.NotificationStore.entry(modelData)
-    readonly property bool critical: entry ? entry.urgency === 2 : false
+    readonly property bool critical: entry ? entry.urgency === NotificationUrgency.Critical : false
 
     // 0 = fuera (a la derecha, transparente), 1 = en su lugar
     property real shown: 0

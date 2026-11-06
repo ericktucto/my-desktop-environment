@@ -1,7 +1,4 @@
 import QtQuick
-import Quickshell
-import Quickshell.Io
-import Quickshell.Hyprland
 import './../../controls/' as Controls
 import '../../../' as App
 
@@ -13,124 +10,111 @@ Item {
     property var allAppsCache: []
     property var filteredApps: []
 
-    // Señales
+    // Se emite al lanzar una app
     signal appLaunched(var app)
-    signal closed()
 
     // ══ State interno ══
     onAppsChanged: {
-        if (apps.length > allAppsCache.length) allAppsCache = apps
+        if (apps.length > allAppsCache.length)
+            allAppsCache = apps;
 
-        filteredApps = apps
+        filteredApps = apps;
     }
 
     onVisibleChanged: {
         if (visible) {
-            searchInput.text = ""
-            searchInput.giveFocus()
-            listView.currentIndex = 0
-            filteredApps = allAppsCache.length ? allAppsCache : apps
+            searchInput.text = "";
+            searchInput.giveFocus();
+            listView.currentIndex = 0;
+            filteredApps = allAppsCache.length ? allAppsCache : apps;
         }
     }
 
-    implicitHeight: column.implicitHeight + 20
-    implicitWidth: column.implicitWidth + 24
-
-    Rectangle {
-        id: pillContainer
+    Column {
+        id: column
         anchors.fill: parent
-        color: "transparent"
+        spacing: 10
 
-        Column {
-            id: column
-            anchors.fill: parent
-            spacing: 10
-            Controls.TextField {
-                id: searchInput
-                placeholder: "Buscar aplicaciones..."
+        Controls.TextField {
+            id: searchInput
+            placeholder: "Buscar aplicaciones..."
 
-                // CRÍTICO: Return y Enter son distintos en QML
-                onPressedKey: function(key) {
-                    if (key == Qt.Key_Enter) {
-                        launchSelected()
-                    }
-                    if (key == Qt.Key_Down) {
-                        listView.incrementCurrentIndex()
-                    }
-                    if (key == Qt.Key_Up) {
-                        listView.decrementCurrentIndex()
-                    }
+            // CRÍTICO: Return y Enter son distintos en QML
+            onPressedKey: function (key) {
+                if (key == Qt.Key_Enter) {
+                    launchSelected();
                 }
-                onTextChanged: filterApps()
+                if (key == Qt.Key_Down) {
+                    listView.incrementCurrentIndex();
+                }
+                if (key == Qt.Key_Up) {
+                    listView.decrementCurrentIndex();
+                }
+            }
+            onTextChanged: filterApps()
+        }
+
+        ListView {
+            id: listView
+            width: parent.width
+            height: column.height - searchInput.height - column.spacing
+            clip: true
+            model: root.filteredApps
+
+            currentIndex: -1
+
+            // Sincronizar currentIndex con teclado
+            Keys.onDownPressed: incrementCurrentIndex()
+            Keys.onUpPressed: decrementCurrentIndex()
+
+            highlight: Rectangle {
+                color: App.Theme.surfaceHigh
+                radius: App.Config.radius.md
+            }
+            highlightMoveDuration: App.Config.anim.highlight
+            highlightResizeDuration: 0
+
+            boundsBehavior: Flickable.StopAtBounds
+            flickDeceleration: 1500
+
+            delegate: RowApp {
+                width: listView.width
+                name: modelData.name || modelData.desktopId || ""
+                description: modelData.comment || modelData.genericName || ""
+                iconSource: modelData.icon || ""
+
+                onClicked: launchFromIndex(index)
             }
 
-            ListView {
-                id: listView
-                width: parent.width
-                height: column.height - searchInput.height - column.spacing
-                clip: true
-                model: root.filteredApps
-
-                currentIndex: -1
-
-                // Sincronizar currentIndex con teclado
-                Keys.onDownPressed: incrementCurrentIndex()
-                Keys.onUpPressed: decrementCurrentIndex()
-
-                highlight: Rectangle {
-                    color: "#3a3f4a"
-                    radius: App.Config.radius.md
-                }
-                highlightMoveDuration: 100
-                highlightResizeDuration: 0
-
-                boundsBehavior: Flickable.StopAtBounds
-                flickDeceleration: 1500
-
-                delegate: RowApp {
-                    width: listView.width
-                    name: modelData.name || modelData.desktopId || ""
-                    description: modelData.comment || modelData.genericName || ""
-                    iconSource: modelData.icon || ""
-                    isCurrent: index === listView.currentIndex && filteredApps.length > 0
-
-                    onClicked: launchFromIndex(index)
-                }
-
-                populate: Transition {
-                    NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: 130 }
+            populate: Transition {
+                NumberAnimation {
+                    properties: "opacity"
+                    from: 0
+                    to: 1
+                    duration: App.Config.anim.hover
                 }
             }
         }
     }
 
     function launchSelected() {
-        const idx = Math.max(0, Math.min(listView.currentIndex, filteredApps.length - 1))
-        if (idx >= 0 && filteredApps.length > 0) {
-            root.appLaunched(filteredApps[idx])
-            close()
-        }
+        const idx = Math.max(0, Math.min(listView.currentIndex, filteredApps.length - 1));
+        if (idx >= 0 && filteredApps.length > 0)
+            root.appLaunched(filteredApps[idx]);
     }
 
     function launchFromIndex(index) {
-        if (index >= 0 && index < filteredApps.length) {
-            root.appLaunched(filteredApps[index])
-            close()
-        }
+        if (index >= 0 && index < filteredApps.length)
+            root.appLaunched(filteredApps[index]);
     }
 
     function filterApps() {
-        const q = searchInput.text.toLowerCase().trim()
+        const q = searchInput.text.toLowerCase().trim();
         if (!q) {
-            filteredApps = allAppsCache.length ? allAppsCache : apps
+            filteredApps = allAppsCache.length ? allAppsCache : apps;
         } else {
-            filteredApps = apps.filter(a => (a.name || "").toLowerCase().includes(q))
+            filteredApps = apps.filter(a => (a.name || "").toLowerCase().includes(q));
         }
-        listView.currentIndex = filteredApps.length > 0 ? 0 : -1
-    }
-
-    function close() {
-        root.closed()
+        listView.currentIndex = filteredApps.length > 0 ? 0 : -1;
     }
 }
-

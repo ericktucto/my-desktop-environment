@@ -19,7 +19,7 @@ Base.Island {
 
         C.IconSvg {
             source: Qt.resolvedUrl("../../assets/svg/" + (S.NotificationStore.dnd ? "notification-off" : "notification-on") + ".svg")
-            size: App.Config.fontSize.icon
+            size: App.Config.pill.iconSize
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -27,7 +27,7 @@ Base.Island {
         Text {
             visible: root.unread > 0
             text: root.unread > 99 ? "99+" : root.unread
-            font.family: "Inter"
+            font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
             font.weight: Font.DemiBold
             color: App.Theme.white

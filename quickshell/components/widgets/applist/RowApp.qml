@@ -9,38 +9,38 @@ Rectangle {
     property string name: ""
     property string description: ""
     property string iconSource: ""
-    property bool isCurrent: false
 
     // Estilo
-    property color bgColor: "transparent"
-    property color hoverColor: "#3a3f4a"
-    property color textColor: "#cdd6f4"
-    property color subtextColor: "#8a93a5"
+    property color hoverColor: App.Theme.surfaceHigh
+    property color textColor: App.Theme.text
+    property color subtextColor: App.Theme.subtext
     property int fontSize: App.Config.fontSize.md
 
     // Tamaño
-    implicitHeight: 52
+    implicitHeight: App.Config.launcher.rowHeight
     implicitWidth: parent ? parent.width : 300
 
-    color: isCurrent ? "#3a3f4a" : "transparent"
+    // La fila seleccionada la resalta el `highlight` del ListView; aquí solo el hover.
+    // Es un binding (nunca se asigna), así que no se rompe al salir el mouse.
+    color: mouse.containsMouse ? Qt.alpha(hoverColor, 0.5) : "transparent"
     radius: App.Config.radius.md
 
-    // ── Resolver el tipo de icono ──
+    Behavior on color {
+        ColorAnimation {
+            duration: App.Config.anim.hover
+        }
+    }
+
+    // ── Resolver el ícono: ruta absoluta o nombre del tema ──
     function resolveIcon(iconStr) {
-        if (!iconStr || iconStr === "") return "";
-
-        // Caso 1: Ruta absoluta (empieza con /)
-        if (iconStr.startsWith("/")) {
+        if (!iconStr)
+            return "";
+        if (iconStr.startsWith("/"))
             return "file://" + iconStr;
-        }
-
-        // Caso 2: URL explícita (data:, https://, etc.)
-        if (iconStr.includes(":")) {
+        // URL explícita (data:, https://, etc.)
+        if (iconStr.includes(":"))
             return iconStr;
-        }
-
-        // Caso 3: Icono del sistema (nombre de tema)
-        return "image://icon/" + iconStr;
+        return Quickshell.iconPath(iconStr, true);
     }
 
     Row {
@@ -52,11 +52,11 @@ Rectangle {
         Image {
             id: iconImage
             anchors.verticalCenter: parent.verticalCenter
-            width: 32
-            height: 32
+            width: App.Config.launcher.iconSize
+            height: App.Config.launcher.iconSize
             source: root.resolveIcon(root.iconSource)
-            sourceSize.width: 32
-            sourceSize.height: 32
+            sourceSize.width: App.Config.launcher.iconSize
+            sourceSize.height: App.Config.launcher.iconSize
             fillMode: Image.PreserveAspectFit
             smooth: true
 
@@ -69,6 +69,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: "󰩉" // icono genérico NF
+                    font.family: App.Config.fonts.icons
                     color: root.subtextColor
                     font.pixelSize: App.Config.fontSize.iconLg
                 }
@@ -100,21 +101,14 @@ Rectangle {
         }
     }
 
-    // ── Hover ──
-    Behavior on color {
-        ColorAnimation { duration: 120 }
-    }
-
     MouseArea {
+        id: mouse
         anchors.fill: parent
         hoverEnabled: true
-        onEntered: {}
-        onExited: root.color = "transparent"
         cursorShape: Qt.PointingHandCursor
         onClicked: root.clicked()
     }
 
     // ── Señal de clic ──
-    signal clicked()
+    signal clicked
 }
-

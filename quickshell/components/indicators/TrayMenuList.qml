@@ -52,7 +52,7 @@ Column {
                     visible: !entryItem.modelData.isSeparator
                     anchors.fill: parent
                     radius: App.Config.radius.md
-                    color: hover.containsMouse && entryItem.modelData.enabled ? Qt.rgba(1, 1, 1, 0.08) : "transparent"
+                    color: hover.containsMouse && entryItem.modelData.enabled ? App.Theme.surfaceHover : "transparent"
                 }
 
                 Row {
@@ -88,7 +88,7 @@ Column {
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
                     text: String.fromCodePoint(entryItem.expanded ? 0xf078 : 0xf054)
-                    font.family: "Symbols Nerd Font"
+                    font.family: App.Config.fonts.icons
                     font.pixelSize: App.Config.fontSize.xs
                     color: App.Theme.gray
                 }

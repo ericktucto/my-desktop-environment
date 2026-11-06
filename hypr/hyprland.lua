@@ -23,7 +23,6 @@ hl.monitor({
     position = "0x0",
     scale = 1,
 })
--- Lanzar el DAEMON de pyprland al inicio (con guarda anti-duplicado)
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")

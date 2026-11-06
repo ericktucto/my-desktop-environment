@@ -3,7 +3,6 @@ local M = {}
 function M.start()
     -- ══ ENTORNO (siempre primero) ══
     hl.exec_cmd('dbus-update-activation-environment --all')
-    hl.exec_cmd('dbus-update-activation-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRPLAND_INSTANCE_SIGNATURE')
 
     -- ══ PORTALES (crítico que estén antes que apps GTK) ══
     hl.exec_cmd('/usr/libexec/xdg-desktop-portal-hyprland')

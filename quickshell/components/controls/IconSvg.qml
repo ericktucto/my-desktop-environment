@@ -1,12 +1,13 @@
 // IconSvg.qml
 import QtQuick
 import QtQuick.Effects
+import "../../" as App
 
 Item {
     id: root
 
     property url source
-    property color color: "#cdd6f4"
+    property color color: App.Theme.text
     property real size: 20
 
     implicitWidth: size

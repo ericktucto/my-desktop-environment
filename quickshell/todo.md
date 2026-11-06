@@ -27,7 +27,13 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Títulos y cuerpos largos con botón para expandir.
 - **System tray:** se puede plegar y tiene menú contextual propio.
 - **Wallpaper:** fondo con transición, radio y margen configurables.
-- **Base:** `Config.qml` con tamaños y animaciones centralizados, y controles propios (Slider y Switch).
+- **Base:** `Config.qml` (tamaños, animaciones, fuentes) y `Theme.qml` (colores) centralizados, controles propios (Slider y Switch) y registro automático de pills con panel (`PanelStore`).
+- **Código ordenado (deuda técnica resuelta):**
+  - Sin `swaybg` ni logs de depuración.
+  - Wallpaper guardado con `FileView`.
+  - Colores en `Theme`; fuentes, tamaños y duraciones en `Config`.
+  - Pills con panel registradas solas en `PanelStore`.
+  - Launcher sin bugs de resaltado.
 
 ---
 
@@ -158,14 +164,10 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 
 ---
 
-## 🧹 Deuda técnica detectada en el código
+## 🧹 Deuda técnica
 
-- [ ] `components/widgets/wallpapers/Wallpapers.qml` todavía ejecuta `pkill swaybg` y `swaybg`, que ya no están instalados.
-  El log muestra `Process failed to start … swaybg`. Esto ya lo hace `WallpaperTransition`, así que hay que eliminar esos `Process`.
-- [ ] `shell.qml`: `keyboardFocus` y el "clic fuera" enumeran las pills a mano (`clockPill`, `batteryPill`, `audioPill`). Cada pill nueva con panel obliga a tocar las dos listas.
-  - Mejor centralizarlo, por ejemplo con un registro de pills expandibles.
-- [ ] `Zoom.qml` tiene la ruta del ícono de respaldo fija en `/var/lib/flatpak/...`. Funciona, pero conviene moverla a `Config`.
-- [ ] Hay archivos sueltos en el repo que conviene revisar: `../exec.sh`, `plan.md` y `requisitos.md`, que ya están implementados.
+- [ ] **Esc duplicado:** `shell.qml` ya cierra cualquier panel con un `Shortcut`, pero siguen los manejadores viejos en `Island.qml` y `Wallpapers.qml`.
+  Cuando confirmes que Esc cierra Audio, Notificaciones y el launcher, hay que quitar los viejos.
 
 ---
 

@@ -11,20 +11,16 @@ Item {
     height: parent.height
 
     // Directorio de wallpapers
-    readonly property string wallpapersDir: "/home/erick/Pictures/Wallpapers"
+    readonly property string wallpapersDir: App.Config.wallpaperPicker.dir
 
     // Lista de archivos de imagen (rutas absolutas)
     property var imageFiles: []
 
-    // Aplica un wallpaper con swaybg (reutilizable desde click o teclado)
+    // Aplica un wallpaper (el fondo lo pinta WallpaperTransition al cambiar App.Wallpaper.current)
     function applyWallpaper(imagePath) {
         if (!imagePath)
             return;
-        console.log("Aplicando wallpaper:", imagePath);
         App.Wallpaper.set(imagePath);
-        killProc.running = true;
-        setter.imagePath = imagePath;
-        setter.running = true;
         root.closed();
     }
 
@@ -124,7 +120,7 @@ Item {
                     opacity: thumb.status === Image.Loading ? 1 : 0
                     Behavior on opacity {
                         NumberAnimation {
-                            duration: 200
+                            duration: App.Config.anim.fadeIn
                         }
                     }
                 }
@@ -141,22 +137,6 @@ Item {
                     root.applyWallpaper(modelData);
                 }
             }
-        }
-    }
-
-    // Procesos declarados una sola vez, no creados en cada click
-    Process {
-        id: killProc
-        command: ["pkill", "swaybg"]
-    }
-
-    Process {
-        id: setter
-        property string imagePath: ""
-        command: ["swaybg", "-i", setter.imagePath, "-m", "fill"]
-        stderr: StdioCollector {
-            onStreamFinished: if (text.trim())
-                console.log("swaybg stderr:", text)
         }
     }
 }

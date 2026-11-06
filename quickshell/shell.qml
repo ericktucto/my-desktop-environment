@@ -7,6 +7,7 @@ import "./components/widgets/" as W
 import "./components/widgets/notifylist/" as N
 import "./components/indicators/" as I
 import "./components/pills/islandcenter/" as IC
+import "./services/panels/" as P
 
 ShellRoot {
 
@@ -27,7 +28,7 @@ ShellRoot {
 
     // ── Popups de notificaciones ──
     N.NotifyPopups {
-        suppressed: notifPill.expanded || audioPill.expanded
+        suppressed: P.PanelStore.anyExpanded
     }
 
     PanelWindow {
@@ -46,28 +47,22 @@ ShellRoot {
         color: "transparent"
 
         WlrLayershell.layer: WlrLayer.Top
-        WlrLayershell.keyboardFocus: {
-            if (clockPill.expanded || notifPill.expanded || audioPill.expanded)
-                return WlrKeyboardFocus.Exclusive;
+        WlrLayershell.keyboardFocus: P.PanelStore.anyExpanded ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-            return WlrKeyboardFocus.None;
+        // Esc cierra cualquier panel abierto
+        Shortcut {
+            sequence: "Escape"
+            enabled: P.PanelStore.anyExpanded
+            onActivated: P.PanelStore.closeAll()
         }
 
         MouseArea {
             id: clickOutsideCatcher
             anchors.fill: parent
-            visible: clockPill.expanded || notifPill.expanded || audioPill.expanded
+            visible: P.PanelStore.anyExpanded
             z: -1
 
-            onClicked: {
-                console.log("click fuera");
-                if (audioPill.expanded)
-                    audioPill.expanded = false;
-                if (clockPill.expanded)
-                    clockPill.expanded = false;
-                if (notifPill.expanded)
-                    notifPill.expanded = false;
-            }
+            onClicked: P.PanelStore.closeAll()
         }
 
         // ══ MASK: solo barra + pill capturan clics ══
@@ -103,9 +98,7 @@ ShellRoot {
         Row {
             id: centerPill
             anchors.horizontalCenter: parent.horizontalCenter
-            IC.IslandCenter {
-                id: clockPill
-            }
+            IC.IslandCenter {}
         }
         Row {
             id: rightPill
@@ -116,15 +109,11 @@ ShellRoot {
 
             I.Tray {}
 
-            I.Audio {
-                id: audioPill
-            }
+            I.Audio {}
 
             I.Battery {}
 
-            I.Notifications {
-                id: notifPill
-            }
+            I.Notifications {}
         }
     }
 }

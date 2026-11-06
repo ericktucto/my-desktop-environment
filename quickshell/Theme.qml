@@ -9,6 +9,18 @@ Singleton {
     readonly property color island:     "#0a0a0f"
     readonly property color islandEdge: Qt.rgba(1, 1, 1, 0.10)
 
+    // ===== Superficies y texto (launcher, inputs) =====
+    readonly property color surfaceHigh: "#3a3f4a"     // selección y hover del launcher, borde de inputs
+    readonly property color text:        "#cdd6f4"     // texto de listas e IconSvg por defecto
+    readonly property color subtext:     "#8a93a5"     // descripciones
+    readonly property color placeholder: "#888888"     // placeholder de inputs
+
+    // ===== Blancos translúcidos =====
+    readonly property color surface:       Qt.rgba(1, 1, 1, 0.06)   // fondo de tarjetas y botones
+    readonly property color surfaceHover:  Qt.rgba(1, 1, 1, 0.08)   // hover suave / botón pequeño
+    readonly property color surfaceActive: Qt.rgba(1, 1, 1, 0.16)   // hover del botón pequeño
+    readonly property color track:         Qt.rgba(1, 1, 1, 0.14)   // parte inactiva del Slider
+
     // ===== Neutros =====
     readonly property color white:  "#ffffff"
     readonly property color gray:   "#b4bcd0"

@@ -31,7 +31,7 @@ Base.Island {
             id: chevron
             anchors.verticalCenter: parent.verticalCenter
             text: String.fromCodePoint(root.shown ? 0xf053 : 0xf054)   //  /
-            font.family: "Symbols Nerd Font"
+            font.family: App.Config.fonts.icons
             font.pixelSize: App.Config.fontSize.sm
             color: App.Theme.white
             opacity: chevronMouse.containsMouse ? 1 : 0.8

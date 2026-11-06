@@ -21,13 +21,13 @@ Base.Island {
         spacing: App.Config.pill.contentSpacing
         C.IconSvg {
             source: Qt.resolvedUrl("../../assets/svg/" + S.AudioStore.volumeIcon(root.sink) + ".svg")
-            size: 16
+            size: App.Config.pill.iconSize
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter
         }
         Text {
             text: root.muted ? "Mute" : S.AudioStore.percent(root.sink) + "%"
-            font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
+            font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
             color: App.Theme.white
             anchors.verticalCenter: parent.verticalCenter

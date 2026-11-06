@@ -18,7 +18,7 @@ Column {
         id: btn
 
         property url icon
-        property color fill: Qt.rgba(1, 1, 1, 0.06)
+        property color fill: App.Theme.surface
         property bool active: true
         signal clicked
 
@@ -38,7 +38,7 @@ Column {
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
-            color: Qt.rgba(1, 1, 1, btnMouse.containsMouse && btn.active ? 0.08 : 0)
+            color: btnMouse.containsMouse && btn.active ? App.Theme.surfaceHover : "transparent"
         }
 
         C.IconSvg {
@@ -77,7 +77,7 @@ Column {
 
         HeaderButton {
             icon: Qt.resolvedUrl("../../../assets/svg/" + (S.NotificationStore.dnd ? "notification-off" : "notification-on") + ".svg")
-            fill: S.NotificationStore.dnd ? App.Theme.primary : Qt.rgba(1, 1, 1, 0.06)
+            fill: S.NotificationStore.dnd ? App.Theme.primary : App.Theme.surface
             onClicked: S.NotificationStore.setDnd(!S.NotificationStore.dnd)
         }
 
@@ -85,7 +85,7 @@ Column {
             width: header.width - 2 * root.cfg.headerHeight - 2 * header.spacing
             height: root.cfg.headerHeight
             radius: height / 2
-            color: Qt.rgba(1, 1, 1, 0.06)
+            color: App.Theme.surface
 
             Text {
                 anchors.centerIn: parent
@@ -104,7 +104,7 @@ Column {
 
         HeaderButton {
             icon: Qt.resolvedUrl("../../../assets/svg/clear.svg")
-            fill: root.confirming ? App.Theme.red : Qt.rgba(1, 1, 1, 0.06)
+            fill: root.confirming ? App.Theme.red : App.Theme.surface
             active: root.total > 0
             onClicked: {
                 if (root.confirming) {

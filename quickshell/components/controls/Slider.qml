@@ -17,7 +17,7 @@ Item {
     readonly property int handleWidth: 4
     readonly property int handleHeight: 22
     readonly property int gap: 4
-    readonly property color inactiveColor: Qt.rgba(1, 1, 1, 0.14)
+    readonly property color inactiveColor: App.Theme.track
 
     implicitWidth: 200
     implicitHeight: 24

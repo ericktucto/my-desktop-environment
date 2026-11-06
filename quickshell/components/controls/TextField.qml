@@ -1,5 +1,5 @@
 import QtQuick
-import './../../' as Root
+import './../../' as App
 
 Rectangle {
     id: root
@@ -9,18 +9,18 @@ Rectangle {
     signal pressedKey(var key)
 
     width: parent.width
-    height: 40
+    height: App.Config.launcher.searchHeight
     color: "transparent"
-    border.color: input.activeFocus ? Root.Theme.primary : "#3a3f4a"
+    border.color: input.activeFocus ? App.Theme.primary : App.Theme.surfaceHigh
     border.width: 1
-    radius: Root.Config.radius.sm
+    radius: App.Config.radius.sm
 
     TextInput {
         id: input
         anchors.fill: parent
         anchors.margins: 10
-        color: "white"
-        font.pixelSize: Root.Config.fontSize.lg
+        color: App.Theme.white
+        font.pixelSize: App.Config.fontSize.lg
         verticalAlignment: TextInput.AlignVCenter
         clip: true
 
@@ -40,8 +40,8 @@ Rectangle {
         anchors.leftMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         text: root.placeholder
-        color: "#888888"
-        font.pixelSize: Root.Config.fontSize.lg
+        color: App.Theme.placeholder
+        font.pixelSize: App.Config.fontSize.lg
         visible: input.text === "" && !input.activeFocus
     }
 

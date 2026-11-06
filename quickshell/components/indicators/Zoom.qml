@@ -8,8 +8,8 @@ import "../../" as App
 Base.Island {
     id: root
 
-    readonly property string appId: "us.zoom.Zoom"
-    readonly property string fallbackIcon: "file:///var/lib/flatpak/exports/share/icons/hicolor/64x64/apps/us.zoom.Zoom.png"
+    readonly property string appId: App.Config.zoom.appId
+    readonly property string fallbackIcon: App.Config.zoom.fallbackIcon
     // Entrada .desktop exportada por el flatpak (la misma que usa el launcher)
     readonly property var entry: DesktopEntries.byId(appId)
     // Ícono de bandeja de Zoom. Al ser una propiedad (se evalúa al cargar) Quickshell
@@ -37,28 +37,28 @@ Base.Island {
 
     Image {
         source: Quickshell.iconPath(root.entry?.icon ?? root.appId, true) || root.fallbackIcon
-        sourceSize: Qt.size(16, 16)
-        width: 16
-        height: 16
+        sourceSize: Qt.size(App.Config.pill.iconSize, App.Config.pill.iconSize)
+        width: App.Config.pill.iconSize
+        height: App.Config.pill.iconSize
         fillMode: Image.PreserveAspectFit
         smooth: true
         opacity: mouse.containsMouse ? 1 : 0.85
         scale: mouse.pressed ? 0.9 : 1
 
-        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 120 } }
+        Behavior on scale { NumberAnimation { duration: App.Config.anim.hover; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: App.Config.anim.hover } }
     }
 
     Text {
         id: label
         text: "Zoom"
-        height: 16
+        height: App.Config.pill.iconSize
         verticalAlignment: Text.AlignVCenter
         font.pixelSize: App.Config.fontSize.sm
         color: App.Theme.white
         opacity: mouse.containsMouse ? 1 : 0.85
 
-        Behavior on opacity { NumberAnimation { duration: 120 } }
+        Behavior on opacity { NumberAnimation { duration: App.Config.anim.hover } }
     }
 
     // Island solo habilita su MouseArea si tiene body, así que usamos uno propio.

@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Services.UPower
-import "../../" as Root
+import "../../" as App
 
 Row {
 
@@ -22,42 +22,42 @@ Row {
     // Color según estado
     readonly property color iconColor: {
         if (charging || percent >= 85)
-            return Root.Theme.green;
+            return App.Theme.green;
         if (percent <= 20)
-            return Root.Theme.red;
+            return App.Theme.red;
         if (percent <= 35)
-            return Root.Theme.orange;
-        return Root.Theme.white;
+            return App.Theme.orange;
+        return App.Theme.white;
     }
 
-    spacing: Root.Config.pill.contentSpacing
+    spacing: App.Config.pill.contentSpacing
 
     // Contenido de la pill: ícono + porcentaje
     Text {
         visible: charging
         text: String.fromCodePoint(0xf140b)
-        font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: Root.Config.fontSize.icon
-        color: Root.Theme.yellow
+        font.family: App.Config.fonts.icons
+        font.pixelSize: App.Config.fontSize.icon
+        color: App.Theme.yellow
         anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
         text: batteryIcon
-        font.family: "Symbols Nerd Font"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: Root.Config.fontSize.icon
+        font.family: App.Config.fonts.icons
+        font.pixelSize: App.Config.fontSize.icon
         color: iconColor
         anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
         text: percent + "%"
-        font.family: "Inter"   // o el nombre exacto de tu Nerd Font
-        font.pixelSize: Root.Config.fontSize.sm
+        font.family: App.Config.fonts.text
+        font.pixelSize: App.Config.fontSize.sm
         font.weight: Font.DemiBold
         font.letterSpacing: -1
 
-        color: "#e8eaed"
+        color: App.Theme.white
         anchors.verticalCenter: parent.verticalCenter
     }
 }
