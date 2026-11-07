@@ -132,6 +132,22 @@ Singleton {
         readonly property int clearConfirm: 3000     // ms que el botón Limpiar espera el segundo clic
     }
 
+    // ===== Menú de sesión =====
+    readonly property QtObject session: QtObject {
+        readonly property int buttonSize: 88        // botón cuadrado redondeado
+        readonly property int iconSize: 32
+        readonly property int spacing: 16           // entre botones
+        readonly property int labelGap: 10          // entre botón y texto
+        readonly property int labelHeight: 18
+        readonly property int defaultIndex: 4       // 4 = Apagar
+        readonly property int confirmTimeout: 3000  // ms del "¿Apagar?"
+        readonly property int suspendDelay: 1000    // ms entre bloquear y suspender
+        readonly property bool dryRun: false        // true = solo registra el comando en el log (para probar)
+        // tamaño de la isla abierta (5 botones + padding estándar)
+        readonly property int width: 5 * buttonSize + 4 * spacing + 2 * root.pill.padding
+        readonly property int height: buttonSize + labelGap + labelHeight + 2 * root.pill.padding
+    }
+
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
         readonly property int pill: 280

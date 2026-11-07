@@ -8,8 +8,11 @@ import "./components/widgets/notifylist/" as N
 import "./components/indicators/" as I
 import "./components/pills/islandcenter/" as IC
 import "./services/panels/" as P
+import "./services/session/" as SS
 
 ShellRoot {
+    // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
+    readonly property var sessionActions: SS.SessionStore.actions
 
     // ── Wallpaper de fondo ──
     PanelWindow {

@@ -65,20 +65,21 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 > Módulo: `Quickshell.Bluetooth`. `bluez` está activo.
 
 ### Menú de sesión y energía
-- [ ] Bloquear, cerrar sesión, suspender, reiniciar y apagar.
-- [ ] Atajo de teclado más IPC (`stixshell@session`).
-- [ ] Pedir confirmación antes de apagar o reiniciar.
+- [x] Bloquear, cerrar sesión, suspender, reiniciar y apagar.
+- [x] Atajo de teclado más IPC (`stixshell@session`).
+- [x] Pedir confirmación antes de apagar o reiniciar.
 
 > En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
+> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-power-button.sh` evita que acpid apague primero.
 
 ### Pantalla de bloqueo e inactividad
 - [ ] Pantalla de bloqueo propia con el estilo de la shell: reloj, wallpaper y campo de contraseña.
-  - Alternativa: integrar `hyprlock`, que ya está instalado.
+  - Alternativa: integrar `hyprlock`, que ya está instalado. Bloquear ya funciona con `hypr/hyprlock.conf`.
 - [ ] Inactividad:
   - bloquear tras N minutos;
   - apagar la pantalla;
   - suspender, con valores distintos con cargador y con batería.
-- [ ] Bloquear antes de suspender.
+- [x] Bloquear antes de suspender.
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
 > También tienes `hypridle`, pero no se lanza en `autostart.lua`.

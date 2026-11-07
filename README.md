@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el audio y las notificaciones.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, el audio y las notificaciones.
 
 ## Contenido
 
@@ -11,7 +11,9 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 ├── hypr/            Configuración de Hyprland en Lua
 │   ├── hyprland.lua   Monitor, entorno, opciones generales
 │   ├── autostart.lua  Servicios que se lanzan al iniciar (portales, polkit, pipewire, qs)
+│   ├── hyprlock.conf  Pantalla de bloqueo (colores de la shell)
 │   └── keybinds/      Atajos de teclado
+├── system/          Ajustes del sistema que necesitan root (acpid)
 └── quickshell/      La shell
     ├── shell.qml      Ventanas: wallpaper, barra y popups
     ├── Config.qml     Tamaños, animaciones y fuentes
@@ -19,13 +21,13 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── assets/svg/    Íconos
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · notify · panels
+    └── services/      audio · notify · panels · session
 ```
 
 ## Funciones
 
 - **Barra:** Workspaces y botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, audio, batería y notificaciones.
-- **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**.
+- **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Audio:** volumen real de salida y micrófono, mute, cambio de dispositivo, modo 150 %, rueda para el volumen y clic derecho para silenciar.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
@@ -38,7 +40,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 |---|---|
 | `Super+T` | Abrir la terminal (kitty) |
 | `Super+Q` | Cerrar la ventana activa |
-| `Super+Shift+E` | Salir de Hyprland |
+| `Super+Escape` o botón de encendido | Menú de sesión |
 | `Super+R` | Launcher de apps |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
@@ -55,6 +57,8 @@ El launcher y el selector se abren por IPC: `qs ipc call stixshell@launcher togg
 - **Hyprland** con soporte de configuración en Lua.
 - **Quickshell 0.3.2** o más reciente (Qt 6).
 - **PipeWire** y WirePlumber (audio).
+- **hyprlock** (bloqueo) y **elogind** (`loginctl`, `elogind-inhibit`).
+- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido. Para que el botón abra el menú de sesión, ejecuta una vez `sudo sh system/acpi-power-button.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
 - Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
 - Wallpapers en `~/Pictures/Wallpapers` (`.jpg`, `.jpeg` o `.png`); la carpeta se cambia en `Config.wallpaperPicker.dir`.
 - Opcional: **Zoom** por flatpak (`us.zoom.Zoom`) para el botón de Zoom.
@@ -117,20 +121,20 @@ Ya está hecho: barra, launcher, wallpapers, audio, notificaciones, tray y Zoom.
 > Módulo: `Quickshell.Bluetooth`. `bluez` está activo.
 
 #### Menú de sesión y energía
-- [ ] Bloquear, cerrar sesión, suspender, reiniciar y apagar.
-- [ ] Atajo de teclado más IPC (`stixshell@session`).
-- [ ] Pedir confirmación antes de apagar o reiniciar.
+- [x] Bloquear, cerrar sesión, suspender, reiniciar y apagar.
+- [x] Atajo de teclado más IPC (`stixshell@session`).
+- [x] Pedir confirmación antes de apagar o reiniciar.
 
 > En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
 
 #### Pantalla de bloqueo e inactividad
 - [ ] Pantalla de bloqueo propia con el estilo de la shell: reloj, wallpaper y campo de contraseña.
-  - Alternativa: integrar `hyprlock`, que ya está instalado.
+  - Alternativa: integrar `hyprlock`, que ya está instalado. Bloquear ya funciona con `hypr/hyprlock.conf`.
 - [ ] Inactividad:
   - bloquear tras N minutos;
   - apagar la pantalla;
   - suspender, con valores distintos con cargador y con batería.
-- [ ] Bloquear antes de suspender.
+- [x] Bloquear antes de suspender.
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
 > También tienes `hypridle`, pero no se lanza en `autostart.lua`.

@@ -13,6 +13,8 @@ Base.Island {
             return App.Config.panel.launcherHeight;
         if (current === 'wallpapers')
             return App.Config.wallpaperPicker.imgHeight * 2 + App.Config.wallpaperPicker.spacingCell * 2 + 2 * App.Config.pill.padding;
+        if (current === 'session')
+            return App.Config.session.height;
         return 300;
     }
     expandedWidth: {
@@ -20,6 +22,8 @@ Base.Island {
             return App.Config.panel.launcherWidth;
         if (current === 'wallpapers')
             return App.Config.panel.wallpapersWidth;
+        if (current === 'session')
+            return App.Config.session.width;
         return 400;
     }
 
