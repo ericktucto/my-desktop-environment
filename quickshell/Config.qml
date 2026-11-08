@@ -52,8 +52,6 @@ Singleton {
         readonly property int wallpapersWidth: 800
         readonly property int audioWidth: 360
         readonly property int notificationsWidth: 420
-        readonly property int workspacesWidth: 360
-        readonly property int workspacesHeight: 80
     }
 
     // ===== Fuentes =====
@@ -86,6 +84,19 @@ Singleton {
         readonly property int dotSize: 10
         readonly property int activeWidth: 20
         readonly property int spacing: 10
+        readonly property int wheelStep: 120        // angleDelta por paso de rueda (el touchpad acumula)
+        // Vista general: una tarjeta por workspace, con una fila (ícono + título) por ventana
+        readonly property int cardWidth: 200
+        readonly property int cardSpacing: 12
+        readonly property int cardPadding: 10
+        readonly property int cardRadius: 20
+        readonly property int headerHeight: 22      // fila del número de workspace
+        readonly property int rowHeight: 28
+        readonly property int rowSpacing: 4
+        readonly property int iconSize: 20
+        readonly property int minRows: 2            // alto mínimo de las tarjetas (en filas)
+        readonly property int maxRows: 6            // más ventanas → la última fila dice "+N más"
+        readonly property int overviewWidth: count * cardWidth + (count - 1) * cardSpacing + 2 * root.pill.padding
     }
 
     // ===== Radios pequeños (tarjetas, resaltados) =====

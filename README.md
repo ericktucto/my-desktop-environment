@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, el audio y las notificaciones.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el audio y las notificaciones.
 
 ## Contenido
 
@@ -21,13 +21,14 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── assets/svg/    Íconos
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · notify · panels · session
+    └── services/      audio · notify · panels · session · workspaces
 ```
 
 ## Funciones
 
 - **Barra:** Workspaces y botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, audio, batería y notificaciones.
 - **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
+- **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Audio:** volumen real de salida y micrófono, mute, cambio de dispositivo, modo 150 %, rueda para el volumen y clic derecho para silenciar.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
@@ -41,6 +42,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+T` | Abrir la terminal (kitty) |
 | `Super+Q` | Cerrar la ventana activa |
 | `Super+Escape` o botón de encendido | Menú de sesión |
+| `Super+Tab` | Vista general de workspaces |
 | `Super+R` | Launcher de apps |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
@@ -49,7 +51,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher y el selector se abren por IPC: `qs ipc call stixshell@launcher toggle ""` y `qs ipc call stixshell@wallpaper toggle ""`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`).
 `Esc` o un clic fuera cierran cualquier panel.
 
 ## Requisitos
@@ -91,7 +93,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 ## TODO
 
 Lo que falta por terminar, ordenado por prioridad y comparado con otras shells de Quickshell (Caelestia, DankMaterialShell, Noctalia, illogical-impulse).
-Ya está hecho: barra, launcher, wallpapers, audio, notificaciones, tray y Zoom.
+Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic, rueda y vista general), audio, notificaciones, tray y Zoom.
 
 ### 🔴 Prioridad alta: lo básico de toda shell
 
@@ -150,11 +152,11 @@ Ya está hecho: barra, launcher, wallpapers, audio, notificaciones, tray y Zoom.
 ### 🟡 Prioridad media: calidad de vida
 
 #### Workspaces
-- [ ] **Clic para cambiar de workspace.** Hoy los puntos no reaccionan.
-- [ ] Rueda del mouse para pasar al siguiente o anterior.
-- [ ] Cantidad dinámica en lugar de 4 fijos, por ejemplo mostrar hasta el último ocupado.
-- [ ] Arrastrar ventanas entre workspaces. Es el `@todo` de `Workspaces.qml`.
-- [ ] Opcional: íconos de las apps de cada workspace.
+- [x] Clic para cambiar de workspace.
+- [x] Rueda del mouse para pasar al siguiente o anterior (se detiene en 1 y 4).
+- [x] ~~Cantidad dinámica~~: descartado, se quedan 4 fijos.
+- [x] Arrastrar ventanas entre workspaces, desde la vista general.
+- [x] Ícono y título de cada ventana en la vista general (así se distinguen dos del mismo programa).
 
 > Módulo: `Quickshell.Hyprland` (`Hyprland.dispatch`). Recuerda la sintaxis Lua de tu Hyprland.
 

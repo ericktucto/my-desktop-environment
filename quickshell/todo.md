@@ -6,12 +6,13 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 
 ## Lo que ya tienes
 - **Barra:**
-  - Workspaces: 4 fijos, solo visuales.
+  - Workspaces: 4 fijos; clic y rueda para cambiar, y vista general (clic derecho o `Super+Tab`) con ícono y título de cada ventana, donde se arrastran ventanas entre workspaces.
   - Zoom: lanzar, enfocar y restaurar desde la bandeja.
 - **Isla central:**
   - Reloj.
   - Launcher de apps (`Super+R`).
   - Selector de wallpapers (`Super+W`).
+  - Menú de sesión (`Super+Escape` o botón de encendido): bloquear, suspender, cerrar sesión, reiniciar y apagar, con teclado y confirmación.
 - **Audio:**
   - Volumen de salida y micrófono.
   - Mute.
@@ -95,11 +96,11 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 ## 🟡 Prioridad media: calidad de vida
 
 ### Workspaces
-- [ ] **Clic para cambiar de workspace.** Hoy los puntos no reaccionan.
-- [ ] Rueda del mouse para pasar al siguiente o anterior.
-- [ ] Cantidad dinámica en lugar de 4 fijos, por ejemplo mostrar hasta el último ocupado.
-- [ ] Arrastrar ventanas entre workspaces. Es el `@todo` de `Workspaces.qml`.
-- [ ] Opcional: íconos de las apps de cada workspace.
+- [x] Clic para cambiar de workspace.
+- [x] Rueda del mouse para pasar al siguiente o anterior (se detiene en 1 y 4).
+- [x] ~~Cantidad dinámica~~: descartado, se quedan 4 fijos.
+- [x] Arrastrar ventanas entre workspaces, desde la vista general.
+- [x] Ícono y título de cada ventana en la vista general (así se distinguen dos del mismo programa).
 
 > Módulo: `Quickshell.Hyprland` (`Hyprland.dispatch`). Recuerda la sintaxis Lua de tu Hyprland.
 

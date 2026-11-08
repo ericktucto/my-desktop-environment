@@ -6,6 +6,10 @@ map.add({ map.SUPER, "2" }, hl.dsp.focus({ workspace = 2 }), nil, "Ir al workspa
 map.add({ map.SUPER, "3" }, hl.dsp.focus({ workspace = 3 }), nil, "Ir al workspace 3")
 map.add({ map.SUPER, "4" }, hl.dsp.focus({ workspace = 4 }), nil, "Ir al workspace 4")
 
+-- vista general de workspaces
+map.add({ map.SUPER, "Tab" }, hl.dsp.exec_cmd("qs ipc call stixshell@workspaces toggle \"\""), nil,
+    "Vista general de workspaces")
+
 -- mandar al workspace
 map.add({ map.SUPER, map.SHIFT, "1" }, hl.dsp.window.move({ workspace = 1, follow = false }), nil,
     "Mandar al workspace 1")
