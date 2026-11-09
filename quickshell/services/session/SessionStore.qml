@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../lock/" as L
 import "../../" as App
 
 // Acciones de sesión (bloquear, suspender, cerrar sesión, reiniciar, apagar)
@@ -54,8 +55,9 @@ Singleton {
             Quickshell.execDetached(cmd);
     }
 
+    // Pantalla de bloqueo propia (services/lock); si la shell no corre, hypridle usa hyprlock
     function lock() {
-        exec(["sh", "-c", "pidof hyprlock || hyprlock"]);
+        L.LockStore.lock();
     }
 
     function run(id) {

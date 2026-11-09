@@ -66,6 +66,7 @@ hl.config({
     },
     misc = {
         disable_hyprland_logo = true,
+        allow_session_lock_restore = true, -- si qs se cae estando bloqueado, se puede volver a bloquear
         --vfr = true,                   -- variable refresh, ahorra batería
     },
 })

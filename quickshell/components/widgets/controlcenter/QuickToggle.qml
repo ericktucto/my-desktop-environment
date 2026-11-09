@@ -7,6 +7,9 @@ Rectangle {
     id: root
 
     property url icon
+    // Carácter de la fuente de íconos (Nerd Font), si no hay `icon`
+    property string glyph: ""
+    property color activeColor: App.Theme.primary
     property string text
     property bool checked: false
 
@@ -15,7 +18,7 @@ Rectangle {
     height: App.Config.notifications.headerHeight
     width: row.implicitWidth + 2 * 16
     radius: height / 2
-    color: checked ? App.Theme.primary : App.Theme.surface
+    color: checked ? activeColor : App.Theme.surface
 
     Behavior on color {
         ColorAnimation {
@@ -35,7 +38,16 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 8
 
+        Text {
+            visible: root.glyph !== ""
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.glyph
+            color: App.Theme.white
+            font.family: App.Config.fonts.icons
+            font.pixelSize: App.Config.notifications.headerIconSize
+        }
         C.IconSvg {
+            visible: root.glyph === ""
             anchors.verticalCenter: parent.verticalCenter
             source: root.icon
             size: App.Config.notifications.headerIconSize

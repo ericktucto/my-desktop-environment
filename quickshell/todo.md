@@ -13,12 +13,13 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Launcher de apps (`Super+R`).
   - Selector de wallpapers (`Super+W`).
   - Menú de sesión (`Super+Escape` o botón de encendido): bloquear, suspender, cerrar sesión, reiniciar y apagar, con teclado y confirmación.
+- **Bloqueo e inactividad:** pantalla de bloqueo propia (`Super+L`) con contraseña PAM; atenúa, bloquea, apaga la pantalla y suspende por inactividad (distinto con batería y cargador); al cerrar la tapa bloquea y suspende.
 - **Centro de control** (`Super+C` o clic derecho en el reloj):
   - No molestar.
   - Brillo.
   - Audio: volumen de salida y micrófono, mute, cambio de dispositivo y modo 150%.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la isla contraída muestra ícono, barra y porcentaje en lugar de la hora.
-- **Batería:** porcentaje y estado de carga, como indicador simple.
+- **Batería y energía:** pill con el porcentaje; su panel muestra el estado (tiempo restante, consumo, salud), el modo cafeína, los tiempos de inactividad editables (batería y cargador), el brillo al atenuar y los avisos de batería baja. Todo se guarda en `~/.config/stixshell/settings.json`.
 - **Notificaciones:**
   - Pill con campana y contador de no leídas.
   - Popups arriba a la derecha, con acciones y cierre automático.
@@ -72,19 +73,18 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [x] Pedir confirmación antes de apagar o reiniciar.
 
 > En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
-> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-shell-keys.sh` evita que acpid apague primero (y que cambie el brillo mientras corre la shell).
+> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-shell-keys.sh` evita que acpid apague primero (que cambie el brillo y que suspenda al cerrar la tapa sin bloquear mientras corre la shell).
 
 ### Pantalla de bloqueo e inactividad
-- [ ] Pantalla de bloqueo propia con el estilo de la shell: reloj, wallpaper y campo de contraseña.
-  - Alternativa: integrar `hyprlock`, que ya está instalado. Bloquear ya funciona con `hypr/hyprlock.conf`.
-- [ ] Inactividad:
-  - bloquear tras N minutos;
-  - apagar la pantalla;
-  - suspender, con valores distintos con cargador y con batería.
-- [x] Bloquear antes de suspender.
+- [x] Pantalla de bloqueo propia (`Super+L`): wallpaper difuminado, reloj, fecha, usuario, contraseña con PAM, batería y botones de suspender, reiniciar y apagar. `hyprlock` queda de respaldo si la shell no corre.
+- [x] Inactividad (`IdleStore`), con tiempos distintos con batería y con cargador (`Config.idle`): atenuar, bloquear, apagar la pantalla y suspender.
+- [x] Bloquear antes de suspender, también al cerrar la tapa (hypridle).
+- [x] Respetar el modo cafeína: pausa atenuar, bloquear, apagar la pantalla y suspender.
+- [ ] Opcional: huella digital, Bloq Mayús y notificaciones en la pantalla de bloqueo.
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
-> También tienes `hypridle`, pero no se lanza en `autostart.lua`.
+> `hypridle` solo conecta el bloqueo con el sistema (`hypr/hypridle.conf`); los tiempos de inactividad los maneja la shell.
+> Los videos en reproducción ya evitan el bloqueo, porque `IdleMonitor` respeta los inhibidores.
 
 ### Control multimedia (MPRIS)
 - [ ] Mostrar en la barra lo que está sonando: título y artista.
@@ -137,19 +137,20 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] Opcional: selector de emojis.
 
 ### Inhibidor de inactividad (modo "cafeína")
-- [ ] Switch para que la pantalla no se bloquee ni se apague (películas, presentaciones).
+- [x] Switch "No bloquear ni apagar" en el panel de la pill de batería (con una taza en la pill mientras está activo; no se guarda al reiniciar).
 
 > `IdleInhibitor` de `Quickshell.Wayland`.
 
 ### Batería y energía
-- [ ] Avisos de batería baja y crítica con notificación, y acción en nivel crítico.
+- [x] Avisos de batería baja (20 %), crítica (10 %) y suspensión (5 %), con umbrales configurables en el panel de la batería.
+- [x] Panel de energía en la pill de batería: estado, tiempos de inactividad con batería y con cargador, brillo al atenuar y avisos.
 - [ ] Opcional: perfiles de energía. **Falta** `power-profiles-daemon`.
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
 - [x] Centro de control en la isla central (`Super+C` o clic derecho en el reloj): No molestar, brillo, y salida y micrófono con mute, 150 % y dispositivos.
-- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, cafeína, luz nocturna y luz del teclado (`platform::kbd_backlight`).
+- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, luz nocturna y luz del teclado (`platform::kbd_backlight`).
 
 ---
 

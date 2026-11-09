@@ -22,6 +22,9 @@ function M.start()
     -- ══ BLUETOOTH (opcional) ══
     --hl.exec_cmd('blueman-applet')
 
+    -- ══ BLOQUEO (hypridle: bloquea antes de dormir; la shell maneja la inactividad) ══
+    hl.exec_cmd('hypridle')
+
     -- ══ SHELL ══
     hl.exec_cmd('qs')
 end

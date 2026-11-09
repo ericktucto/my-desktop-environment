@@ -10,12 +10,26 @@ import "./components/pills/islandcenter/" as IC
 import "./services/panels/" as P
 import "./services/session/" as SS
 import "./services/brightness/" as BR
+import "./services/lock/" as LK
+import "./services/idle/" as ID
+import "./services/power/" as PW
+import "./services/settings/" as SE
+import "./components/lock/" as LC
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
     readonly property var sessionActions: SS.SessionStore.actions
     // Instancia el store de brillo desde el inicio (su IPC debe existir para las teclas)
     readonly property var brightnessValue: BR.BrightnessStore.value
+    // Instancian el bloqueo (IPC stixshell@lock) y la inactividad
+    readonly property var lockLocked: LK.LockStore.locked
+    readonly property var idleBattery: ID.IdleStore.onBattery
+    // Instancian los avisos de batería baja y los ajustes (settings.json)
+    readonly property var batteryPercent: PW.BatteryStore.percent
+    readonly property var settingsData: SE.SettingsStore.idle
+
+    // ── Pantalla de bloqueo ──
+    LC.LockScreen {}
 
     // ── Wallpaper de fondo ──
     PanelWindow {

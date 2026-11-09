@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control y las notificaciones.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía y las notificaciones. Al bloquear, la shell muestra su propia pantalla de bloqueo.
 
 ## Contenido
 
@@ -11,7 +11,8 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 ├── hypr/            Configuración de Hyprland en Lua
 │   ├── hyprland.lua   Monitor, entorno, opciones generales
 │   ├── autostart.lua  Servicios que se lanzan al iniciar (portales, polkit, pipewire, qs)
-│   ├── hyprlock.conf  Pantalla de bloqueo (colores de la shell)
+│   ├── hyprlock.conf  Bloqueo de respaldo (colores de la shell), si la shell no corre
+│   ├── hypridle.conf  Conecta el bloqueo con el sistema (antes de dormir)
 │   └── keybinds/      Atajos de teclado
 ├── system/          Ajustes del sistema que necesitan root (acpid)
 └── quickshell/      La shell
@@ -21,7 +22,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── assets/svg/    Íconos
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · brightness · notify · osd · panels · session · workspaces
+    └── services/      audio · brightness · idle · lock · notify · osd · power · settings · panels · session · workspaces
 ```
 
 ## Funciones
@@ -30,6 +31,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Centro de control** (`Super+C` o clic derecho en el reloj): No molestar, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo.
+- **Energía** (pill de batería): estado, modo cafeína, tiempos de inactividad editables con batería y con cargador, brillo al atenuar y avisos de batería baja (20 %, 10 % y suspender al 5 %). Se guarda en `~/.config/stixshell/settings.json`, que también se puede editar a mano.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
@@ -43,6 +45,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+T` | Abrir la terminal (kitty) |
 | `Super+Q` | Cerrar la ventana activa |
 | `Super+Escape` o botón de encendido | Menú de sesión |
+| `Super+L` | Bloquear la pantalla |
 | `Super+Tab` | Vista general de workspaces |
 | `Super+C` | Centro de control |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
@@ -55,7 +58,9 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+F` | Maximizar |
 
 El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
-`Esc` o un clic fuera cierran cualquier panel.
+`Esc` o un clic fuera cierran cualquier panel. El bloqueo se dispara con `qs ipc call stixshell@lock lock`.
+
+> Si la shell se cae estando bloqueado, Hyprland muestra su pantalla roja. Para recuperarte: `Ctrl+Alt+F2`, entra con tu usuario y ejecuta `hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("hyprlock")'` (o relanza `qs`); vuelve con `Ctrl+Alt+F1` (o la TTY de Hyprland) y desbloquea con tu contraseña.
 
 > Desarrollo: Quickshell recarga solo al editar archivos, pero no reconoce una carpeta nueva (por ejemplo un servicio nuevo en `services/`) mientras corre. Si el IPC o el tipo no aparece, reinicia la shell (`pkill -x qs; qs`).
 
@@ -65,8 +70,9 @@ El launcher, el selector, el menú de sesión y la vista de workspaces se abren 
 - **Quickshell 0.3.2** o más reciente (Qt 6).
 - **PipeWire** y WirePlumber (audio).
 - **brightnessctl**, con tu usuario en el grupo `video` (brillo).
-- **hyprlock** (bloqueo) y **elogind** (`loginctl`, `elogind-inhibit`).
-- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido. Para que el botón abra el menú de sesión y las teclas de brillo las maneje la shell, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
+- **notify-send** (libnotify), para los avisos de batería baja.
+- **hypridle** (bloquea antes de dormir), **hyprlock** (bloqueo de respaldo) y **elogind** (`loginctl`, `elogind-inhibit`).
+- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido, cambia el brillo y suspende al cerrar la tapa sin bloquear. Para que el botón abra el menú de sesión, las teclas de brillo las maneje la shell y la tapa bloquee y suspenda, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
 - Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
 - Wallpapers en `~/Pictures/Wallpapers` (`.jpg`, `.jpeg` o `.png`); la carpeta se cambia en `Config.wallpaperPicker.dir`.
 - Opcional: **Zoom** por flatpak (`us.zoom.Zoom`) para el botón de Zoom.
@@ -99,7 +105,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 ## TODO
 
 Lo que falta por terminar, ordenado por prioridad y comparado con otras shells de Quickshell (Caelestia, DankMaterialShell, Noctalia, illogical-impulse).
-Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic, rueda y vista general), centro de control con OSD, notificaciones, tray y Zoom.
+Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactividad, workspaces (clic, rueda y vista general), centro de control con OSD, panel de energía, notificaciones, tray y Zoom.
 
 ### 🔴 Prioridad alta: lo básico de toda shell
 
@@ -138,16 +144,15 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic,
 > En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
 
 #### Pantalla de bloqueo e inactividad
-- [ ] Pantalla de bloqueo propia con el estilo de la shell: reloj, wallpaper y campo de contraseña.
-  - Alternativa: integrar `hyprlock`, que ya está instalado. Bloquear ya funciona con `hypr/hyprlock.conf`.
-- [ ] Inactividad:
-  - bloquear tras N minutos;
-  - apagar la pantalla;
-  - suspender, con valores distintos con cargador y con batería.
-- [x] Bloquear antes de suspender.
+- [x] Pantalla de bloqueo propia (`Super+L`): wallpaper difuminado, reloj, fecha, usuario, contraseña con PAM, batería y botones de suspender, reiniciar y apagar. `hyprlock` queda de respaldo si la shell no corre.
+- [x] Inactividad (`IdleStore`), con tiempos distintos con batería y con cargador (`Config.idle`): atenuar, bloquear, apagar la pantalla y suspender.
+- [x] Bloquear antes de suspender, también al cerrar la tapa (hypridle).
+- [x] Respetar el modo cafeína: pausa atenuar, bloquear, apagar la pantalla y suspender.
+- [ ] Opcional: huella digital, Bloq Mayús y notificaciones en la pantalla de bloqueo.
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
-> También tienes `hypridle`, pero no se lanza en `autostart.lua`.
+> `hypridle` solo conecta el bloqueo con el sistema (`hypr/hypridle.conf`); los tiempos de inactividad los maneja la shell.
+> Los videos en reproducción ya evitan el bloqueo, porque `IdleMonitor` respeta los inhibidores.
 
 #### Control multimedia (MPRIS)
 - [ ] Mostrar en la barra lo que está sonando: título y artista.
@@ -200,19 +205,20 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic,
 - [ ] Opcional: selector de emojis.
 
 #### Inhibidor de inactividad (modo "cafeína")
-- [ ] Switch para que la pantalla no se bloquee ni se apague (películas, presentaciones).
+- [x] Switch "No bloquear ni apagar" en el panel de la pill de batería (con una taza en la pill mientras está activo; no se guarda al reiniciar).
 
 > `IdleInhibitor` de `Quickshell.Wayland`.
 
 #### Batería y energía
-- [ ] Avisos de batería baja y crítica con notificación, y acción en nivel crítico.
+- [x] Avisos de batería baja (20 %), crítica (10 %) y suspensión (5 %), con umbrales configurables en el panel de la batería.
+- [x] Panel de energía en la pill de batería: estado, tiempos de inactividad con batería y con cargador, brillo al atenuar y avisos.
 - [ ] Opcional: perfiles de energía. **Falta** `power-profiles-daemon`.
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 #### Panel de controles rápidos (Control Center)
 - [x] Centro de control en la isla central (`Super+C` o clic derecho en el reloj): No molestar, brillo, y salida y micrófono con mute, 150 % y dispositivos.
-- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, cafeína, luz nocturna y luz del teclado (`platform::kbd_backlight`).
+- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, luz nocturna y luz del teclado (`platform::kbd_backlight`).
 
 ---
 

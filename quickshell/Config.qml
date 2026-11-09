@@ -52,6 +52,7 @@ Singleton {
         readonly property int wallpapersWidth: 800
         readonly property int controlCenterWidth: 380
         readonly property int notificationsWidth: 420
+        readonly property int batteryWidth: 420
     }
 
     // ===== Fuentes =====
@@ -173,6 +174,57 @@ Singleton {
         readonly property real min: 0.05            // nunca por debajo (pantalla negra)
         readonly property real keyStep: 0.05        // paso de las teclas
         readonly property int writeDelay: 30        // ms para agrupar escrituras al arrastrar el slider
+    }
+
+    // ===== Pantalla de bloqueo =====
+    readonly property QtObject lock: QtObject {
+        readonly property int clockSize: 96
+        readonly property int dateSize: 20
+        readonly property int userSize: 16
+        readonly property int fieldWidth: 320
+        readonly property int fieldHeight: 48
+        readonly property real blur: 1.0            // 0..1
+        readonly property int blurMax: 64
+        readonly property real dim: 0.45            // oscurecido del wallpaper
+        readonly property int powerSpacing: 24
+        readonly property int confirmTimeout: 3000  // ms del "¿Apagar?"
+        readonly property int errorShake: 300       // ms de la sacudida al fallar la contraseña
+        readonly property int margin: 24
+        // > 0 = al bloquear se desbloquea solo a los N s (solo para probar sin quedarte fuera)
+        readonly property int testAutoUnlock: 0
+    }
+
+    // ===== Inactividad (segundos; 0 = nunca) =====
+    readonly property QtObject idle: QtObject {
+        readonly property QtObject battery: QtObject {
+            readonly property int dim: 270
+            readonly property int lock: 300
+            readonly property int screenOff: 330
+            readonly property int suspend: 900
+        }
+        readonly property QtObject ac: QtObject {
+            readonly property int dim: 570
+            readonly property int lock: 600
+            readonly property int screenOff: 660
+            readonly property int suspend: 0
+        }
+        readonly property real dimLevel: 0.10       // brillo al atenuar
+        // Valores que recorren los botones − y + del panel de batería (segundos)
+        readonly property var steps: [30, 60, 90, 120, 150, 180, 240, 270, 300, 330, 360, 420, 480, 540, 570, 600, 660, 720, 900, 1200, 1500, 1800, 2700, 3600]
+        // Avisos de batería baja (%; 0 = desactivado)
+        readonly property QtObject lowBattery: QtObject {
+            readonly property int warn: 20
+            readonly property int critical: 10
+            readonly property int suspend: 5
+        }
+        readonly property int lowBatterySuspendDelay: 10000   // ms entre el aviso y la suspensión
+    }
+
+    // ===== Panel de energía (pill de batería) =====
+    readonly property QtObject power: QtObject {
+        readonly property int stepperWidth: 104
+        readonly property int rowHeight: 32
+        readonly property int labelWidth: 130
     }
 
     // ===== Animaciones (ms) =====

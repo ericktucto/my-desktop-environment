@@ -9,6 +9,9 @@ map.add({ map.SUPER, "Escape" }, hl.dsp.exec_cmd("qs ipc call stixshell@session 
 map.add({ "XF86PowerOff" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil,
     "Menú de sesión (botón de encendido)")
 
+-- bloquear la pantalla
+map.add({ map.SUPER, "L" }, hl.dsp.exec_cmd("qs ipc call stixshell@lock lock"), nil, "Bloquear la pantalla")
+
 -- centro de control (brillo, volumen, micrófono, No molestar)
 map.add({ map.SUPER, "C" }, hl.dsp.exec_cmd("qs ipc call stixshell@controlcenter toggle \"\""), nil, "Centro de control")
 
