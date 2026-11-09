@@ -42,7 +42,7 @@ Singleton {
         readonly property int contentSpacing: 8      // entre ícono y texto
         readonly property int padding: 36            // padding con la pill abierta (estándar)
         readonly property int radiusExpanded: 32
-        readonly property int iconSize: 16           // ícono de las pills plegadas (Audio, Zoom, Notificaciones)
+        readonly property int iconSize: 16           // ícono de las pills plegadas (Zoom, Notificaciones)
     }
 
     // ===== Tamaño de cada pill abierta =====
@@ -50,7 +50,7 @@ Singleton {
         readonly property int launcherWidth: 480
         readonly property int launcherHeight: 600
         readonly property int wallpapersWidth: 800
-        readonly property int audioWidth: 360
+        readonly property int controlCenterWidth: 380
         readonly property int notificationsWidth: 420
     }
 
@@ -157,6 +157,22 @@ Singleton {
         // tamaño de la isla abierta (5 botones + padding estándar)
         readonly property int width: 5 * buttonSize + 4 * spacing + 2 * root.pill.padding
         readonly property int height: buttonSize + labelGap + labelHeight + 2 * root.pill.padding
+    }
+
+    // ===== OSD (volumen/brillo en la isla central contraída) =====
+    readonly property QtObject osd: QtObject {
+        readonly property int timeout: 1500         // ms visible desde la última tecla
+        readonly property int iconSize: 16
+        readonly property int barWidth: 96
+        readonly property int barHeight: 6
+        readonly property int percentWidth: 36      // ancho fijo del "100%", para que la pill no tiemble
+    }
+
+    // ===== Brillo de pantalla =====
+    readonly property QtObject brightness: QtObject {
+        readonly property real min: 0.05            // nunca por debajo (pantalla negra)
+        readonly property real keyStep: 0.05        // paso de las teclas
+        readonly property int writeDelay: 30        // ms para agrupar escrituras al arrastrar el slider
     }
 
     // ===== Animaciones (ms) =====

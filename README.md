@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el audio y las notificaciones.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control y las notificaciones.
 
 ## Contenido
 
@@ -21,15 +21,16 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── assets/svg/    Íconos
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · notify · panels · session · workspaces
+    └── services/      audio · brightness · notify · osd · panels · session · workspaces
 ```
 
 ## Funciones
 
-- **Barra:** Workspaces y botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, audio, batería y notificaciones.
+- **Barra:** Workspaces y botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, batería y notificaciones.
 - **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
-- **Audio:** volumen real de salida y micrófono, mute, cambio de dispositivo, modo 150 %, rueda para el volumen y clic derecho para silenciar.
+- **Centro de control** (`Super+C` o clic derecho en el reloj): No molestar, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo.
+- **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
 - **Zoom:** lanza, enfoca o restaura Zoom (flatpak) aunque esté en segundo plano.
@@ -43,7 +44,8 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+Q` | Cerrar la ventana activa |
 | `Super+Escape` o botón de encendido | Menú de sesión |
 | `Super+Tab` | Vista general de workspaces |
-| Teclas de volumen y mute (Fn) | Subir, bajar y silenciar el audio; mute del micrófono |
+| `Super+C` | Centro de control |
+| Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
 | `Super+R` | Launcher de apps |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
@@ -52,16 +54,19 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). El volumen se controla con `qs ipc call stixshell@audio up|down|mute|micMute`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
 `Esc` o un clic fuera cierran cualquier panel.
+
+> Desarrollo: Quickshell recarga solo al editar archivos, pero no reconoce una carpeta nueva (por ejemplo un servicio nuevo en `services/`) mientras corre. Si el IPC o el tipo no aparece, reinicia la shell (`pkill -x qs; qs`).
 
 ## Requisitos
 
 - **Hyprland** con soporte de configuración en Lua.
 - **Quickshell 0.3.2** o más reciente (Qt 6).
 - **PipeWire** y WirePlumber (audio).
+- **brightnessctl**, con tu usuario en el grupo `video` (brillo).
 - **hyprlock** (bloqueo) y **elogind** (`loginctl`, `elogind-inhibit`).
-- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido. Para que el botón abra el menú de sesión, ejecuta una vez `sudo sh system/acpi-power-button.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
+- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido. Para que el botón abra el menú de sesión y las teclas de brillo las maneje la shell, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
 - Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
 - Wallpapers en `~/Pictures/Wallpapers` (`.jpg`, `.jpeg` o `.png`); la carpeta se cambia en `Config.wallpaperPicker.dir`.
 - Opcional: **Zoom** por flatpak (`us.zoom.Zoom`) para el botón de Zoom.
@@ -94,20 +99,21 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 ## TODO
 
 Lo que falta por terminar, ordenado por prioridad y comparado con otras shells de Quickshell (Caelestia, DankMaterialShell, Noctalia, illogical-impulse).
-Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic, rueda y vista general), audio, notificaciones, tray y Zoom.
+Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic, rueda y vista general), centro de control con OSD, notificaciones, tray y Zoom.
 
 ### 🔴 Prioridad alta: lo básico de toda shell
 
 #### OSD de volumen y brillo
-- [ ] Mostrar un indicador flotante unos segundos al cambiar el volumen, el mute o el brillo.
+- [x] OSD: con las teclas de volumen, brillo o micrófono, la hora de la isla central se reemplaza 1,5 s por ícono, barra y porcentaje.
 - [x] Teclas de volumen, mute y micrófono en Hyprland (`hypr/keybinds/media.lua`), por IPC `stixshell@audio`.
-- [ ] Teclas de brillo (`XF86MonBrightnessUp/Down`). Hay `brightnessctl` y la pantalla es `amdgpu_bl0`.
+- [x] Teclas de brillo (`XF86MonBrightnessUp/Down`), por IPC `stixshell@brightness`.
 
 > Módulos: `Quickshell.Services.Pipewire` (ya en `AudioStore`) y `IpcHandler`.
+> Cambios de volumen o brillo hechos desde otro programa (pavucontrol, `brightnessctl` a mano) no muestran el OSD: solo sale con las teclas.
 
 #### Brillo de pantalla
-- [ ] Pill o sección con slider de brillo, reutilizando `components/controls/Slider.qml`.
-- [ ] Rueda del mouse sobre la pill para subir o bajar.
+- [x] Slider de brillo en el centro de control (`Super+C`), con mínimo de 5 %.
+- [ ] Rueda del mouse sobre el reloj de la isla central para subir o bajar el volumen o el brillo (alternativa por decidir).
 
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
@@ -205,7 +211,8 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic,
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 #### Panel de controles rápidos (Control Center)
-- [ ] Un panel único con interruptores: Wi-Fi, Bluetooth, DND, cafeína, luz nocturna y mute del micrófono, más los sliders de volumen y brillo.
+- [x] Centro de control en la isla central (`Super+C` o clic derecho en el reloj): No molestar, brillo, y salida y micrófono con mute, 150 % y dispositivos.
+- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, cafeína, luz nocturna y luz del teclado (`platform::kbd_backlight`).
 
 ---
 
@@ -227,7 +234,7 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic,
 ### 🧹 Deuda técnica
 
 - [ ] **Esc duplicado:** `shell.qml` ya cierra cualquier panel con un `Shortcut`, pero siguen los manejadores viejos en `Island.qml` y `Wallpapers.qml`.
-  Cuando confirmes que Esc cierra Audio, Notificaciones y el launcher, hay que quitar los viejos.
+  Cuando confirmes que Esc cierra Notificaciones y el launcher, hay que quitar los viejos.
 
 ---
 

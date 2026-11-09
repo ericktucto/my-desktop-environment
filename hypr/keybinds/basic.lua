@@ -9,6 +9,9 @@ map.add({ map.SUPER, "Escape" }, hl.dsp.exec_cmd("qs ipc call stixshell@session 
 map.add({ "XF86PowerOff" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil,
     "Menú de sesión (botón de encendido)")
 
+-- centro de control (brillo, volumen, micrófono, No molestar)
+map.add({ map.SUPER, "C" }, hl.dsp.exec_cmd("qs ipc call stixshell@controlcenter toggle \"\""), nil, "Centro de control")
+
 -- launcher
 map.add({ map.SUPER, "R" }, hl.dsp.exec_cmd("qs ipc call stixshell@launcher toggle \"\""), nil, "Abrir el launcher")
 map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper toggle \"\""), nil,

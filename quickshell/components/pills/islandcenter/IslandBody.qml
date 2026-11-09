@@ -4,6 +4,8 @@ import Quickshell.Io
 import "../../widgets/applist" as A
 import "../../widgets/wallpapers" as W
 import "../../widgets/session" as SE
+import "../../widgets/controlcenter" as CC
+import "../../../services/brightness" as BS
 import "../../../services/session" as SS
 
 Rectangle {
@@ -11,6 +13,7 @@ Rectangle {
     color: "transparent"
 
     property var root
+    readonly property real controlHeight: control.implicitHeight
 
     A.AppList {
         visible: root.current === 'applist'
@@ -58,6 +61,23 @@ Rectangle {
                     return;
                 }
                 root.current = 'session';
+                root.open();
+            }
+        }
+    }
+    CC.ControlCenter {
+        id: control
+        visible: root.current === 'control'
+        width: parent.width
+        IpcHandler {
+            target: "stixshell@controlcenter"
+            function toggle(mon: string): void {
+                if (root.expanded && root.current === 'control') {
+                    root.close();
+                    return;
+                }
+                root.current = 'control';
+                BS.BrightnessStore.refresh();
                 root.open();
             }
         }

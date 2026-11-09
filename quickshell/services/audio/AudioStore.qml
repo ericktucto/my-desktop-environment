@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import "../osd/" as O
 
 Singleton {
     id: store
@@ -48,15 +49,19 @@ Singleton {
         target: "stixshell@audio"
         function up(): void {
             store.step(store.sink, store.keyStep);
+            O.OsdStore.show("volume");
         }
         function down(): void {
             store.step(store.sink, -store.keyStep);
+            O.OsdStore.show("volume");
         }
         function mute(): void {
             store.toggleMute(store.sink);
+            O.OsdStore.show("volume");
         }
         function micMute(): void {
             store.toggleMute(store.source);
+            O.OsdStore.show("mic");
         }
     }
 

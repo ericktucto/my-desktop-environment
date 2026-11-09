@@ -18,3 +18,10 @@ map.add({ "XF86AudioMute" }, audio("mute", "wpctl set-mute " .. sink .. " toggle
     { locked = true }, "Silenciar el audio")
 map.add({ "XF86AudioMicMute" }, audio("micMute", "wpctl set-mute " .. source .. " toggle"),
     { locked = true }, "Silenciar el micrófono")
+
+-- Brillo. Sin respaldo: si la shell no corre, acpid (handler.sh) ya maneja estas teclas.
+-- Para que acpid no lo haga también mientras qs corre: sudo sh system/acpi-shell-keys.sh
+map.add({ "XF86MonBrightnessUp" }, hl.dsp.exec_cmd("qs ipc call stixshell@brightness up"),
+    { locked = true, repeating = true }, "Subir el brillo")
+map.add({ "XF86MonBrightnessDown" }, hl.dsp.exec_cmd("qs ipc call stixshell@brightness down"),
+    { locked = true, repeating = true }, "Bajar el brillo")

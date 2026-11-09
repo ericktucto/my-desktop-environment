@@ -14,6 +14,8 @@ Column {
     signal select(var device)
 
     readonly property bool muted: node && node.audio ? node.audio.muted : false
+    // Lista de dispositivos plegada por defecto
+    property bool devicesOpen: false
     readonly property bool boost: isSink ? S.AudioStore.allowOverSink : S.AudioStore.allowOverSource
 
     spacing: 8
@@ -31,8 +33,32 @@ Column {
             font.letterSpacing: 1
             anchors.verticalCenter: parent.verticalCenter
         }
-        Text {
+        // ∨ despliega la lista de dispositivos
+        C.IconSvg {
+            id: chevron
             anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            size: 16
+            source: Qt.resolvedUrl("../../../assets/svg/chevron-down.svg")
+            color: root.devicesOpen ? App.Theme.white : App.Theme.gray
+            rotation: root.devicesOpen ? 180 : 0
+
+            Behavior on rotation {
+                NumberAnimation {
+                    duration: App.Config.anim.control
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                anchors.margins: -6
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.devicesOpen = !root.devicesOpen
+            }
+        }
+        Text {
+            anchors.right: chevron.left
+            anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             text: root.muted ? "Mute" : S.AudioStore.percent(root.node) + "%"
             color: root.muted ? App.Theme.orange : App.Theme.white
@@ -104,6 +130,7 @@ Column {
     Column {
         width: parent.width
         spacing: 2
+        visible: root.devicesOpen
 
         Repeater {
             model: root.devices

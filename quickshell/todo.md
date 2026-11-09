@@ -13,12 +13,11 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Launcher de apps (`Super+R`).
   - Selector de wallpapers (`Super+W`).
   - Menú de sesión (`Super+Escape` o botón de encendido): bloquear, suspender, cerrar sesión, reiniciar y apagar, con teclado y confirmación.
-- **Audio:**
-  - Volumen de salida y micrófono.
-  - Mute.
-  - Cambio de dispositivo.
-  - Modo 150%.
-  - Íconos según el nivel.
+- **Centro de control** (`Super+C` o clic derecho en el reloj):
+  - No molestar.
+  - Brillo.
+  - Audio: volumen de salida y micrófono, mute, cambio de dispositivo y modo 150%.
+- **OSD:** con las teclas de volumen, brillo y micrófono, la isla contraída muestra ícono, barra y porcentaje en lugar de la hora.
 - **Batería:** porcentaje y estado de carga, como indicador simple.
 - **Notificaciones:**
   - Pill con campana y contador de no leídas.
@@ -41,15 +40,16 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 ## 🔴 Prioridad alta: lo básico de toda shell
 
 ### OSD de volumen y brillo
-- [ ] Mostrar un indicador flotante unos segundos al cambiar el volumen, el mute o el brillo.
+- [x] OSD: con las teclas de volumen, brillo o micrófono, la hora de la isla central se reemplaza 1,5 s por ícono, barra y porcentaje.
 - [x] Teclas de volumen, mute y micrófono en Hyprland (`hypr/keybinds/media.lua`), por IPC `stixshell@audio`.
-- [ ] Teclas de brillo (`XF86MonBrightnessUp/Down`). Hay `brightnessctl` y la pantalla es `amdgpu_bl0`.
+- [x] Teclas de brillo (`XF86MonBrightnessUp/Down`), por IPC `stixshell@brightness`.
 
 > Módulos: `Quickshell.Services.Pipewire` (ya en `AudioStore`) y `IpcHandler`.
+> Cambios de volumen o brillo hechos desde otro programa (pavucontrol, `brightnessctl` a mano) no muestran el OSD: solo sale con las teclas.
 
 ### Brillo de pantalla
-- [ ] Pill o sección con slider de brillo, reutilizando `components/controls/Slider.qml`.
-- [ ] Rueda del mouse sobre la pill para subir o bajar.
+- [x] Slider de brillo en el centro de control (`Super+C`), con mínimo de 5 %.
+- [ ] Rueda del mouse sobre el reloj de la isla central para subir o bajar el volumen o el brillo (alternativa por decidir).
 
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
@@ -72,7 +72,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [x] Pedir confirmación antes de apagar o reiniciar.
 
 > En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
-> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-power-button.sh` evita que acpid apague primero.
+> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-shell-keys.sh` evita que acpid apague primero (y que cambie el brillo mientras corre la shell).
 
 ### Pantalla de bloqueo e inactividad
 - [ ] Pantalla de bloqueo propia con el estilo de la shell: reloj, wallpaper y campo de contraseña.
@@ -148,7 +148,8 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
-- [ ] Un panel único con interruptores: Wi-Fi, Bluetooth, DND, cafeína, luz nocturna y mute del micrófono, más los sliders de volumen y brillo.
+- [x] Centro de control en la isla central (`Super+C` o clic derecho en el reloj): No molestar, brillo, y salida y micrófono con mute, 150 % y dispositivos.
+- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, cafeína, luz nocturna y luz del teclado (`platform::kbd_backlight`).
 
 ---
 
@@ -170,7 +171,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 ## 🧹 Deuda técnica
 
 - [ ] **Esc duplicado:** `shell.qml` ya cierra cualquier panel con un `Shortcut`, pero siguen los manejadores viejos en `Island.qml` y `Wallpapers.qml`.
-  Cuando confirmes que Esc cierra Audio, Notificaciones y el launcher, hay que quitar los viejos.
+  Cuando confirmes que Esc cierra Notificaciones y el launcher, hay que quitar los viejos.
 
 ---
 

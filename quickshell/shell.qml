@@ -9,10 +9,13 @@ import "./components/indicators/" as I
 import "./components/pills/islandcenter/" as IC
 import "./services/panels/" as P
 import "./services/session/" as SS
+import "./services/brightness/" as BR
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
     readonly property var sessionActions: SS.SessionStore.actions
+    // Instancia el store de brillo desde el inicio (su IPC debe existir para las teclas)
+    readonly property var brightnessValue: BR.BrightnessStore.value
 
     // ── Wallpaper de fondo ──
     PanelWindow {
@@ -111,8 +114,6 @@ ShellRoot {
             spacing: App.Config.bar.spacing
 
             I.Tray {}
-
-            I.Audio {}
 
             I.Battery {}
 
