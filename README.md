@@ -43,6 +43,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+Q` | Cerrar la ventana activa |
 | `Super+Escape` o botón de encendido | Menú de sesión |
 | `Super+Tab` | Vista general de workspaces |
+| Teclas de volumen y mute (Fn) | Subir, bajar y silenciar el audio; mute del micrófono |
 | `Super+R` | Launcher de apps |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
@@ -51,7 +52,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`).
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). El volumen se controla con `qs ipc call stixshell@audio up|down|mute|micMute`.
 `Esc` o un clic fuera cierran cualquier panel.
 
 ## Requisitos
@@ -99,7 +100,8 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, workspaces (clic,
 
 #### OSD de volumen y brillo
 - [ ] Mostrar un indicador flotante unos segundos al cambiar el volumen, el mute o el brillo.
-- [ ] Teclas multimedia en Hyprland (`XF86AudioRaiseVolume`, `XF86MonBrightnessUp`…) que llamen a la shell por IPC.
+- [x] Teclas de volumen, mute y micrófono en Hyprland (`hypr/keybinds/media.lua`), por IPC `stixshell@audio`.
+- [ ] Teclas de brillo (`XF86MonBrightnessUp/Down`). Hay `brightnessctl` y la pantalla es `amdgpu_bl0`.
 
 > Módulos: `Quickshell.Services.Pipewire` (ya en `AudioStore`) y `IpcHandler`.
 

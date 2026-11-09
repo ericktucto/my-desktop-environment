@@ -42,7 +42,8 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 
 ### OSD de volumen y brillo
 - [ ] Mostrar un indicador flotante unos segundos al cambiar el volumen, el mute o el brillo.
-- [ ] Teclas multimedia en Hyprland (`XF86AudioRaiseVolume`, `XF86MonBrightnessUp`…) que llamen a la shell por IPC.
+- [x] Teclas de volumen, mute y micrófono en Hyprland (`hypr/keybinds/media.lua`), por IPC `stixshell@audio`.
+- [ ] Teclas de brillo (`XF86MonBrightnessUp/Down`). Hay `brightnessctl` y la pantalla es `amdgpu_bl0`.
 
 > Módulos: `Quickshell.Services.Pipewire` (ya en `AudioStore`) y `IpcHandler`.
 

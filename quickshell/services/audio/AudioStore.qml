@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Pipewire
 
 Singleton {
@@ -40,6 +41,27 @@ Singleton {
                 store.allowOverSource = true;
         }
     }
+
+    // ── Teclas multimedia (hypr/keybinds/media.lua llama a esto por IPC) ──
+    // qs ipc call stixshell@audio up|down|mute|micMute
+    IpcHandler {
+        target: "stixshell@audio"
+        function up(): void {
+            store.step(store.sink, store.keyStep);
+        }
+        function down(): void {
+            store.step(store.sink, -store.keyStep);
+        }
+        function mute(): void {
+            store.toggleMute(store.sink);
+        }
+        function micMute(): void {
+            store.toggleMute(store.source);
+        }
+    }
+
+    // Paso de las teclas de volumen (el mismo de la rueda sobre la pill)
+    readonly property real keyStep: 0.05
 
     // ── Helpers ──
     function isDefault(node) {
