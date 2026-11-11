@@ -76,7 +76,6 @@ Item {
 
         Keys.onReturnPressed: root.applyWallpaper(root.imageFiles[currentIndex])
         Keys.onEnterPressed: root.applyWallpaper(root.imageFiles[currentIndex])
-        Keys.onEscapePressed: root.closed()
 
         ScrollBar.horizontal: ScrollBar {
             policy: ScrollBar.AsNeeded

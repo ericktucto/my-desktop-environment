@@ -1,56 +1,12 @@
 # TODO de la shell
 
-Lista de lo que le falta a la shell, comparada con las shells de Quickshell más usadas:
-**Caelestia**, **DankMaterialShell**, **Noctalia** y **illogical-impulse** (end-4).
-Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quickshell o qué herramienta ya instalada sirve.
-
-## Lo que ya tienes
-- **Barra:**
-  - Workspaces: 4 fijos; clic y rueda para cambiar, y vista general (clic derecho o `Super+Tab`) con ícono y título de cada ventana, donde se arrastran ventanas entre workspaces.
-  - Zoom: lanzar, enfocar y restaurar desde la bandeja.
-- **Isla central:**
-  - Reloj.
-  - Launcher de apps (`Super+R`): favoritos con estrella, emojis (`e:`), calculadora (`c:`), terminal (`t:`) y acciones de sesión.
-  - Selector de wallpapers (`Super+W`).
-  - Menú de sesión (`Super+Escape` o botón de encendido): bloquear, suspender, cerrar sesión, reiniciar y apagar, con teclado y confirmación.
-- **Bloqueo e inactividad:** pantalla de bloqueo propia (`Super+L`) con contraseña PAM; atenúa, bloquea, apaga la pantalla y suspende por inactividad (distinto con batería y cargador); al cerrar la tapa bloquea y suspende.
-- **Centro de control** (`Super+C` o clic derecho en el reloj):
-  - No molestar.
-  - Brillo.
-  - Audio: volumen de salida y micrófono, mute, cambio de dispositivo y modo 150%.
-- **OSD:** con las teclas de volumen, brillo y micrófono, la isla contraída muestra ícono, barra y porcentaje en lugar de la hora.
-- **Batería y energía:** pill con el porcentaje; su panel muestra el estado (tiempo restante, consumo, salud), el modo cafeína, un perfil de energía para la batería y otro para el cargador, el modo conservación (cargar hasta 60 %), los tiempos de inactividad editables (batería y cargador), el brillo al atenuar y los avisos de batería baja. Todo se guarda en `~/.config/stixshell/settings.json`.
-- **Portapapeles** (`Super+H`): historial con búsqueda y vista previa (texto e imágenes). Copiar, eliminar, borrar todo, código QR, compartir por Bluetooth, ejecutar en la terminal y, en imágenes, abrir con otra app.
-- **Notificaciones:**
-  - Pill con campana y contador de no leídas.
-  - Popups arriba a la derecha, con acciones y cierre automático.
-  - Historial guardado en disco: solo se borra con el cierre de cada tarjeta o con Limpiar.
-  - Modo No molestar (las críticas pasan).
-  - Títulos y cuerpos largos con botón para expandir.
-- **System tray:** se puede plegar y tiene menú contextual propio.
-- **Wallpaper:** fondo con transición, radio y margen configurables.
-- **Base:** `Config.qml` (tamaños, animaciones, fuentes) y `Theme.qml` (colores) centralizados, controles propios (Slider y Switch) y registro automático de pills con panel (`PanelStore`).
-- **Código ordenado (deuda técnica resuelta):**
-  - Sin `swaybg` ni logs de depuración.
-  - Wallpaper guardado con `FileView`.
-  - Colores en `Theme`; fuentes, tamaños y duraciones en `Config`.
-  - Pills con panel registradas solas en `PanelStore`.
-  - Launcher sin bugs de resaltado.
-
----
+Lo que falta por hacer, comparado con las shells de Quickshell más usadas: **Caelestia**, **DankMaterialShell**, **Noctalia** e **illogical-impulse** (end-4).
+Está ordenado por prioridad; junto a cada tarea se indica qué módulo de Quickshell o qué herramienta sirve.
+Lo que la shell ya hace está en el [README](../README.md).
 
 ## 🔴 Prioridad alta: lo básico de toda shell
 
-### OSD de volumen y brillo
-- [x] OSD: con las teclas de volumen, brillo o micrófono, la hora de la isla central se reemplaza 1,5 s por ícono, barra y porcentaje.
-- [x] Teclas de volumen, mute y micrófono en Hyprland (`hypr/keybinds/media.lua`), por IPC `stixshell@audio`.
-- [x] Teclas de brillo (`XF86MonBrightnessUp/Down`), por IPC `stixshell@brightness`.
-
-> Módulos: `Quickshell.Services.Pipewire` (ya en `AudioStore`) y `IpcHandler`.
-> Cambios de volumen o brillo hechos desde otro programa (pavucontrol, `brightnessctl` a mano) no muestran el OSD: solo sale con las teclas.
-
 ### Brillo de pantalla
-- [x] Slider de brillo en el centro de control (`Super+C`), con mínimo de 5 %.
 - [ ] Rueda del mouse sobre el reloj de la isla central para subir o bajar el volumen o el brillo (alternativa por decidir).
 
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
@@ -68,24 +24,10 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 
 > Módulo: `Quickshell.Bluetooth`. `bluez` está activo.
 
-### Menú de sesión y energía
-- [x] Bloquear, cerrar sesión, suspender, reiniciar y apagar.
-- [x] Atajo de teclado más IPC (`stixshell@session`).
-- [x] Pedir confirmación antes de apagar o reiniciar.
-
-> En Void no hay `systemctl`: usar `loginctl poweroff|reboot|suspend` (elogind).
-> El botón de encendido lo reserva la shell con un inhibidor de elogind, y `system/acpi-shell-keys.sh` evita que acpid apague primero (que cambie el brillo y que suspenda al cerrar la tapa sin bloquear mientras corre la shell).
-
 ### Pantalla de bloqueo e inactividad
-- [x] Pantalla de bloqueo propia (`Super+L`): wallpaper difuminado, reloj, fecha, usuario, contraseña con PAM, batería y botones de suspender, reiniciar y apagar. `hyprlock` queda de respaldo si la shell no corre.
-- [x] Inactividad (`IdleStore`), con tiempos distintos con batería y con cargador (`Config.idle`): atenuar, bloquear, apagar la pantalla y suspender.
-- [x] Bloquear antes de suspender, también al cerrar la tapa (hypridle).
-- [x] Respetar el modo cafeína: pausa atenuar, bloquear, apagar la pantalla y suspender.
 - [ ] Opcional: huella digital, Bloq Mayús y notificaciones en la pantalla de bloqueo.
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
-> `hypridle` solo conecta el bloqueo con el sistema (`hypr/hypridle.conf`); los tiempos de inactividad los maneja la shell.
-> Los videos en reproducción ya evitan el bloqueo, porque `IdleMonitor` respeta los inhibidores.
 
 ### Control multimedia (MPRIS)
 - [ ] Mostrar en la barra lo que está sonando: título y artista.
@@ -97,15 +39,6 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 
 ## 🟡 Prioridad media: calidad de vida
 
-### Workspaces
-- [x] Clic para cambiar de workspace.
-- [x] Rueda del mouse para pasar al siguiente o anterior (se detiene en 1 y 4).
-- [x] ~~Cantidad dinámica~~: descartado, se quedan 4 fijos.
-- [x] Arrastrar ventanas entre workspaces, desde la vista general.
-- [x] Ícono y título de cada ventana en la vista general (así se distinguen dos del mismo programa).
-
-> Módulo: `Quickshell.Hyprland` (`Hyprland.dispatch`). Recuerda la sintaxis Lua de tu Hyprland.
-
 ### Ventana activa
 - [ ] Mostrar el título o el nombre de la app enfocada en la barra.
 
@@ -116,15 +49,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] Calendario mensual en un panel.
 
 ### Historial del portapapeles
-- [x] Historial de `cliphist` en la isla central (`Super+H`): búsqueda, vista previa de texto e imágenes, copiar, eliminar y borrar todo.
-- [x] Lanzar los dos `wl-paste --watch cliphist store` (texto e imagen) en `autostart.lua`.
-- [x] Acciones: código QR del texto, compartir (por Bluetooth; la lista de destinos es ampliable), ejecutar en la terminal y, para imágenes, abrir con otra aplicación.
-- [x] Imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta): se muestran y se copian como imagen.
-- [x] El QR declara UTF-8 (ECI), así que las tildes se leen bien en el teléfono.
-- [x] Archivos copiados desde un gestor de archivos (Nemo guarda solo las rutas como texto): uno o varios, de cualquier tipo (PDF, Word, carpetas…). Se muestran con su ícono, tipo y tamaño; se pueden copiar (las rutas), abrir con otra app (uno solo), compartir por Bluetooth (varios a la vez, sin carpetas) y eliminar. Si una ruta ya no existe se marca; si ninguna existe, es un texto más.
 - [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
-
-> Para el QR hace falta `python3-qrcode` y, para compartir por Bluetooth, `bluez-obex` (`sudo xbps-install -Su python3-qrcode bluez bluez-obex`).
 
 ### Capturas de pantalla
 - [ ] Captura de región, ventana o pantalla completa, con una notificación y copia al portapapeles.
@@ -136,32 +61,12 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] Panel con todos los atajos (`Super+/`).
 - [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell.
 
-### Launcher
-- [x] Se abre solo con `Super+R` (ya no con el clic en el reloj), y `Super+R` también lo cierra.
-- [x] Favoritos: cada app tiene una estrella (o `Ctrl+D`); los favoritos van arriba. Se guardan en `settings.json`.
-- [x] Orden por uso, búsqueda sin tildes (nombre, palabras clave y categorías en español) y acciones de las apps ("Firefox · New Private Window").
-- [x] Prefijos: `e:` emojis (base de GTK en español), `c:` calculadora y `t:` terminal (con historial de comandos).
-- [x] Acciones de sesión como resultados más: apagar, reiniciar, bloquear… (apagar, reiniciar y cerrar sesión piden un segundo Enter).
-- [x] Ejecutar en terminal: kitty con tu shell (`bash -ic`), así que `sudo` y las confirmaciones se responden en la ventana. Las apps con `Terminal=true` (nvim) se abren en kitty.
-- [x] Emojis y resultados de la calculadora: se escriben en la ventana activa con `wtype`; sin `wtype` se copian.
-- [x] `wtype` instalado: los emojis y la calculadora se escriben en la ventana activa.
-
-### Inhibidor de inactividad (modo "cafeína")
-- [x] Switch "No bloquear ni apagar" en el panel de la pill de batería (con una taza en la pill mientras está activo; no se guarda al reiniciar).
-
-> `IdleInhibitor` de `Quickshell.Wayland`.
-
 ### Batería y energía
-- [x] Avisos de batería baja (20 %), crítica (10 %) y suspensión (5 %), con umbrales configurables en el panel de la batería.
-- [x] Panel de energía en la pill de batería: estado, tiempos de inactividad con batería y con cargador, brillo al atenuar y avisos.
-- [x] Perfiles de energía (`power-profiles-daemon`) en el panel de la batería: un perfil para la batería y otro para el cargador (Ahorro, Equilibrado o Rendimiento), que se aplica solo al enchufar o desenchufar. Si algo lo cambia por fuera (Fn+Q, otra app), se respeta y el panel avisa.
-- [x] Modo conservación del IdeaPad ("Cargar hasta 60 %") en el panel. Necesita `sudo sh system/conservation-mode.sh` una vez (regla udev que da permiso al grupo `video`; ya probado: el panel escribe 1 y 0).
 - [ ] Opcional: pasar a Ahorro al llegar a batería baja, mostrar el perfil en la pill y un atajo de teclado para cambiarlo.
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
-- [x] Centro de control en la isla central (`Super+C` o clic derecho en el reloj): No molestar, brillo, y salida y micrófono con mute, 150 % y dispositivos.
 - [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, luz nocturna y luz del teclado (`platform::kbd_backlight`).
 
 ---
@@ -178,13 +83,6 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] **Colores dinámicos según el wallpaper** (matugen): `Theme.qml` se generaría a partir del fondo.
 - [ ] **Widgets de escritorio:** reloj grande sobre el wallpaper.
 - [ ] **Visualizador de audio** (cava) en la isla o en el fondo.
-
----
-
-## 🧹 Deuda técnica
-
-- [ ] **Esc duplicado:** `shell.qml` ya cierra cualquier panel con un `Shortcut`, pero siguen los manejadores viejos en `Island.qml` y `Wallpapers.qml`.
-  Cuando confirmes que Esc cierra Notificaciones y el launcher, hay que quitar los viejos.
 
 ---
 

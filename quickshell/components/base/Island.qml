@@ -111,12 +111,6 @@ Rectangle {
             }
         }
 
-        Keys.onPressed: function (event) {
-            if (event.key == Qt.Key_Escape)
-                p.expanded = false;
-            event.accepted = true;
-        }
-
         Behavior on opacity {
             SequentialAnimation {
                 PauseAnimation {
