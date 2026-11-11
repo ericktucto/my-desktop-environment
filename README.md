@@ -14,7 +14,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 │   ├── hyprlock.conf  Bloqueo de respaldo (colores de la shell), si la shell no corre
 │   ├── hypridle.conf  Conecta el bloqueo con el sistema (antes de dormir)
 │   └── keybinds/      Atajos de teclado
-├── system/          Ajustes del sistema que necesitan root (acpid)
+├── system/          Ajustes del sistema que necesitan root (acpid, modo conservación)
 └── quickshell/      La shell
     ├── shell.qml      Ventanas: wallpaper, barra y popups
     ├── Config.qml     Tamaños, animaciones y fuentes
@@ -32,7 +32,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Centro de control** (`Super+C` o clic derecho en el reloj): No molestar, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo.
-- **Energía** (pill de batería): estado, modo cafeína, tiempos de inactividad editables con batería y con cargador, brillo al atenuar y avisos de batería baja (20 %, 10 % y suspender al 5 %). Se guarda en `~/.config/stixshell/settings.json`, que también se puede editar a mano.
+- **Energía** (pill de batería): estado, modo cafeína, perfil de energía distinto con batería y con cargador (Ahorro, Equilibrado o Rendimiento), que se aplica solo al enchufar o desenchufar, modo conservación (cargar hasta 60 %), tiempos de inactividad editables con batería y con cargador, brillo al atenuar y avisos de batería baja (20 %, 10 % y suspender al 5 %). Se guarda en `~/.config/stixshell/settings.json`, que también se puede editar a mano.
 - **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen. Arriba, Borrar todo.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
@@ -75,6 +75,7 @@ El launcher, el selector, el menú de sesión y la vista de workspaces se abren 
 - **brightnessctl**, con tu usuario en el grupo `video` (brillo).
 - **notify-send** (libnotify), para los avisos de batería baja.
 - **cliphist** y **wl-clipboard** (historial del portapapeles); **python3-qrcode** (con Pillow, para el código QR: declara UTF-8 para que las tildes se lean bien) y **bluez-obex** con **blueman** (compartir por Bluetooth): `sudo xbps-install -Su python3-qrcode bluez bluez-obex`.
+- **power-profiles-daemon** con su servicio activo (`sudo ln -s /etc/sv/power-profiles-daemon /var/service/`): perfiles de energía. Para el modo conservación del IdeaPad, ejecuta una vez `sudo sh system/conservation-mode.sh` (regla udev que da permiso al grupo `video`).
 - **hypridle** (bloquea antes de dormir), **hyprlock** (bloqueo de respaldo) y **elogind** (`loginctl`, `elogind-inhibit`).
 - **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido, cambia el brillo y suspende al cerrar la tapa sin bloquear. Para que el botón abra el menú de sesión, las teclas de brillo las maneje la shell y la tapa bloquee y suspenda, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
 - Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
@@ -221,7 +222,9 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactiv
 #### Batería y energía
 - [x] Avisos de batería baja (20 %), crítica (10 %) y suspensión (5 %), con umbrales configurables en el panel de la batería.
 - [x] Panel de energía en la pill de batería: estado, tiempos de inactividad con batería y con cargador, brillo al atenuar y avisos.
-- [ ] Opcional: perfiles de energía. **Falta** `power-profiles-daemon`.
+- [x] Perfiles de energía (`power-profiles-daemon`) en el panel de la batería: un perfil para la batería y otro para el cargador (Ahorro, Equilibrado o Rendimiento), que se aplica solo al enchufar o desenchufar. Si algo lo cambia por fuera (Fn+Q, otra app), se respeta y el panel avisa.
+- [x] Modo conservación del IdeaPad ("Cargar hasta 60 %") en el panel. Necesita `sudo sh system/conservation-mode.sh` una vez (regla udev que da permiso al grupo `video`; ya probado: el panel escribe 1 y 0).
+- [ ] Opcional: pasar a Ahorro al llegar a batería baja, mostrar el perfil en la pill y un atajo de teclado para cambiarlo.
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 

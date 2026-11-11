@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.UPower
 import "../session/" as S
 import "../settings/" as ST
@@ -27,7 +28,44 @@ Singleton {
             const t = device.timeToEmpty;
             return t > 0 ? "Con batería · quedan " + ST.SettingsStore.format(Math.round(t / 60) * 60) : "Con batería";
         }
-        return "Conectada";
+        return conservation ? "Conectada · modo conservación" : "Conectada";
+    }
+
+    // ── Modo conservación (IdeaPad): limita la carga a ~60 % para cuidar la batería ──
+    // sysfs no avisa los cambios, así que se vuelve a leer al abrir el panel y al escribir.
+    property string conservationPath: ""
+    property bool conservation: false
+    property bool conservationWritable: false
+    readonly property bool conservationAvailable: conservationPath !== ""
+
+    function refreshConservation() {
+        conservationProc.running = true;
+    }
+
+    function setConservation(on) {
+        if (!conservationAvailable || !conservationWritable)
+            return;
+        conservationSet.command = ["sh", "-c", 'echo "$1" > "$2"', "_", on ? "1" : "0", conservationPath];
+        conservationSet.running = true;
+    }
+
+    Process {
+        id: conservationProc
+        // línea 1: ruta · línea 2: valor · línea 3: w si se puede escribir
+        command: ["sh", "-c", 'p=$(ls -d /sys/bus/platform/drivers/ideapad_acpi/VPC2004:*/conservation_mode 2>/dev/null | head -1); [ -n "$p" ] || exit 0; echo "$p"; cat "$p"; [ -w "$p" ] && echo w || echo r']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const l = text.trim().split("\n");
+                store.conservationPath = l[0] || "";
+                store.conservation = l[1] === "1";
+                store.conservationWritable = l[2] === "w";
+            }
+        }
+    }
+
+    Process {
+        id: conservationSet
+        onExited: store.refreshConservation()
     }
 
     readonly property string rateText: {
@@ -94,7 +132,10 @@ Singleton {
     onChargingChanged: check()
     onDischargingChanged: check()
     onFullChanged: check()
-    Component.onCompleted: check()
+    Component.onCompleted: {
+        check();
+        refreshConservation();
+    }
 
     Timer {
         id: suspendTimer

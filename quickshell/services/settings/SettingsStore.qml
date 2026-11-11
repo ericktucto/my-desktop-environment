@@ -13,9 +13,10 @@ Singleton {
     readonly property string dir: Quickshell.env("HOME") + "/.config/stixshell"
     readonly property string filePath: dir + "/settings.json"
 
-    // Acceso corto: SettingsStore.idle.battery.lock, SettingsStore.low.warn…
+    // Acceso corto: SettingsStore.idle.battery.lock, SettingsStore.low.warn, SettingsStore.profiles.battery…
     readonly property var idle: data.idle
     readonly property var low: data.low
+    readonly property var profiles: data.profiles
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -39,6 +40,10 @@ Singleton {
             property int critical: App.Config.idle.lowBattery.critical
             property int suspend: App.Config.idle.lowBattery.suspend
         }
+        property JsonObject profiles: JsonObject {
+            property string battery: App.Config.profiles.battery
+            property string ac: App.Config.profiles.ac
+        }
     }
 
     // true mientras se cambian varios valores seguidos: se guarda una sola vez al final
@@ -54,6 +59,8 @@ Singleton {
         data.idle.dimLevel = d.dimLevel;
         for (const k of ["warn", "critical", "suspend"])
             data.low[k] = d.lowBattery[k];
+        for (const k of ["battery", "ac"])
+            data.profiles[k] = App.Config.profiles[k];
         batching = false;
         file.selfWriteRestart();
         file.writeAdapter();

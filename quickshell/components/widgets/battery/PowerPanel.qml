@@ -21,30 +21,69 @@ Column {
     }
 
     // ── Estado de la batería ──
-    Column {
+    Item {
         width: parent.width
-        spacing: 2
+        height: status.implicitHeight
 
-        Text {
-            text: P.BatteryStore.percent + " %"
-            color: App.Theme.white
-            font.family: App.Config.fonts.mono
-            font.pixelSize: 26
-            font.weight: Font.Medium
+        Column {
+            id: status
+            width: parent.width
+            spacing: 2
+
+            Text {
+                text: P.BatteryStore.percent + " %"
+                color: App.Theme.white
+                font.family: App.Config.fonts.mono
+                font.pixelSize: 26
+                font.weight: Font.Medium
+            }
+            Text {
+                text: P.BatteryStore.stateText
+                color: App.Theme.white
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.md
+            }
+            Text {
+                visible: text !== ""
+                text: P.BatteryStore.detailText
+                color: App.Theme.gray
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.sm
+            }
         }
-        Text {
-            text: P.BatteryStore.stateText
-            color: App.Theme.white
-            font.family: App.Config.fonts.text
-            font.pixelSize: App.Config.fontSize.md
+
+        // Modo conservación (IdeaPad): carga solo hasta ~60 %
+        Row {
+            visible: P.BatteryStore.conservationAvailable
+            anchors.right: parent.right
+            anchors.top: parent.top
+            spacing: 8
+            opacity: P.BatteryStore.conservationWritable ? 1 : 0.5
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "Cargar hasta 60 %"
+                color: App.Theme.text
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.sm
+            }
+            C.Switch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: P.BatteryStore.conservation
+                onToggled: c => P.BatteryStore.setConservation(c)
+            }
         }
-        Text {
-            visible: text !== ""
-            text: P.BatteryStore.detailText
-            color: App.Theme.gray
-            font.family: App.Config.fonts.text
-            font.pixelSize: App.Config.fontSize.sm
-        }
+    }
+
+    // Sin permiso para escribir el archivo del modo conservación
+    Text {
+        visible: P.BatteryStore.conservationAvailable && !P.BatteryStore.conservationWritable
+        width: parent.width
+        wrapMode: Text.WordWrap
+        text: "Falta el permiso para cambiar «Cargar hasta 60 %»: sudo sh system/conservation-mode.sh"
+        color: App.Theme.amber
+        font.family: App.Config.fonts.text
+        font.pixelSize: App.Config.fontSize.xs
     }
 
     Rectangle {
@@ -62,6 +101,17 @@ Column {
             activeColor: App.Theme.amber
             onClicked: I.IdleStore.toggleCaffeine()
         }
+    }
+
+    Rectangle {
+        width: parent.width
+        height: 1
+        color: App.Theme.islandEdge
+    }
+
+    // ── Perfil de energía ──
+    ProfileSection {
+        width: parent.width
     }
 
     Rectangle {

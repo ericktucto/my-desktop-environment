@@ -26,6 +26,8 @@ ShellRoot {
     readonly property var idleBattery: ID.IdleStore.onBattery
     // Instancian los avisos de batería baja y los ajustes (settings.json)
     readonly property var batteryPercent: PW.BatteryStore.percent
+    // Instancia el perfil de energía automático (cambia al enchufar o desenchufar)
+    readonly property var powerProfile: PW.ProfileStore.profile
     readonly property var settingsData: SE.SettingsStore.idle
 
     // ── Pantalla de bloqueo ──

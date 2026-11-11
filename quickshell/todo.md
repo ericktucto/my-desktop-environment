@@ -19,7 +19,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Brillo.
   - Audio: volumen de salida y micrófono, mute, cambio de dispositivo y modo 150%.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la isla contraída muestra ícono, barra y porcentaje en lugar de la hora.
-- **Batería y energía:** pill con el porcentaje; su panel muestra el estado (tiempo restante, consumo, salud), el modo cafeína, los tiempos de inactividad editables (batería y cargador), el brillo al atenuar y los avisos de batería baja. Todo se guarda en `~/.config/stixshell/settings.json`.
+- **Batería y energía:** pill con el porcentaje; su panel muestra el estado (tiempo restante, consumo, salud), el modo cafeína, un perfil de energía para la batería y otro para el cargador, el modo conservación (cargar hasta 60 %), los tiempos de inactividad editables (batería y cargador), el brillo al atenuar y los avisos de batería baja. Todo se guarda en `~/.config/stixshell/settings.json`.
 - **Portapapeles** (`Super+H`): historial con búsqueda y vista previa (texto e imágenes). Copiar, eliminar, borrar todo, código QR, compartir por Bluetooth, ejecutar en la terminal y, en imágenes, abrir con otra app.
 - **Notificaciones:**
   - Pill con campana y contador de no leídas.
@@ -149,7 +149,9 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 ### Batería y energía
 - [x] Avisos de batería baja (20 %), crítica (10 %) y suspensión (5 %), con umbrales configurables en el panel de la batería.
 - [x] Panel de energía en la pill de batería: estado, tiempos de inactividad con batería y con cargador, brillo al atenuar y avisos.
-- [ ] Opcional: perfiles de energía. **Falta** `power-profiles-daemon`.
+- [x] Perfiles de energía (`power-profiles-daemon`) en el panel de la batería: un perfil para la batería y otro para el cargador (Ahorro, Equilibrado o Rendimiento), que se aplica solo al enchufar o desenchufar. Si algo lo cambia por fuera (Fn+Q, otra app), se respeta y el panel avisa.
+- [x] Modo conservación del IdeaPad ("Cargar hasta 60 %") en el panel. Necesita `sudo sh system/conservation-mode.sh` una vez (regla udev que da permiso al grupo `video`; ya probado: el panel escribe 1 y 0).
+- [ ] Opcional: pasar a Ahorro al llegar a batería baja, mostrar el perfil en la pill y un atajo de teclado para cambiarlo.
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 

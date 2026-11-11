@@ -227,6 +227,13 @@ Singleton {
         readonly property int stepperWidth: 104
         readonly property int rowHeight: 32
         readonly property int labelWidth: 130
+        readonly property int segmentHeight: 40     // selector de perfil de energía
+    }
+
+    // ===== Perfiles de energía (valores por defecto; nombres de `powerprofilesctl`) =====
+    readonly property QtObject profiles: QtObject {
+        readonly property string battery: "power-saver"
+        readonly property string ac: "balanced"
     }
 
     // ===== Historial del portapapeles =====

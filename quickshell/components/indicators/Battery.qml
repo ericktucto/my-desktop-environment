@@ -2,6 +2,7 @@ import QtQuick
 import "../base" as Base
 import "../widgets/battery/" as B
 import "../../services/idle/" as I
+import "../../services/power/" as PW
 import "../../" as App
 
 // Pill de batería: porcentaje y, con la cafeína encendida, una taza.
@@ -13,6 +14,12 @@ Base.Island {
     expandedHeight: panel.implicitHeight + 2 * paddingContainer
 
     preventFocus: true
+
+    // sysfs y el daemon no avisan los cambios: se vuelven a leer al abrir
+    onOpened: {
+        PW.BatteryStore.refreshConservation();
+        PW.ProfileStore.refresh();
+    }
 
     BatteryText {}
 
