@@ -17,6 +17,7 @@ Singleton {
     readonly property var idle: data.idle
     readonly property var low: data.low
     readonly property var profiles: data.profiles
+    readonly property var launcher: data.launcher
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -39,6 +40,10 @@ Singleton {
             property int warn: App.Config.idle.lowBattery.warn
             property int critical: App.Config.idle.lowBattery.critical
             property int suspend: App.Config.idle.lowBattery.suspend
+        }
+        property JsonObject launcher: JsonObject {
+            // ids de .desktop (se reasigna el arreglo entero para que se guarde)
+            property var favorites: []
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery

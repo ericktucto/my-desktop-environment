@@ -17,6 +17,8 @@ Rectangle {
     // false = el ancho sigue al contenido sin animación propia (el contenido ya se anima)
     property bool animateWidth: true
     property int paddingContainer: App.Config.pill.padding
+    // false = el clic izquierdo no abre la isla (se abre por IPC o atajo)
+    property bool openOnClick: true
 
     default property alias content: contentContainer.data
     property alias body: pillContainer.data
@@ -132,7 +134,7 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         // disabled si no hay body — la pill no hace nada si no tiene contenido
         // disabled cuando esta expandido
-        enabled: p.hasBody && !p.expanded
+        enabled: p.hasBody && !p.expanded && p.openOnClick
 
         onClicked: {
             p.clicked();

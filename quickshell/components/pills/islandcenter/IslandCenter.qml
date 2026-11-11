@@ -37,10 +37,12 @@ Base.Island {
     }
 
     preventFocus: true
+    // El launcher se abre solo con Super+R; el clic derecho abre el centro de control
+    openOnClick: false
 
     IslandStatus {}
 
-    // Clic derecho en el reloj: centro de control. El izquierdo llega al MouseArea de Island (launcher).
+    // Clic derecho en el reloj: centro de control.
     // parent: root porque los hijos de Island van a un Row (anchors.fill lo rompe).
     MouseArea {
         parent: root
@@ -60,9 +62,5 @@ Base.Island {
     body: IslandBody {
         id: islandBody
         root: root
-    }
-
-    onClicked: {
-        current = 'applist';
     }
 }

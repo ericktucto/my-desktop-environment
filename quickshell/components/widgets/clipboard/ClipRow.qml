@@ -8,6 +8,9 @@ Rectangle {
 
     property var entry: null
     readonly property bool isImage: entry ? entry.isImage : false
+    // Archivos copiados desde un gestor (uno o varios, de cualquier tipo): ícono en lugar de miniatura
+    readonly property bool isFiles: entry ? entry.isFiles === true : false
+    readonly property bool hasThumb: isImage || isFiles
 
     signal clicked
     signal doubleClicked
@@ -37,7 +40,7 @@ Rectangle {
 
         Rectangle {
             id: thumb
-            visible: root.isImage
+            visible: root.hasThumb
             anchors.verticalCenter: parent.verticalCenter
             width: App.Config.clipboard.thumbSize
             height: width
@@ -45,8 +48,18 @@ Rectangle {
             color: App.Theme.surface
             clip: true
 
+            Text {
+                anchors.centerIn: parent
+                visible: root.isFiles
+                text: root.isFiles ? String.fromCodePoint(root.entry.glyph) : ""
+                color: App.Theme.gray
+                font.family: App.Config.fonts.icons
+                font.pixelSize: App.Config.fontSize.iconLg + 4
+            }
+
             Image {
                 anchors.fill: parent
+                visible: root.isImage
                 source: root.entry ? (S.ClipboardStore.imageUrls[root.entry.id] || "") : ""
                 sourceSize: Qt.size(App.Config.clipboard.thumbSize * 2, App.Config.clipboard.thumbSize * 2)
                 fillMode: Image.PreserveAspectCrop
@@ -60,20 +73,20 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: root.entry ? root.entry.preview : ""
+                text: !root.entry ? "" : (root.isFiles ? root.entry.name : root.entry.preview)
                 color: App.Theme.text
                 font.family: App.Config.fonts.text
                 font.pixelSize: App.Config.fontSize.md
-                font.weight: root.isImage ? Font.Medium : Font.Normal
+                font.weight: root.hasThumb ? Font.Medium : Font.Normal
                 elide: Text.ElideRight
-                wrapMode: root.isImage ? Text.NoWrap : Text.WrapAnywhere
-                maximumLineCount: root.isImage ? 1 : 2
+                wrapMode: root.hasThumb ? Text.NoWrap : Text.WrapAnywhere
+                maximumLineCount: root.hasThumb ? 1 : 2
             }
 
             Text {
-                visible: root.isImage
+                visible: root.hasThumb
                 width: parent.width
-                text: !root.entry ? "" : (root.entry.width > 0 ? root.entry.width + "×" + root.entry.height + " · " + root.entry.size : (root.entry.name || ""))
+                text: !root.entry ? "" : root.isFiles ? root.entry.subtitle : (root.entry.width > 0 ? root.entry.width + "×" + root.entry.height + " · " + root.entry.size : (root.entry.name || ""))
                 color: App.Theme.subtext
                 font.family: App.Config.fonts.text
                 font.pixelSize: App.Config.fontSize.sm

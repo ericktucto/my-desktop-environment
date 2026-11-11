@@ -20,20 +20,21 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Config.qml     Tamaños, animaciones y fuentes
     ├── Theme.qml      Colores
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
-    ├── assets/svg/    Íconos
-    ├── scripts/       Scripts de apoyo (código QR del portapapeles)
+    ├── assets/        Íconos (svg) y la base de emojis (emoji)
+    ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher)
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · brightness · clipboard · idle · lock · notify · osd · power · settings · share · panels · session · workspaces
+    └── services/      audio · brightness · clipboard · idle · launcher · lock · notify · osd · power · settings · share · panels · session · workspaces
 ```
 
 ## Funciones
 
 - **Barra:** Workspaces y botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, batería y notificaciones.
-- **Isla central:** reloj; al abrirla es el **launcher de apps** o el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
+- **Isla central:** reloj; se abre con atajos y es el **launcher de apps** (`Super+R`), el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Centro de control** (`Super+C` o clic derecho en el reloj): No molestar, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo.
 - **Energía** (pill de batería): estado, modo cafeína, perfil de energía distinto con batería y con cargador (Ahorro, Equilibrado o Rendimiento), que se aplica solo al enchufar o desenchufar, modo conservación (cargar hasta 60 %), tiempos de inactividad editables con batería y con cargador, brillo al atenuar y avisos de batería baja (20 %, 10 % y suspender al 5 %). Se guarda en `~/.config/stixshell/settings.json`, que también se puede editar a mano.
-- **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen. Arriba, Borrar todo.
+- **Launcher** (`Super+R`): busca apps sin tildes (por nombre, palabras clave y categoría) y las ordena con tus favoritos arriba (estrella o `Ctrl+D`) y las más usadas. También aparecen las acciones de las apps ("Firefox · New Private Window") y las de sesión (apagar, reiniciar, bloquear…). Prefijos: `e:` emojis, `c:` calculadora y `t:` ejecutar en la terminal (kitty con tu shell, para `sudo` y confirmaciones; guarda un historial). Las apps de terminal (nvim) se abren en kitty.
+- **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen, y los archivos de otro tipo (PDF, Word…), carpetas o varios archivos a la vez aparecen como una lista con ícono, tipo y tamaño (copiar, abrir con, compartir y eliminar). Arriba, Borrar todo.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
@@ -52,7 +53,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+C` | Centro de control |
 | `Super+H` | Historial del portapapeles |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
-| `Super+R` | Launcher de apps |
+| `Super+R` | Launcher de apps (abre y cierra) |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
 | `Super+Shift+1…4` | Mandar la ventana al workspace |
@@ -69,18 +70,48 @@ El launcher, el selector, el menú de sesión y la vista de workspaces se abren 
 
 ## Requisitos
 
-- **Hyprland** con soporte de configuración en Lua.
-- **Quickshell 0.3.2** o más reciente (Qt 6).
-- **PipeWire** y WirePlumber (audio).
-- **brightnessctl**, con tu usuario en el grupo `video` (brillo).
-- **notify-send** (libnotify), para los avisos de batería baja.
-- **cliphist** y **wl-clipboard** (historial del portapapeles); **python3-qrcode** (con Pillow, para el código QR: declara UTF-8 para que las tildes se lean bien) y **bluez-obex** con **blueman** (compartir por Bluetooth): `sudo xbps-install -Su python3-qrcode bluez bluez-obex`.
-- **power-profiles-daemon** con su servicio activo (`sudo ln -s /etc/sv/power-profiles-daemon /var/service/`): perfiles de energía. Para el modo conservación del IdeaPad, ejecuta una vez `sudo sh system/conservation-mode.sh` (regla udev que da permiso al grupo `video`).
-- **hypridle** (bloquea antes de dormir), **hyprlock** (bloqueo de respaldo) y **elogind** (`loginctl`, `elogind-inhibit`).
-- **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido, cambia el brillo y suspende al cerrar la tapa sin bloquear. Para que el botón abra el menú de sesión, las teclas de brillo las maneje la shell y la tapa bloquee y suspenda, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
-- Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
+Pensado para **Void Linux** (los nombres son de paquetes de xbps) en una laptop **Lenovo IdeaPad**; en otro equipo, lo del modo conservación no aplica.
+
+### Paquetes
+
+Todo de una vez (la lista completa que usa la shell):
+
+```sh
+sudo xbps-install -Su hyprland quickshell upower pipewire wireplumber brightnessctl libnotify \
+    hypridle hyprlock elogind acpid eudev dbus hyprpolkitagent xdg-desktop-portal xdg-desktop-portal-hyprland \
+    cliphist wl-clipboard wtype kitty xdg-utils glib gtk+3 file \
+    python3 python3-qrcode python3-Pillow bluez bluez-obex blueman power-profiles-daemon \
+    font-inter nerd-fonts-ttf noto-fonts-emoji
+```
+
+| Para qué | Paquetes | Si falta |
+|---|---|---|
+| **Base** | `hyprland` (con configuración en Lua), `quickshell` 0.3.2 o más reciente (Qt 6), `dbus`, `xdg-desktop-portal`, `xdg-desktop-portal-hyprland`, `hyprpolkitagent` | no arranca |
+| **Audio** (control de volumen, OSD) | `pipewire`, `wireplumber` | sin volumen |
+| **Brillo** | `brightnessctl`, con tu usuario en el grupo `video` | sin brillo |
+| **Batería y energía** | `upower`, `libnotify` (`notify-send`, avisos de batería baja), `power-profiles-daemon` | sin batería, avisos ni perfiles |
+| **Bloqueo, inactividad y sesión** | `hypridle`, `hyprlock` (bloqueo de respaldo), `elogind` (`loginctl`, `elogind-inhibit`), `acpid`, `eudev` | no bloquea ni suspende |
+| **Portapapeles** | `cliphist`, `wl-clipboard`, `file`, `xdg-utils` (`xdg-mime`), `glib` (`gio`), `gtk+3` (`gtk-launch`) | sin historial, "Abrir con" ni tipos de archivo |
+| **Código QR** | `python3`, `python3-qrcode`, `python3-Pillow` | el botón QR avisa que falta |
+| **Compartir por Bluetooth** | `bluez`, `bluez-obex`, `blueman` (`blueman-sendto`) | no aparece el destino Bluetooth |
+| **Launcher y terminal** | `kitty` (`t:`, apps de terminal, ejecutar desde el portapapeles) | no abre terminales |
+| **Escribir en la ventana activa** (emojis y calculadora del launcher) | `wtype` | opcional: sin él, se copian |
+| **Fuentes** | `font-inter`, `nerd-fonts-ttf` (JetBrainsMono Nerd Font y Symbols Nerd Font), `noto-fonts-emoji` | íconos y emojis rotos |
+| **Opcional** | Zoom por flatpak (`us.zoom.Zoom`) para su botón. `python3-gobject` y `gtk4` solo para regenerar los emojis (`scripts/emoji-data.py`) | |
+
+### Servicios (runit)
+
+Activos con `sudo ln -s /etc/sv/<nombre> /var/service/`: `dbus`, `udevd`, `elogind`, `acpid`, `bluetoothd` y `power-profiles-daemon`. `upowerd` y `obexd` los inicia `dbus` cuando hacen falta.
+
+### Ajustes de una vez (necesitan root)
+
+- `sudo sh system/acpi-shell-keys.sh`: `acpid` deja de apagar con el botón de encendido, de cambiar el brillo y de suspender al cerrar la tapa sin bloquear (mientras la shell corre). Con esto el botón abre el menú de sesión, las teclas de brillo las maneja la shell y la tapa bloquea y suspende. Sin `qs`, vuelve a funcionar como siempre.
+- `sudo sh system/conservation-mode.sh`: regla de udev para el modo conservación del IdeaPad ("Cargar hasta 60 %"). Solo IdeaPad.
+
+### Datos
+
 - Wallpapers en `~/Pictures/Wallpapers` (`.jpg`, `.jpeg` o `.png`); la carpeta se cambia en `Config.wallpaperPicker.dir`.
-- Opcional: **Zoom** por flatpak (`us.zoom.Zoom`) para el botón de Zoom.
+- Para Bluetooth, empareja el teléfono una vez desde `blueman-manager`.
 
 ## Instalación
 
@@ -194,7 +225,8 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactiv
 - [x] Acciones: código QR del texto, compartir (por Bluetooth; la lista de destinos es ampliable), ejecutar en la terminal y, para imágenes, abrir con otra aplicación.
 - [x] Imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta): se muestran y se copian como imagen.
 - [x] El QR declara UTF-8 (ECI), así que las tildes se leen bien en el teléfono.
-- [ ] Opcional: pegar solo al elegir (necesita `wtype`) y más destinos para compartir (KDE Connect, LocalSend…).
+- [x] Archivos copiados desde un gestor de archivos (Nemo guarda solo las rutas como texto): uno o varios, de cualquier tipo (PDF, Word, carpetas…). Se muestran con su ícono, tipo y tamaño; se pueden copiar (las rutas), abrir con otra app (uno solo), compartir por Bluetooth (varios a la vez, sin carpetas) y eliminar. Si una ruta ya no existe se marca; si ninguna existe, es un texto más.
+- [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
 
 > Para el QR hace falta `python3-qrcode` y, para compartir por Bluetooth, `bluez-obex` (`sudo xbps-install -Su python3-qrcode bluez bluez-obex`).
 
@@ -209,10 +241,14 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactiv
 - [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell.
 
 #### Launcher
-- [ ] Calculadora: escribir `=2+2` o una expresión.
-- [ ] Acciones de sesión desde el launcher: apagar, bloquear…
-- [ ] Apps favoritas o fijadas, y orden por uso.
-- [ ] Opcional: selector de emojis.
+- [x] Se abre solo con `Super+R` (ya no con el clic en el reloj), y `Super+R` también lo cierra.
+- [x] Favoritos: cada app tiene una estrella (o `Ctrl+D`); los favoritos van arriba. Se guardan en `settings.json`.
+- [x] Orden por uso, búsqueda sin tildes (nombre, palabras clave y categorías en español) y acciones de las apps ("Firefox · New Private Window").
+- [x] Prefijos: `e:` emojis (base de GTK en español), `c:` calculadora y `t:` terminal (con historial de comandos).
+- [x] Acciones de sesión como resultados más: apagar, reiniciar, bloquear… (apagar, reiniciar y cerrar sesión piden un segundo Enter).
+- [x] Ejecutar en terminal: kitty con tu shell (`bash -ic`), así que `sudo` y las confirmaciones se responden en la ventana. Las apps con `Terminal=true` (nvim) se abren en kitty.
+- [x] Emojis y resultados de la calculadora: se escriben en la ventana activa con `wtype`; sin `wtype` se copian.
+- [x] `wtype` instalado: los emojis y la calculadora se escriben en la ventana activa.
 
 #### Inhibidor de inactividad (modo "cafeína")
 - [x] Switch "No bloquear ni apagar" en el panel de la pill de batería (con una taza en la pill mientras está activo; no se guarda al reiniciar).

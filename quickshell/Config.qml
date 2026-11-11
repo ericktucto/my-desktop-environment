@@ -79,6 +79,11 @@ Singleton {
         readonly property int rowHeight: 52
         readonly property int iconSize: 32
         readonly property int searchHeight: 40
+        readonly property int historyMax: 20        // comandos recordados en t:
+        readonly property int pasteDelay: 150       // ms entre cerrar la isla y escribir con wtype
+        readonly property int emojiSize: 24
+        readonly property int maxResults: 60
+        readonly property int helpHeight: 22        // pie de ayuda
     }
 
     // ===== Workspaces =====

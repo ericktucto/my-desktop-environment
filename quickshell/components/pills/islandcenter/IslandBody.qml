@@ -20,14 +20,14 @@ Rectangle {
         visible: root.current === 'applist'
         anchors.fill: parent
         apps: DesktopEntries.applications.values.filter(a => !a.noDisplay && !a.hidden)
-        onAppLaunched: function (app) {
-            root.expanded = false;
-            if (app)
-                app.execute();
-        }
+        onCloseRequested: root.close()
         IpcHandler {
             target: "stixshell@launcher"
             function toggle(mon: string): void {
+                if (root.expanded && root.current === 'applist') {
+                    root.close();
+                    return;
+                }
                 root.current = 'applist';
                 root.open();
             }

@@ -3,16 +3,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Compartir un archivo con "destinos" intercambiables. No sabe nada del portapapeles:
-// recibe una ruta, así que sirve para cualquier cosa que se quiera compartir.
+// Compartir archivos con "destinos" intercambiables. No sabe nada del portapapeles:
+// recibe rutas, así que sirve para cualquier cosa que se quiera compartir.
 //
 // Para sumar un destino (KDE Connect, LocalSend, un enlace…) basta con agregar una entrada a `targets`:
 //   id      identificador
 //   name    texto del menú
 //   glyph   código del ícono (Nerd Font)
-//   kinds   qué puede enviar: "text", "image"
+//   kinds   qué puede enviar: "text", "image", "file"
 //   bin     programa que necesita; si no está instalado, el destino no aparece
-//   command función (ruta) → arreglo con el comando
+//   command función (arreglo de rutas) → arreglo con el comando
 Singleton {
     id: store
 
@@ -21,10 +21,10 @@ Singleton {
             id: "bluetooth",
             name: "Bluetooth",
             glyph: 0xf00af,
-            kinds: ["text", "image"],
+            kinds: ["text", "image", "file"],
             bin: "blueman-sendto",
-            command: function (file) {
-                return ["blueman-sendto", file];
+            command: function (files) {
+                return ["blueman-sendto"].concat(files);
             }
         }
     ]
@@ -36,10 +36,11 @@ Singleton {
         return available.filter(t => t.kinds.indexOf(kind) >= 0);
     }
 
-    function share(targetId, file) {
+    // `files`: una ruta o un arreglo de rutas
+    function share(targetId, files) {
         const t = targets.find(x => x.id === targetId);
         if (t)
-            Quickshell.execDetached(t.command(file));
+            Quickshell.execDetached(t.command([].concat(files)));
     }
 
     function refresh() {

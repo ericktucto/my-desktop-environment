@@ -10,7 +10,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Zoom: lanzar, enfocar y restaurar desde la bandeja.
 - **Isla central:**
   - Reloj.
-  - Launcher de apps (`Super+R`).
+  - Launcher de apps (`Super+R`): favoritos con estrella, emojis (`e:`), calculadora (`c:`), terminal (`t:`) y acciones de sesión.
   - Selector de wallpapers (`Super+W`).
   - Menú de sesión (`Super+Escape` o botón de encendido): bloquear, suspender, cerrar sesión, reiniciar y apagar, con teclado y confirmación.
 - **Bloqueo e inactividad:** pantalla de bloqueo propia (`Super+L`) con contraseña PAM; atenúa, bloquea, apaga la pantalla y suspende por inactividad (distinto con batería y cargador); al cerrar la tapa bloquea y suspende.
@@ -121,7 +121,8 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [x] Acciones: código QR del texto, compartir (por Bluetooth; la lista de destinos es ampliable), ejecutar en la terminal y, para imágenes, abrir con otra aplicación.
 - [x] Imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta): se muestran y se copian como imagen.
 - [x] El QR declara UTF-8 (ECI), así que las tildes se leen bien en el teléfono.
-- [ ] Opcional: pegar solo al elegir (necesita `wtype`) y más destinos para compartir (KDE Connect, LocalSend…).
+- [x] Archivos copiados desde un gestor de archivos (Nemo guarda solo las rutas como texto): uno o varios, de cualquier tipo (PDF, Word, carpetas…). Se muestran con su ícono, tipo y tamaño; se pueden copiar (las rutas), abrir con otra app (uno solo), compartir por Bluetooth (varios a la vez, sin carpetas) y eliminar. Si una ruta ya no existe se marca; si ninguna existe, es un texto más.
+- [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
 
 > Para el QR hace falta `python3-qrcode` y, para compartir por Bluetooth, `bluez-obex` (`sudo xbps-install -Su python3-qrcode bluez bluez-obex`).
 
@@ -136,10 +137,14 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell.
 
 ### Launcher
-- [ ] Calculadora: escribir `=2+2` o una expresión.
-- [ ] Acciones de sesión desde el launcher: apagar, bloquear…
-- [ ] Apps favoritas o fijadas, y orden por uso.
-- [ ] Opcional: selector de emojis.
+- [x] Se abre solo con `Super+R` (ya no con el clic en el reloj), y `Super+R` también lo cierra.
+- [x] Favoritos: cada app tiene una estrella (o `Ctrl+D`); los favoritos van arriba. Se guardan en `settings.json`.
+- [x] Orden por uso, búsqueda sin tildes (nombre, palabras clave y categorías en español) y acciones de las apps ("Firefox · New Private Window").
+- [x] Prefijos: `e:` emojis (base de GTK en español), `c:` calculadora y `t:` terminal (con historial de comandos).
+- [x] Acciones de sesión como resultados más: apagar, reiniciar, bloquear… (apagar, reiniciar y cerrar sesión piden un segundo Enter).
+- [x] Ejecutar en terminal: kitty con tu shell (`bash -ic`), así que `sudo` y las confirmaciones se responden en la ventana. Las apps con `Terminal=true` (nvim) se abren en kitty.
+- [x] Emojis y resultados de la calculadora: se escriben en la ventana activa con `wtype`; sin `wtype` se copian.
+- [x] `wtype` instalado: los emojis y la calculadora se escriben en la ventana activa.
 
 ### Inhibidor de inactividad (modo "cafeína")
 - [x] Switch "No bloquear ni apagar" en el panel de la pill de batería (con una taza en la pill mientras está activo; no se guarda al reiniciar).
