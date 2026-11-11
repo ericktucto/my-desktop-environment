@@ -53,6 +53,8 @@ Singleton {
         readonly property int controlCenterWidth: 380
         readonly property int notificationsWidth: 420
         readonly property int batteryWidth: 420
+        readonly property int clipboardWidth: 880
+        readonly property int clipboardHeight: 520
     }
 
     // ===== Fuentes =====
@@ -225,6 +227,20 @@ Singleton {
         readonly property int stepperWidth: 104
         readonly property int rowHeight: 32
         readonly property int labelWidth: 130
+    }
+
+    // ===== Historial del portapapeles =====
+    readonly property QtObject clipboard: QtObject {
+        readonly property int listWidth: 280
+        readonly property int rowHeight: 52
+        readonly property int thumbSize: 40
+        readonly property int gap: 16               // entre la lista y la vista previa
+        readonly property int qrSize: 260
+        readonly property int qrMaxBytes: 2000      // más que esto, el teléfono ya no lo lee bien
+        readonly property int confirmTimeout: 3000  // ms del "¿Ejecutar?" y "¿Borrar todo?"
+        readonly property int decodeJobs: 2         // miniaturas que se decodifican a la vez
+        readonly property int maxEntries: 300       // filas que se muestran (cliphist guarda más)
+        readonly property string cacheDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/stixshell/clipboard"
     }
 
     // ===== Animaciones (ms) =====

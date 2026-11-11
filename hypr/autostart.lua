@@ -25,6 +25,10 @@ function M.start()
     -- ══ BLOQUEO (hypridle: bloquea antes de dormir; la shell maneja la inactividad) ══
     hl.exec_cmd('hypridle')
 
+    -- ══ PORTAPAPELES (historial de la shell: un vigilante por tipo, para que las imágenes no se guarden como HTML) ══
+    hl.exec_cmd('wl-paste --type text --watch cliphist store')
+    hl.exec_cmd('wl-paste --type image --watch cliphist store')
+
     -- ══ SHELL ══
     hl.exec_cmd('qs')
 end

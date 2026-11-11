@@ -5,6 +5,7 @@ import "../../widgets/applist" as A
 import "../../widgets/wallpapers" as W
 import "../../widgets/session" as SE
 import "../../widgets/controlcenter" as CC
+import "../../widgets/clipboard" as CB
 import "../../../services/brightness" as BS
 import "../../../services/session" as SS
 
@@ -78,6 +79,22 @@ Rectangle {
                 }
                 root.current = 'control';
                 BS.BrightnessStore.refresh();
+                root.open();
+            }
+        }
+    }
+    CB.ClipboardPanel {
+        visible: root.current === 'clipboard'
+        anchors.fill: parent
+        onCloseRequested: root.close()
+        IpcHandler {
+            target: "stixshell@clipboard"
+            function toggle(mon: string): void {
+                if (root.expanded && root.current === 'clipboard') {
+                    root.close();
+                    return;
+                }
+                root.current = 'clipboard';
                 root.open();
             }
         }

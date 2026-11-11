@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía y las notificaciones. Al bloquear, la shell muestra su propia pantalla de bloqueo.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía, el portapapeles y las notificaciones. Al bloquear, la shell muestra su propia pantalla de bloqueo.
 
 ## Contenido
 
@@ -10,7 +10,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 .
 ├── hypr/            Configuración de Hyprland en Lua
 │   ├── hyprland.lua   Monitor, entorno, opciones generales
-│   ├── autostart.lua  Servicios que se lanzan al iniciar (portales, polkit, pipewire, qs)
+│   ├── autostart.lua  Servicios que se lanzan al iniciar (portales, polkit, pipewire, portapapeles, qs)
 │   ├── hyprlock.conf  Bloqueo de respaldo (colores de la shell), si la shell no corre
 │   ├── hypridle.conf  Conecta el bloqueo con el sistema (antes de dormir)
 │   └── keybinds/      Atajos de teclado
@@ -21,8 +21,9 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Theme.qml      Colores
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── assets/svg/    Íconos
+    ├── scripts/       Scripts de apoyo (código QR del portapapeles)
     ├── components/    base · controls · indicators · pills · widgets · layouts
-    └── services/      audio · brightness · idle · lock · notify · osd · power · settings · panels · session · workspaces
+    └── services/      audio · brightness · clipboard · idle · lock · notify · osd · power · settings · share · panels · session · workspaces
 ```
 
 ## Funciones
@@ -32,6 +33,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Centro de control** (`Super+C` o clic derecho en el reloj): No molestar, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo.
 - **Energía** (pill de batería): estado, modo cafeína, tiempos de inactividad editables con batería y con cargador, brillo al atenuar y avisos de batería baja (20 %, 10 % y suspender al 5 %). Se guarda en `~/.config/stixshell/settings.json`, que también se puede editar a mano.
+- **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen. Arriba, Borrar todo.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
 - **System tray:** íconos plegables y menú contextual propio.
@@ -48,6 +50,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+L` | Bloquear la pantalla |
 | `Super+Tab` | Vista general de workspaces |
 | `Super+C` | Centro de control |
+| `Super+H` | Historial del portapapeles |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
 | `Super+R` | Launcher de apps |
 | `Super+W` | Selector de wallpapers |
@@ -57,7 +60,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@clipboard toggle ""`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
 `Esc` o un clic fuera cierran cualquier panel. El bloqueo se dispara con `qs ipc call stixshell@lock lock`.
 
 > Si la shell se cae estando bloqueado, Hyprland muestra su pantalla roja. Para recuperarte: `Ctrl+Alt+F2`, entra con tu usuario y ejecuta `hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("hyprlock")'` (o relanza `qs`); vuelve con `Ctrl+Alt+F1` (o la TTY de Hyprland) y desbloquea con tu contraseña.
@@ -71,6 +74,7 @@ El launcher, el selector, el menú de sesión y la vista de workspaces se abren 
 - **PipeWire** y WirePlumber (audio).
 - **brightnessctl**, con tu usuario en el grupo `video` (brillo).
 - **notify-send** (libnotify), para los avisos de batería baja.
+- **cliphist** y **wl-clipboard** (historial del portapapeles); **python3-qrcode** (con Pillow, para el código QR: declara UTF-8 para que las tildes se lean bien) y **bluez-obex** con **blueman** (compartir por Bluetooth): `sudo xbps-install -Su python3-qrcode bluez bluez-obex`.
 - **hypridle** (bloquea antes de dormir), **hyprlock** (bloqueo de respaldo) y **elogind** (`loginctl`, `elogind-inhibit`).
 - **acpid** (Void): su `handler.sh` apaga la laptop con el botón de encendido, cambia el brillo y suspende al cerrar la tapa sin bloquear. Para que el botón abra el menú de sesión, las teclas de brillo las maneje la shell y la tapa bloquee y suspenda, ejecuta una vez `sudo sh system/acpi-shell-keys.sh`; con la shell corriendo acpid no apaga, y sin ella vuelve a apagar.
 - Fuentes: **Inter**, **JetBrainsMono Nerd Font** y **Symbols Nerd Font**.
@@ -92,6 +96,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 
 - Historial de notificaciones: `~/.local/state/quickshell/by-shell/*/notifications.json`.
 - Wallpaper actual: `~/.cache/quickshell/wallpaper`.
+- Historial del portapapeles: la base de `cliphist`. Las imágenes y los QR que se ven en el panel se decodifican a `$XDG_RUNTIME_DIR/stixshell/clipboard` (se vacía al arrancar la shell).
 - Log de la shell: `$(ls -td /run/user/$UID/quickshell/by-id/*/ | head -1)log.log`.
 
 ## Personalizar
@@ -105,7 +110,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 ## TODO
 
 Lo que falta por terminar, ordenado por prioridad y comparado con otras shells de Quickshell (Caelestia, DankMaterialShell, Noctalia, illogical-impulse).
-Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactividad, workspaces (clic, rueda y vista general), centro de control con OSD, panel de energía, notificaciones, tray y Zoom.
+Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactividad, workspaces (clic, rueda y vista general), centro de control con OSD, panel de energía, portapapeles, notificaciones, tray y Zoom.
 
 ### 🔴 Prioridad alta: lo básico de toda shell
 
@@ -183,10 +188,14 @@ Ya está hecho: barra, launcher, wallpapers, menú de sesión, bloqueo e inactiv
 - [ ] Calendario mensual en un panel.
 
 #### Historial del portapapeles
-- [ ] Lista de `cliphist` con búsqueda, dentro del launcher o en una pill propia.
-- [ ] Lanzar `wl-paste --watch cliphist store` en `autostart.lua`.
+- [x] Historial de `cliphist` en la isla central (`Super+H`): búsqueda, vista previa de texto e imágenes, copiar, eliminar y borrar todo.
+- [x] Lanzar los dos `wl-paste --watch cliphist store` (texto e imagen) en `autostart.lua`.
+- [x] Acciones: código QR del texto, compartir (por Bluetooth; la lista de destinos es ampliable), ejecutar en la terminal y, para imágenes, abrir con otra aplicación.
+- [x] Imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta): se muestran y se copian como imagen.
+- [x] El QR declara UTF-8 (ECI), así que las tildes se leen bien en el teléfono.
+- [ ] Opcional: pegar solo al elegir (necesita `wtype`) y más destinos para compartir (KDE Connect, LocalSend…).
 
-> Tienes `cliphist` y `wl-copy`.
+> Para el QR hace falta `python3-qrcode` y, para compartir por Bluetooth, `bluez-obex` (`sudo xbps-install -Su python3-qrcode bluez bluez-obex`).
 
 #### Capturas de pantalla
 - [ ] Captura de región, ventana o pantalla completa, con una notificación y copia al portapapeles.

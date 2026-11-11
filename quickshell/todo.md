@@ -20,6 +20,7 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
   - Audio: volumen de salida y micrófono, mute, cambio de dispositivo y modo 150%.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la isla contraída muestra ícono, barra y porcentaje en lugar de la hora.
 - **Batería y energía:** pill con el porcentaje; su panel muestra el estado (tiempo restante, consumo, salud), el modo cafeína, los tiempos de inactividad editables (batería y cargador), el brillo al atenuar y los avisos de batería baja. Todo se guarda en `~/.config/stixshell/settings.json`.
+- **Portapapeles** (`Super+H`): historial con búsqueda y vista previa (texto e imágenes). Copiar, eliminar, borrar todo, código QR, compartir por Bluetooth, ejecutar en la terminal y, en imágenes, abrir con otra app.
 - **Notificaciones:**
   - Pill con campana y contador de no leídas.
   - Popups arriba a la derecha, con acciones y cierre automático.
@@ -115,10 +116,14 @@ Está ordenada por prioridad. Junto a cada tarea se indica qué módulo de Quick
 - [ ] Calendario mensual en un panel.
 
 ### Historial del portapapeles
-- [ ] Lista de `cliphist` con búsqueda, dentro del launcher o en una pill propia.
-- [ ] Lanzar `wl-paste --watch cliphist store` en `autostart.lua`.
+- [x] Historial de `cliphist` en la isla central (`Super+H`): búsqueda, vista previa de texto e imágenes, copiar, eliminar y borrar todo.
+- [x] Lanzar los dos `wl-paste --watch cliphist store` (texto e imagen) en `autostart.lua`.
+- [x] Acciones: código QR del texto, compartir (por Bluetooth; la lista de destinos es ampliable), ejecutar en la terminal y, para imágenes, abrir con otra aplicación.
+- [x] Imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta): se muestran y se copian como imagen.
+- [x] El QR declara UTF-8 (ECI), así que las tildes se leen bien en el teléfono.
+- [ ] Opcional: pegar solo al elegir (necesita `wtype`) y más destinos para compartir (KDE Connect, LocalSend…).
 
-> Tienes `cliphist` y `wl-copy`.
+> Para el QR hace falta `python3-qrcode` y, para compartir por Bluetooth, `bluez-obex` (`sudo xbps-install -Su python3-qrcode bluez bluez-obex`).
 
 ### Capturas de pantalla
 - [ ] Captura de región, ventana o pantalla completa, con una notificación y copia al portapapeles.

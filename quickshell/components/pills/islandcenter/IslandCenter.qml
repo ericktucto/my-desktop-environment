@@ -18,6 +18,8 @@ Base.Island {
             return App.Config.session.height;
         if (current === 'control')
             return islandBody.controlHeight + 2 * paddingContainer;
+        if (current === 'clipboard')
+            return App.Config.panel.clipboardHeight;
         return 300;
     }
     expandedWidth: {
@@ -29,6 +31,8 @@ Base.Island {
             return App.Config.session.width;
         if (current === 'control')
             return App.Config.panel.controlCenterWidth;
+        if (current === 'clipboard')
+            return App.Config.panel.clipboardWidth;
         return 400;
     }
 

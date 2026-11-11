@@ -15,6 +15,10 @@ map.add({ map.SUPER, "L" }, hl.dsp.exec_cmd("qs ipc call stixshell@lock lock"), 
 -- centro de control (brillo, volumen, micrófono, No molestar)
 map.add({ map.SUPER, "C" }, hl.dsp.exec_cmd("qs ipc call stixshell@controlcenter toggle \"\""), nil, "Centro de control")
 
+-- historial del portapapeles
+map.add({ map.SUPER, "H" }, hl.dsp.exec_cmd("qs ipc call stixshell@clipboard toggle \"\""), nil,
+    "Historial del portapapeles")
+
 -- launcher
 map.add({ map.SUPER, "R" }, hl.dsp.exec_cmd("qs ipc call stixshell@launcher toggle \"\""), nil, "Abrir el launcher")
 map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper toggle \"\""), nil,
