@@ -14,6 +14,7 @@ import "./services/lock/" as LK
 import "./services/idle/" as ID
 import "./services/power/" as PW
 import "./services/settings/" as SE
+import "./services/media/" as MD
 import "./components/lock/" as LC
 
 ShellRoot {
@@ -29,6 +30,8 @@ ShellRoot {
     // Instancia el perfil de energía automático (cambia al enchufar o desenchufar)
     readonly property var powerProfile: PW.ProfileStore.profile
     readonly property var settingsData: SE.SettingsStore.idle
+    // Instancia el reproductor (IPC stixshell@media para las teclas multimedia)
+    readonly property var mediaPlayer: MD.MediaStore.player
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}
@@ -96,7 +99,10 @@ ShellRoot {
                 item: leftPill
             }
             Region {
-                item: centerPill
+                item: clockPill
+            }
+            Region {
+                item: mediaMask
             }
             Region {
                 item: rightPill
@@ -117,10 +123,50 @@ ShellRoot {
             I.Workspaces {}
             I.Zoom {}
         }
-        Row {
+        // ══ CENTRO: el reloj y, a su izquierda, la pill de música ══
+        // Solo uno tiene el foco: con la música expandida, pasa al centro y el reloj (ya círculo) a su derecha.
+        // `blend` (0 = reloj al centro, 1 = música al centro) se anima, y las posiciones se mezclan entre
+        // las dos disposiciones, así el movimiento es continuo aunque los anchos también estén cambiando.
+        Item {
             id: centerPill
-            anchors.horizontalCenter: parent.horizontalCenter
-            IC.IslandCenter {}
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: App.Config.bar.exclusiveZone
+
+            readonly property real gap: App.Config.bar.spacing
+            property real blend: mediaPill.expanded ? 1 : 0
+            Behavior on blend {
+                NumberAnimation {
+                    duration: App.Config.anim.pill
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            // Reloj al centro / música a su izquierda
+            readonly property real clockA: (width - clockPill.width) / 2
+            readonly property real mediaA: clockA - gap - mediaPill.width
+            // Música al centro / reloj a su derecha
+            readonly property real mediaB: (width - mediaPill.width) / 2
+            readonly property real clockB: mediaB + mediaPill.width + gap
+
+            I.Media {
+                id: mediaPill
+                x: centerPill.mediaA + (centerPill.mediaB - centerPill.mediaA) * centerPill.blend
+            }
+            IC.IslandCenter {
+                id: clockPill
+                compact: mediaPill.expanded
+                x: centerPill.clockA + (centerPill.clockB - centerPill.clockA) * centerPill.blend
+            }
+        }
+        // La máscara de la pill de música: sin ancho si no se ve (no captura clics vacíos)
+        Item {
+            id: mediaMask
+            x: mediaPill.x
+            y: mediaPill.y
+            width: mediaPill.visible ? mediaPill.width : 0
+            height: mediaPill.visible ? mediaPill.height : 0
         }
         Row {
             id: rightPill

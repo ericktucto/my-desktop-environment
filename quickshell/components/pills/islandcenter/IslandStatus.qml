@@ -1,6 +1,7 @@
 import QtQuick
 import "../../controls/" as C
 import "../../indicators/" as I
+import "../../widgets/media/" as M
 import "../../../services/audio/" as A
 import "../../../services/brightness/" as B
 import "../../../services/osd/" as O
@@ -14,6 +15,8 @@ Item {
     readonly property var cfg: App.Config.osd
     readonly property string kind: O.OsdStore.kind
     readonly property bool showOsd: kind !== ""
+    // Círculo con el reloj analógico mini (la música está expandida)
+    property bool circle: false
 
     readonly property var sink: A.AudioStore.sink
     readonly property var source: A.AudioStore.source
@@ -45,18 +48,31 @@ Item {
     }
 
     // La pill sigue el ancho del elemento visible
-    implicitWidth: showOsd ? osd.implicitWidth : clock.implicitWidth
+    implicitWidth: showOsd ? osd.implicitWidth : (circle ? mini.width : clock.implicitWidth)
     implicitHeight: Math.max(clock.implicitHeight, osd.implicitHeight)
 
     I.ClockText {
         id: clock
         anchors.horizontalCenter: parent.horizontalCenter
-        opacity: root.showOsd ? 0 : 1
+        opacity: root.showOsd || root.circle ? 0 : 1
         visible: opacity > 0
 
         Behavior on opacity {
             NumberAnimation {
-                duration: root.showOsd ? App.Config.anim.fadeOut : App.Config.anim.fadeIn
+                duration: root.showOsd || root.circle ? App.Config.anim.fadeOut : App.Config.anim.fadeIn
+            }
+        }
+    }
+
+    M.MiniClock {
+        id: mini
+        anchors.centerIn: parent
+        opacity: root.circle ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: root.circle ? App.Config.anim.fadeIn : App.Config.anim.fadeOut
             }
         }
     }

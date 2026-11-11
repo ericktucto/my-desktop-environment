@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Services.UPower
 import "../brightness/" as B
 import "../lock/" as L
+import "../media/" as MD
 import "../session/" as S
 import "../settings/" as ST
 import "../../" as App
@@ -78,7 +79,8 @@ Singleton {
 
     IdleMonitor {
         timeout: store.cfg.suspend
-        enabled: store.cfg.suspend > 0 && !store.caffeine
+        // Mientras suena música no se suspende (sí se atenúa, bloquea y apaga la pantalla)
+        enabled: store.cfg.suspend > 0 && !store.caffeine && !MD.MediaStore.anyPlaying
         respectInhibitors: true
         onIsIdleChanged: {
             if (isIdle)

@@ -29,12 +29,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 > Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
 
-### Control multimedia (MPRIS)
-- [ ] Mostrar en la barra lo que está sonando: título y artista.
-- [ ] Panel con carátula, play/pausa, anterior/siguiente y barra de progreso.
-
-> Módulo: `Quickshell.Services.Mpris`. Tienes `playerctl` como respaldo.
-
 ---
 
 ## 🟡 Prioridad media: calidad de vida

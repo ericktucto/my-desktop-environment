@@ -21,6 +21,13 @@ Singleton {
             items = items.filter(x => x !== p);
     }
 
+    function closeOthers(except) {
+        items.forEach(p => {
+            if (p && p !== except && p.expanded)
+                p.expanded = false;
+        });
+    }
+
     function closeAll() {
         items.forEach(p => {
             if (p && p.expanded)

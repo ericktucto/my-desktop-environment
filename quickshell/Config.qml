@@ -255,6 +255,34 @@ Singleton {
         readonly property string cacheDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/stixshell/clipboard"
     }
 
+    // ===== Reproductor multimedia (MPRIS) =====
+    readonly property QtObject media: QtObject {
+        // Pill plegada: carátula redonda con un anillo de progreso
+        readonly property int pillArt: 22
+        readonly property int ringWidth: 2
+        readonly property int miniClock: 28          // reloj circular mientras la música está expandida
+        // Panel expandido
+        readonly property int panelWidth: 520
+        readonly property int panelHeight: 216
+        readonly property int padding: 20
+        readonly property int artSize: 150
+        readonly property int chipsHeight: 34        // fichas de reproductor (solo con dos o más)
+        readonly property int buttonSize: 38
+        readonly property real blur: 1.0             // 0..1
+        readonly property int blurMax: 64
+        readonly property real dim: 0.45             // oscurecido del fondo
+        // Saltos (segundos)
+        readonly property int seekBack: 5
+        readonly property int seekForward: 15
+        readonly property real volumeStep: 0.05
+        // Tiempos (ms)
+        readonly property int pollInterval: 500      // refresco de la posición mientras suena
+        readonly property int volumeOsd: 1500        // el anillo muestra el volumen tras mover la rueda
+        readonly property int hideAfter: 300000      // sin sonar este tiempo, la pill se oculta
+        readonly property int artTimeout: 1000       // carátula que no llega: ícono de la app
+        readonly property int trackFade: 200         // fundido al cambiar de canción
+    }
+
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
         readonly property int pill: 280

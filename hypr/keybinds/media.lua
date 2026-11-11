@@ -25,3 +25,14 @@ map.add({ "XF86MonBrightnessUp" }, hl.dsp.exec_cmd("qs ipc call stixshell@bright
     { locked = true, repeating = true }, "Subir el brillo")
 map.add({ "XF86MonBrightnessDown" }, hl.dsp.exec_cmd("qs ipc call stixshell@brightness down"),
     { locked = true, repeating = true }, "Bajar el brillo")
+
+-- Reproductor multimedia (MPRIS). Llaman a la shell por IPC; si no corre, `playerctl` hace lo mismo.
+-- locked: también con la pantalla bloqueada.
+local function player(fn, fallback)
+    return hl.dsp.exec_cmd("sh -c 'qs ipc call stixshell@media " .. fn .. " || playerctl " .. fallback .. "'")
+end
+
+map.add({ "XF86AudioPlay" }, player("playPause", "play-pause"), { locked = true }, "Reproducir o pausar")
+map.add({ "XF86AudioPause" }, player("playPause", "play-pause"), { locked = true }, "Reproducir o pausar")
+map.add({ "XF86AudioNext" }, player("next", "next"), { locked = true }, "Canción siguiente")
+map.add({ "XF86AudioPrev" }, player("previous", "previous"), { locked = true }, "Canción anterior")

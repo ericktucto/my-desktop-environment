@@ -8,7 +8,9 @@ Rectangle {
     id: p
 
     property bool expanded: false
-    property int collapsedWidth: Math.ceil(contentContainer.implicitWidth) + 2 * App.Config.pill.paddingX
+    // Relleno horizontal con la pill plegada (0 = el contenido manda el ancho, p. ej. un círculo)
+    property int collapsedPaddingX: App.Config.pill.paddingX
+    property int collapsedWidth: Math.ceil(contentContainer.implicitWidth) + 2 * collapsedPaddingX
     property int collapsedHeight: App.Config.pill.height
     property int expandedWidth: 320
     property int expandedHeight: 180
@@ -41,7 +43,9 @@ Rectangle {
     Component.onCompleted: syncRegistry()
     Component.onDestruction: P.PanelStore.remove(p)
 
+    // Solo un panel abierto a la vez: abrir uno cierra los demás
     function open() {
+        P.PanelStore.closeOthers(p);
         expanded = true;
     }
     function close() {
@@ -132,7 +136,7 @@ Rectangle {
 
         onClicked: {
             p.clicked();
-            p.expanded = true;
+            p.open();
         }
     }
 }
