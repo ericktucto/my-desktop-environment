@@ -47,9 +47,8 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 ### Capturas de pantalla
 - [ ] Captura de región, ventana o pantalla completa, con una notificación y copia al portapapeles.
-- [ ] Opcional: grabación de pantalla con un indicador en la barra.
 
-> Tienes `slurp`, pero **falta `grim`** (y `wf-recorder` para grabar). Alternativa nativa: `ScreencopyView` de Quickshell.
+> Tienes `slurp`, pero **falta `grim`**. Alternativa nativa: `ScreencopyView` de Quickshell.
 
 ### Ayuda de atajos de teclado
 - [ ] Panel con todos los atajos (`Super+/`).

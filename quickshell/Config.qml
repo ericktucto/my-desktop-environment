@@ -55,6 +55,7 @@ Singleton {
         readonly property int batteryWidth: 420
         readonly property int clipboardWidth: 880
         readonly property int clipboardHeight: 520
+        readonly property int recorderWidth: 460
     }
 
     // ===== Fuentes =====
@@ -290,6 +291,20 @@ Singleton {
         readonly property int tileGlyph: 18          // glifo dentro del círculo
         readonly property int tileSpacing: 8
         readonly property int footerHeight: 44       // fila de abajo: apagar, batería y ajustes
+    }
+
+    // ===== Grabador de pantalla (wf-recorder, scripts/screen-record.py) =====
+    readonly property QtObject recorder: QtObject {
+        readonly property int fps: 60
+        readonly property int countdown: 3           // segundos de cuenta regresiva antes de grabar
+        readonly property string encoder: "h264_vaapi"      // por la GPU
+        readonly property string fallbackEncoder: "libx264" // por la CPU, si VA-API falla
+        readonly property string device: "/dev/dri/renderD128"
+        readonly property string folderName: "Grabaciones"  // subcarpeta de Vídeos por defecto
+        readonly property string filePattern: "'Grabación' yyyy-MM-dd HH-mm-ss"
+        readonly property int dot: 8                 // punto rojo del contador
+        readonly property int pulse: 900             // ms del latido del punto
+        readonly property int checkInterval: 3000    // ms entre revisiones de que wf-recorder sigue vivo
     }
 
     // ===== Animaciones (ms) =====

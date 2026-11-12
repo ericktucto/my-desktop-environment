@@ -6,6 +6,8 @@ import "../../widgets/wallpapers" as W
 import "../../widgets/session" as SE
 import "../../widgets/controlcenter" as CC
 import "../../widgets/clipboard" as CB
+import "../../widgets/recorder" as RC
+import "../../../services/recorder" as RS
 import "../../../services/session" as SS
 
 Rectangle {
@@ -14,6 +16,7 @@ Rectangle {
 
     property var root
     readonly property real controlHeight: control.implicitHeight
+    readonly property real recorderHeight: recorderMenu.implicitHeight
 
     // Abrir el centro de control (clic derecho en el reloj o IPC): vuelve a leer lo que no avisa
     function refreshControl() {
@@ -86,6 +89,42 @@ Rectangle {
                 root.current = 'control';
                 control.refresh();
                 root.open();
+            }
+        }
+    }
+    RC.RecorderMenu {
+        id: recorderMenu
+        visible: root.current === 'recorder'
+        width: parent.width
+        // El menú lo abre Super+G (IPC) o, tras elegir la carpeta, el propio grabador
+        Connections {
+            target: RS.RecorderStore
+            function onOpenMenu() {
+                root.current = 'recorder';
+                root.open();
+            }
+            function onCloseMenu() {
+                if (root.current === 'recorder')
+                    root.close();
+            }
+        }
+        // Super+G: abre o cierra el menú; con una grabación en curso (o la cuenta regresiva) la cancela o detiene
+        IpcHandler {
+            target: "stixshell@recorder"
+            function toggle(mon: string): void {
+                if (RS.RecorderStore.active || RS.RecorderStore.picking) {
+                    RS.RecorderStore.stopOrCancel();
+                    return;
+                }
+                if (root.expanded && root.current === 'recorder') {
+                    root.close();
+                    return;
+                }
+                root.current = 'recorder';
+                root.open();
+            }
+            function stop(): void {
+                RS.RecorderStore.stopOrCancel();
             }
         }
     }

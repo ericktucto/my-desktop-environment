@@ -23,3 +23,6 @@ map.add({ map.SUPER, "H" }, hl.dsp.exec_cmd("qs ipc call stixshell@clipboard tog
 map.add({ map.SUPER, "R" }, hl.dsp.exec_cmd("qs ipc call stixshell@launcher toggle \"\""), nil, "Abrir el launcher")
 map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper toggle \"\""), nil,
     "Abrir el selector de wallpapers")
+
+-- grabador de pantalla (abre el menú; con una grabación en curso, la detiene)
+map.add({ map.SUPER, "G" }, hl.dsp.exec_cmd("qs ipc call stixshell@recorder toggle \"\""), nil, "Grabar la pantalla")

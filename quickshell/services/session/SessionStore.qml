@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../lock/" as L
+import "../recorder/" as R
 import "../../" as App
 
 // Acciones de sesión (bloquear, suspender, cerrar sesión, reiniciar, apagar)
@@ -61,6 +62,14 @@ Singleton {
     }
 
     function run(id) {
+        // Grabando la pantalla: primero se guarda el video (la cuenta regresiva o la región se cancelan)
+        if (id !== "lock" && R.RecorderStore.active) {
+            if (R.RecorderStore.busy) {
+                R.RecorderStore.whenSaved(() => run(id));
+                return;
+            }
+            R.RecorderStore.cancel();
+        }
         switch (id) {
         case "lock":
             lock();

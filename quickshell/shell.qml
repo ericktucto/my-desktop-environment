@@ -16,6 +16,7 @@ import "./services/power/" as PW
 import "./services/settings/" as SE
 import "./services/media/" as MD
 import "./components/lock/" as LC
+import "./components/widgets/recorder/" as RC
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
@@ -35,6 +36,9 @@ ShellRoot {
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}
+
+    // ── Selector de región del grabador (Super+G → Región ›) ──
+    RC.RegionSelector {}
 
     // ── Wallpaper de fondo ──
     PanelWindow {
@@ -105,6 +109,9 @@ ShellRoot {
                 item: mediaMask
             }
             Region {
+                item: recMask
+            }
+            Region {
                 item: rightPill
             }
         }
@@ -159,6 +166,11 @@ ShellRoot {
                 compact: mediaPill.expanded
                 x: centerPill.clockA + (centerPill.clockB - centerPill.clockA) * centerPill.blend
             }
+            // El contador de la grabación, siempre pegado a la derecha del reloj
+            I.Recorder {
+                id: recPill
+                x: clockPill.x + clockPill.width + centerPill.gap
+            }
         }
         // La máscara de la pill de música: sin ancho si no se ve (no captura clics vacíos)
         Item {
@@ -167,6 +179,14 @@ ShellRoot {
             y: mediaPill.y
             width: mediaPill.visible ? mediaPill.width : 0
             height: mediaPill.visible ? mediaPill.height : 0
+        }
+        // La máscara del contador de grabación
+        Item {
+            id: recMask
+            x: recPill.x
+            y: recPill.y
+            width: recPill.visible ? recPill.width : 0
+            height: recPill.visible ? recPill.height : 0
         }
         Row {
             id: rightPill

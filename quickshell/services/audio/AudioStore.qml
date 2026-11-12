@@ -12,7 +12,8 @@ Singleton {
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
 
-    readonly property var sinks: Pipewire.nodes.values.filter(n => n.audio && !n.isStream && n.isSink)
+    // `stixshell_rec` es la mezcla temporal del grabador de pantalla: no es un dispositivo para elegir
+    readonly property var sinks: Pipewire.nodes.values.filter(n => n.audio && !n.isStream && n.isSink && n.name !== "stixshell_rec")
     readonly property var sources: Pipewire.nodes.values.filter(n => n.audio && !n.isStream && !n.isSink)
 
     // ── Permitir más del 100% (hasta 150%) ──

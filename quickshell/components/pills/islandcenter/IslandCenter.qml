@@ -25,6 +25,8 @@ Base.Island {
             return islandBody.controlHeight + 2 * paddingContainer;
         if (current === 'clipboard')
             return App.Config.panel.clipboardHeight;
+        if (current === 'recorder')
+            return islandBody.recorderHeight + 2 * paddingContainer;
         return 300;
     }
     expandedWidth: {
@@ -38,6 +40,8 @@ Base.Island {
             return App.Config.panel.controlCenterWidth;
         if (current === 'clipboard')
             return App.Config.panel.clipboardWidth;
+        if (current === 'recorder')
+            return App.Config.panel.recorderWidth;
         return 400;
     }
 

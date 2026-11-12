@@ -39,6 +39,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen, y los archivos de otro tipo (PDF, Word…), carpetas o varios archivos a la vez aparecen como una lista con ícono, tipo y tamaño (copiar, abrir con, compartir y eliminar). Arriba, Borrar todo.
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
+- **Grabador de pantalla** (`Super+G`): el menú se abre en la isla central. Elige un monitor o una región (la flecha `›` de la casilla abre un selector sobre el escritorio: arrastra para marcar el área, muévela o cámbiale el tamaño desde los bordes, y **Aceptar** o Enter la confirma), si grabar el sonido interno y el micrófono (los dos a la vez se mezclan), y la carpeta (por defecto `~/Vídeos/Grabaciones`; el menú muestra solo su nombre y la ruta sale al pasar el mouse). Con Grabar o Enter hay una cuenta regresiva de 3 s y a la derecha del reloj aparece un contador con el tiempo; un clic en él, o `Super+G`, detiene y guarda, y sale un aviso con **Abrir** (el reproductor de video predeterminado, vía `gio open`) y **Carpeta** (el gestor de archivos predeterminado, con el video seleccionado). Mientras graba, No molestar está activo y la inactividad en pausa; suspender o apagar desde la shell guarda el video primero. Graba MP4 a 60 fps por la GPU (VA-API) y, si falla, por la CPU.
 - **System tray:** íconos plegables y menú contextual propio.
 - **Zoom:** lanza, enfoca o restaura Zoom (flatpak) aunque esté en segundo plano.
 - **Wallpaper:** transición con fundido y esquinas redondeadas; todo configurable desde `Config.qml`.
@@ -53,6 +54,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+L` | Bloquear la pantalla |
 | `Super+Tab` | Vista general de workspaces |
 | `Super+C` | Centro de control |
+| `Super+G` | Menú del grabador de pantalla; con una grabación en curso, la detiene |
 | `Super+H` | Historial del portapapeles |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
 | `Super+R` | Launcher de apps (abre y cierra) |
@@ -64,7 +66,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@recorder toggle ""|stop`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
 `Esc` o un clic fuera cierran cualquier panel. El bloqueo se dispara con `qs ipc call stixshell@lock lock`.
 
 > Si la shell se cae estando bloqueado, Hyprland muestra su pantalla roja. Para recuperarte: `Ctrl+Alt+F2`, entra con tu usuario y ejecuta `hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("hyprlock")'` (o relanza `qs`); vuelve con `Ctrl+Alt+F1` (o la TTY de Hyprland) y desbloquea con tu contraseña.
@@ -82,8 +84,8 @@ Todo de una vez (la lista completa que usa la shell):
 ```sh
 sudo xbps-install -Su hyprland quickshell upower pipewire wireplumber brightnessctl libnotify \
     hypridle hyprlock elogind acpid eudev dbus hyprpolkitagent xdg-desktop-portal xdg-desktop-portal-hyprland \
-    cliphist wl-clipboard wtype kitty xdg-utils glib gtk+3 file playerctl \
-    python3 python3-qrcode python3-Pillow bluez bluez-obex blueman power-profiles-daemon \
+    cliphist wl-clipboard wtype kitty xdg-utils glib gtk+3 file playerctl wf-recorder \
+    python3 python3-gobject python3-qrcode python3-Pillow bluez bluez-obex blueman power-profiles-daemon \
     font-inter nerd-fonts-ttf noto-fonts-emoji
 ```
 
@@ -100,9 +102,10 @@ sudo xbps-install -Su hyprland quickshell upower pipewire wireplumber brightness
 | **Compartir por Bluetooth** | `bluez`, `bluez-obex`, `blueman` (`blueman-sendto`) | no aparece el destino Bluetooth |
 | **Launcher y terminal** | `kitty` (`t:`, apps de terminal, ejecutar desde el portapapeles) | no abre terminales |
 | **Multimedia** | `playerctl` (respaldo de las teclas multimedia si la shell no corre). Opcional: `mpv-mpris` (mpv no habla MPRIS sin él), que además hay que enlazar una vez: `mkdir -p ~/.config/mpv/scripts && ln -s /usr/lib/mpv-mpris/mpris.so ~/.config/mpv/scripts/` y reabrir mpv | sin él, mpv no se ve; las teclas solo funcionan con la shell |
+| **Grabador de pantalla** | `wf-recorder`, `pipewire-pulse` con `pactl` (audio), `mesa-vaapi` (grabar con la GPU), `python3-gobject` y `gtk+3` (diálogo de carpeta) y `libnotify` (aviso) | sin `wf-recorder`, avisa "No se pudo grabar"; sin VA-API, graba por la CPU |
 | **Escribir en la ventana activa** (emojis y calculadora del launcher) | `wtype` | opcional: sin él, se copian |
 | **Fuentes** | `font-inter`, `nerd-fonts-ttf` (JetBrainsMono Nerd Font y Symbols Nerd Font), `noto-fonts-emoji` | íconos y emojis rotos |
-| **Opcional** | Zoom por flatpak (`us.zoom.Zoom`) para su botón. `python3-gobject` y `gtk4` solo para regenerar los emojis (`scripts/emoji-data.py`) | |
+| **Opcional** | Zoom por flatpak (`us.zoom.Zoom`) para su botón. `gtk4` solo para regenerar los emojis (`scripts/emoji-data.py`) | |
 
 ### Servicios (runit)
 
@@ -147,6 +150,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 - **Void y elogind:** no hay `systemctl`; se usa `loginctl poweroff|reboot|suspend`. El botón de encendido lo reserva la shell con un inhibidor de elogind (mientras `qs` corre), y `system/acpi-shell-keys.sh` evita que acpid apague primero.
 - **Inactividad:** `hypridle` solo conecta el bloqueo con el sistema (`hypr/hypridle.conf`); los tiempos de atenuar, bloquear, apagar la pantalla y suspender los maneja la shell. Los videos en reproducción evitan el bloqueo, porque `IdleMonitor` respeta los inhibidores.
 - **Música e inactividad:** mientras suena algún reproductor, no se suspende por inactividad (sí se atenúa, se bloquea y se apaga la pantalla). Cerrar la tapa y el aviso de batería al 5 % siguen suspendiendo.
+- **Grabación:** `wf-recorder` corre aparte de la shell (`scripts/screen-record.py`), así que recargar `qs` no la corta; el estado queda en `$XDG_RUNTIME_DIR/stixshell/recorder.json`. Si grabas un monitor completo, la barra sale en el video (graba una región para evitarlo). Con el audio interno y el micrófono a la vez, se crea una salida temporal `stixshell_rec` en PipeWire que se quita al terminar.
 - **OSD:** solo sale con las teclas de volumen, brillo y micrófono; los cambios hechos desde otro programa (pavucontrol, `brightnessctl` a mano) no lo muestran.
 
 ## Pendiente

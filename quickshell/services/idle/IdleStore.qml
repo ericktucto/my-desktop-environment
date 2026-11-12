@@ -6,6 +6,7 @@ import Quickshell.Services.UPower
 import "../brightness/" as B
 import "../lock/" as L
 import "../media/" as MD
+import "../recorder/" as R
 import "../session/" as S
 import "../settings/" as ST
 import "../../" as App
@@ -22,6 +23,8 @@ Singleton {
 
     // Modo cafeína: no atenuar, bloquear, apagar la pantalla ni suspender (no se guarda)
     property bool caffeine: false
+    // Con la cafeína o grabando la pantalla, la inactividad queda en pausa
+    readonly property bool paused: caffeine || R.RecorderStore.active
 
     function toggleCaffeine() {
         caffeine = !caffeine;
@@ -53,14 +56,14 @@ Singleton {
     IdleMonitor {
         id: dimMonitor
         timeout: store.cfg.dim
-        enabled: store.cfg.dim > 0 && !L.LockStore.locked && !store.caffeine
+        enabled: store.cfg.dim > 0 && !L.LockStore.locked && !store.paused
         respectInhibitors: true
         onIsIdleChanged: isIdle ? store.dim() : store.undim()
     }
 
     IdleMonitor {
         timeout: store.cfg.lock
-        enabled: store.cfg.lock > 0 && !store.caffeine
+        enabled: store.cfg.lock > 0 && !store.paused
         respectInhibitors: true
         onIsIdleChanged: {
             if (isIdle) {
@@ -72,7 +75,7 @@ Singleton {
 
     IdleMonitor {
         timeout: store.cfg.screenOff
-        enabled: store.cfg.screenOff > 0 && !store.caffeine
+        enabled: store.cfg.screenOff > 0 && !store.paused
         respectInhibitors: true
         onIsIdleChanged: store.dpms(!isIdle)
     }
@@ -80,7 +83,7 @@ Singleton {
     IdleMonitor {
         timeout: store.cfg.suspend
         // Mientras suena música no se suspende (sí se atenúa, bloquea y apaga la pantalla)
-        enabled: store.cfg.suspend > 0 && !store.caffeine && !MD.MediaStore.anyPlaying
+        enabled: store.cfg.suspend > 0 && !store.paused && !MD.MediaStore.anyPlaying
         respectInhibitors: true
         onIsIdleChanged: {
             if (isIdle)

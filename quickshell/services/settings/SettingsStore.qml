@@ -18,6 +18,7 @@ Singleton {
     readonly property var low: data.low
     readonly property var profiles: data.profiles
     readonly property var launcher: data.launcher
+    readonly property var recorder: data.recorder
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -44,6 +45,12 @@ Singleton {
         property JsonObject launcher: JsonObject {
             // ids de .desktop (se reasigna el arreglo entero para que se guarde)
             property var favorites: []
+        }
+        property JsonObject recorder: JsonObject {
+            property string folder: ""      // vacío = ~/Vídeos/Grabaciones
+            property string target: ""      // nombre del monitor o "region"; vacío = el primero
+            property bool internal: true
+            property bool mic: false
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery
