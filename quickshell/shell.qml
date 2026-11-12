@@ -82,7 +82,7 @@ ShellRoot {
         Shortcut {
             sequence: "Escape"
             enabled: P.PanelStore.anyExpanded
-            onActivated: P.PanelStore.closeAll()
+            onActivated: P.PanelStore.escapePressed()
         }
 
         MouseArea {
@@ -201,6 +201,8 @@ ShellRoot {
             spacing: App.Config.bar.spacing
 
             I.Tray {}
+
+            I.Bluetooth {}
 
             I.Battery {}
 

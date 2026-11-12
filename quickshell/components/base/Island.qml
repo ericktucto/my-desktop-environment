@@ -21,6 +21,8 @@ Rectangle {
     property int paddingContainer: App.Config.pill.padding
     // false = el clic izquierdo no abre la isla (se abre por IPC o atajo)
     property bool openOnClick: true
+    // Esc: función opcional que devuelve true si ya hizo algo (volver atrás) y entonces no se cierra la isla
+    property var escapeBack: null
 
     default property alias content: contentContainer.data
     property alias body: pillContainer.data

@@ -16,6 +16,8 @@ Rectangle {
     property color activeColor: App.Theme.primary
     property bool detail: false
     property bool ready: true
+    // La flecha puede funcionar aunque la casilla no (p. ej. Bluetooth sin adaptador abre la vista con el aviso)
+    property bool detailReady: ready
 
     signal clicked
     signal detailClicked
@@ -125,9 +127,9 @@ Rectangle {
         }
         MouseArea {
             anchors.fill: parent
-            cursorShape: root.ready ? Qt.PointingHandCursor : Qt.ArrowCursor
+            cursorShape: root.detailReady ? Qt.PointingHandCursor : Qt.ArrowCursor
             onClicked: {
-                if (root.ready)
+                if (root.detailReady)
                     root.detailClicked();
             }
         }

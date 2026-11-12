@@ -8,6 +8,7 @@ import "../../widgets/controlcenter" as CC
 import "../../widgets/clipboard" as CB
 import "../../widgets/recorder" as RC
 import "../../../services/recorder" as RS
+import "../../../services/bluetooth" as BTS
 import "../../../services/session" as SS
 
 Rectangle {
@@ -17,6 +18,11 @@ Rectangle {
     property var root
     readonly property real controlHeight: control.implicitHeight
     readonly property real recorderHeight: recorderMenu.implicitHeight
+
+    // Esc: en el centro de control vuelve atrás (renombrado → casillas) antes de cerrar la isla
+    function escapeBack() {
+        return root.current === 'control' && control.back();
+    }
 
     // Abrir el centro de control (clic derecho en el reloj o IPC): vuelve a leer lo que no avisa
     function refreshControl() {
@@ -77,8 +83,28 @@ Rectangle {
         id: control
         visible: root.current === 'control'
         width: parent.width
-        onSessionRequested: root.current = 'session'
+        onSessionRequested: {
+            reset();
+            root.current = 'session';
+        }
         onCloseRequested: root.close()
+        // Al cerrar la isla, el centro de control vuelve a las casillas y Bluetooth deja de buscar
+        Connections {
+            target: root
+            function onClosed() {
+                control.reset();
+            }
+        }
+        // Una pregunta de emparejamiento (o el ícono de la barra) abre la vista de Bluetooth
+        Connections {
+            target: BTS.BluetoothStore
+            function onOpenPanel() {
+                root.current = 'control';
+                control.refresh();
+                control.openBluetooth();
+                root.open();
+            }
+        }
         IpcHandler {
             target: "stixshell@controlcenter"
             function toggle(mon: string): void {

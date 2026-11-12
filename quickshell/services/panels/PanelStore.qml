@@ -28,6 +28,15 @@ Singleton {
         });
     }
 
+    // Esc: si la isla abierta sabe volver atrás (escapeBack), lo hace; si no, se cierra todo
+    function escapePressed() {
+        const open = items.filter(p => p && p.expanded);
+        for (const p of open)
+            if (p.escapeBack && p.escapeBack())
+                return;
+        closeAll();
+    }
+
     function closeAll() {
         items.forEach(p => {
             if (p && p.expanded)

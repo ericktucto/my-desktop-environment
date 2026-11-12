@@ -18,12 +18,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 > Módulo: `Quickshell.Networking`, que viene en tu Quickshell 0.3.2. Respaldo: `nmcli`. NetworkManager está activo.
 
-### Bluetooth
-- [ ] Indicador en la barra: apagado, encendido o conectado.
-- [ ] Panel con los dispositivos emparejados: conectar, desconectar, nivel de batería y un switch para apagarlo.
-
-> Módulo: `Quickshell.Bluetooth`. `bluez` está activo.
-
 ### Pantalla de bloqueo e inactividad
 - [ ] Opcional: huella digital, Bloq Mayús y notificaciones en la pantalla de bloqueo.
 
@@ -55,7 +49,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
-- [ ] Dar función a las casillas que hoy dicen "Próximamente": Wi-Fi y Bluetooth (con su flecha › hacia el panel de redes o de dispositivos), Luz nocturna y Captura.
+- [ ] Dar función a las casillas que hoy dicen "Próximamente": Wi-Fi (con su flecha › hacia el panel de redes), Luz nocturna y Captura.
 
 ---
 

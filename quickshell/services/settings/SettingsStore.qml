@@ -19,6 +19,7 @@ Singleton {
     readonly property var profiles: data.profiles
     readonly property var launcher: data.launcher
     readonly property var recorder: data.recorder
+    readonly property var bluetooth: data.bluetooth
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -45,6 +46,9 @@ Singleton {
         property JsonObject launcher: JsonObject {
             // ids de .desktop (se reasigna el arreglo entero para que se guarde)
             property var favorites: []
+        }
+        property JsonObject bluetooth: JsonObject {
+            property bool enabled: true     // si lo dejaste apagado, la shell lo apaga al arrancar
         }
         property JsonObject recorder: JsonObject {
             property string folder: ""      // vacío = ~/Vídeos/Grabaciones

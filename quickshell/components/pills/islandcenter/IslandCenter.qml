@@ -46,6 +46,9 @@ Base.Island {
     }
 
     preventFocus: true
+    escapeBack: function () {
+        return islandBody.escapeBack();
+    }
     // El launcher se abre solo con Super+R; el clic derecho abre el centro de control
     openOnClick: false
 

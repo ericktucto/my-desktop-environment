@@ -34,6 +34,27 @@ Singleton {
         readonly property int exclusiveZone: root.pill.top + root.pill.height + gapBelow
     }
 
+    // ===== Bluetooth (vista del centro de control, services/bluetooth) =====
+    readonly property QtObject bluetooth: QtObject {
+        readonly property int rowHeight: 52
+        readonly property int scanTimeout: 60000     // ms buscando dispositivos nuevos
+        readonly property int armDelay: 3000         // ms tras arrancar antes de recordar los cambios de encendido y avisar
+        readonly property int messageTime: 3000      // "No se pudo conectar"
+        readonly property int lowBattery: 15         // % para el aviso de batería baja
+        // Glifo (fuente de íconos) según el `icon` que da BlueZ
+        readonly property var glyphs: ({
+                "phone": 0xf03f2,
+                "input-mouse": 0xf037d,
+                "input-gaming": 0xf0297,
+                "audio-headset": 0xf02cb,
+                "audio-headphones": 0xf02cb,
+                "input-keyboard": 0xf030c,
+                "audio-card": 0xf04c3,
+                "computer": 0xf0322
+            })
+        readonly property int glyphDefault: 0xf00af
+    }
+
     // ===== Pill de la ventana activa =====
     readonly property QtObject activeWindow: QtObject {
         readonly property int maxWidth: 300          // la pill no pasa de este ancho (los paneles del centro empiezan en x ≈ 520)
