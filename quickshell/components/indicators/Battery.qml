@@ -21,6 +21,14 @@ Base.Island {
         PW.ProfileStore.refresh();
     }
 
+    // Desde el centro de control (la pill de batería de abajo)
+    Connections {
+        target: PW.BatteryStore
+        function onPanelRequested() {
+            root.open();
+        }
+    }
+
     BatteryText {}
 
     // Cafeína activa: la inactividad está pausada

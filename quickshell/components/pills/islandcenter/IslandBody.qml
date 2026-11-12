@@ -6,7 +6,6 @@ import "../../widgets/wallpapers" as W
 import "../../widgets/session" as SE
 import "../../widgets/controlcenter" as CC
 import "../../widgets/clipboard" as CB
-import "../../../services/brightness" as BS
 import "../../../services/session" as SS
 
 Rectangle {
@@ -15,6 +14,11 @@ Rectangle {
 
     property var root
     readonly property real controlHeight: control.implicitHeight
+
+    // Abrir el centro de control (clic derecho en el reloj o IPC): vuelve a leer lo que no avisa
+    function refreshControl() {
+        control.refresh();
+    }
 
     A.AppList {
         visible: root.current === 'applist'
@@ -70,6 +74,8 @@ Rectangle {
         id: control
         visible: root.current === 'control'
         width: parent.width
+        onSessionRequested: root.current = 'session'
+        onCloseRequested: root.close()
         IpcHandler {
             target: "stixshell@controlcenter"
             function toggle(mon: string): void {
@@ -78,7 +84,7 @@ Rectangle {
                     return;
                 }
                 root.current = 'control';
-                BS.BrightnessStore.refresh();
+                control.refresh();
                 root.open();
             }
         }

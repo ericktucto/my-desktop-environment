@@ -82,6 +82,21 @@ Singleton {
         return byKey(wantedKey) || all[1];
     }
 
+    // Ahorro de batería (casilla del centro de control): Ahorro hasta el próximo cambio de fuente;
+    // al apagarlo, el perfil de la fuente actual (o Equilibrado si ese también es Ahorro)
+    readonly property bool saver: PowerProfiles.profile === PowerProfile.PowerSaver
+
+    function toggleSaver() {
+        if (!available)
+            return;
+        if (!saver) {
+            PowerProfiles.profile = PowerProfile.PowerSaver;
+            return;
+        }
+        const w = wantedNow();
+        PowerProfiles.profile = w.value === PowerProfile.PowerSaver ? PowerProfile.Balanced : w.value;
+    }
+
     function apply() {
         if (!available)
             return;
@@ -118,7 +133,7 @@ Singleton {
         const h = PowerProfiles.holds;
         if (h && h.length > 0)
             return "Ahora: " + now + " (lo pidió " + h[0].applicationId + ")";
-        return "Ahora: " + now + " (cambiado fuera del panel, p. ej. Fn+Q)";
+        return "Ahora: " + now + " (cambiado fuera del panel: Fn+Q o el centro de control)";
     }
 
     // ¿Responde el daemon? Si `powerprofilesctl get` funciona, sí.

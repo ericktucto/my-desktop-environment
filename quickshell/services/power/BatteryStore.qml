@@ -31,6 +31,28 @@ Singleton {
         return conservation ? "Conectada · modo conservación" : "Conectada";
     }
 
+    // Versión corta para el centro de control: "llena en 27 min", "quedan 3 h 10 min"…
+    readonly property string shortText: {
+        if (full)
+            return "Cargada";
+        if (charging) {
+            const t = device.timeToFull;
+            return t > 0 ? "llena en " + ST.SettingsStore.format(Math.round(t / 60) * 60) : "Cargando";
+        }
+        if (discharging) {
+            const t = device.timeToEmpty;
+            return t > 0 ? "quedan " + ST.SettingsStore.format(Math.round(t / 60) * 60) : "Con batería";
+        }
+        return conservation ? "Conservación" : "Conectada";
+    }
+
+    // El centro de control pide abrir el panel de batería (lo escucha la pill, indicators/Battery.qml)
+    signal panelRequested
+
+    function openPanel() {
+        panelRequested();
+    }
+
     // ── Modo conservación (IdeaPad): limita la carga a ~60 % para cuidar la batería ──
     // sysfs no avisa los cambios, así que se vuelve a leer al abrir el panel y al escribir.
     property string conservationPath: ""

@@ -61,7 +61,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
-- [ ] Faltan en el centro de control: Wi-Fi, Bluetooth, luz nocturna y luz del teclado (`platform::kbd_backlight`).
+- [ ] Dar función a las casillas que hoy dicen "Próximamente": Wi-Fi y Bluetooth (con su flecha › hacia el panel de redes o de dispositivos), Luz nocturna y Captura.
 
 ---
 

@@ -2,7 +2,7 @@ import QtQuick
 import "../../" as App
 
 // Switch estilo Material 3: pista redondeada; apagado = borde + círculo pequeño,
-// encendido = pista rellena + círculo grande con check.
+// encendido = pista rellena + círculo grande.
 Item {
     id: root
 
@@ -37,17 +37,6 @@ Item {
         Behavior on x { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }
         Behavior on size { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: App.Config.anim.control } }
-
-        Text {
-            anchors.centerIn: parent
-            text: "✓"
-            font.pixelSize: 11
-            font.bold: true
-            color: App.Theme.primary
-            opacity: root.checked ? 1 : 0
-
-            Behavior on opacity { NumberAnimation { duration: App.Config.anim.control } }
-        }
     }
 
     MouseArea {

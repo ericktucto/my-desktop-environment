@@ -1,7 +1,6 @@
 import QtQuick
 import "../../base" as Base
 import "../../../" as App
-import "../../../services/brightness/" as B
 import "../../../services/osd/" as O
 import "../../../services/panels/" as P
 
@@ -59,7 +58,7 @@ Base.Island {
         acceptedButtons: Qt.RightButton
         onClicked: {
             root.current = 'control';
-            B.BrightnessStore.refresh();
+            islandBody.refreshControl();
             root.open();
         }
     }

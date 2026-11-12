@@ -50,7 +50,7 @@ Singleton {
         readonly property int launcherWidth: 480
         readonly property int launcherHeight: 600
         readonly property int wallpapersWidth: 800
-        readonly property int controlCenterWidth: 380
+        readonly property int controlCenterWidth: 460
         readonly property int notificationsWidth: 420
         readonly property int batteryWidth: 420
         readonly property int clipboardWidth: 880
@@ -281,6 +281,15 @@ Singleton {
         readonly property int hideAfter: 300000      // sin sonar este tiempo, la pill se oculta
         readonly property int artTimeout: 1000       // carátula que no llega: ícono de la app
         readonly property int trackFade: 200         // fundido al cambiar de canción
+    }
+
+    // ===== Centro de control =====
+    readonly property QtObject control: QtObject {
+        readonly property int tileHeight: 56         // casilla en forma de pastilla
+        readonly property int tileIcon: 36           // círculo del ícono dentro de la casilla
+        readonly property int tileGlyph: 18          // glifo dentro del círculo
+        readonly property int tileSpacing: 8
+        readonly property int footerHeight: 44       // fila de abajo: apagar, batería y ajustes
     }
 
     // ===== Animaciones (ms) =====
