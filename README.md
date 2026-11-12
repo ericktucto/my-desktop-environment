@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía, el portapapeles y las notificaciones. Al bloquear, la shell muestra su propia pantalla de bloqueo.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía, el portapapeles, el grabador de pantalla y las notificaciones. Al bloquear, la shell muestra su propia pantalla de bloqueo.
 
 ## Contenido
 
@@ -22,14 +22,14 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── todo.md        Lo que falta por hacer
     ├── assets/        Íconos (svg) y la base de emojis (emoji)
-    ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher)
+    ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher, grabador de pantalla y selector de carpeta)
     ├── components/    base · controls · indicators · layouts · lock · pills · widgets
     └── services/      audio · brightness · clipboard · idle · launcher · lock · media · notify · osd · power · recorder · settings · share · panels · session · windows · workspaces
 ```
 
 ## Funciones
 
-- **Barra:** Workspaces, la ventana activa (ícono, nombre de la app y título; el clic central la cierra) y el botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, batería y notificaciones. Si suena algo, aparece la carátula en una pill redonda a la izquierda del reloj.
+- **Barra:** Workspaces, la ventana activa (ícono, nombre de la app y título; el clic central la cierra) y el botón de Zoom a la izquierda, reloj en el centro, y a la derecha tray, batería y notificaciones. Si suena algo, aparece la carátula en una pill redonda a la izquierda del reloj, y al grabar la pantalla, un contador a su derecha.
 - **Isla central:** reloj; se abre con atajos y es el **launcher de apps** (`Super+R`), el **selector de wallpapers**, o el **menú de sesión** (bloquear, suspender, cerrar sesión, reiniciar y apagar; flechas + Enter, con confirmación en lo destructivo).
 - **Workspaces:** puntos fijos (4); clic o rueda para cambiar y clic derecho o `Super+Tab` para la vista general, con una fila (ícono y título) por ventana, para distinguir por ejemplo dos Firefox, y arrastrar ventanas entre workspaces.
 - **Centro de control** (`Super+C` o clic derecho en el reloj): una cuadrícula de casillas, slider de brillo, y salida y micrófono con mute, modo 150 % y cambio de dispositivo. Abajo, el botón de apagar (abre el menú de sesión), la batería (abre su panel) y el engranaje (abre `settings.json` en kitty con tu `$EDITOR`, o nvim). Las casillas que funcionan son No molestar, Cafeína, Luz del teclado y Ahorro (perfil de ahorro hasta el próximo cambio de cargador, como `Fn+Q`); Wi-Fi, Bluetooth, Luz nocturna y Captura se ven pero dicen "Próximamente".
