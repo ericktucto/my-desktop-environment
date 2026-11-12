@@ -72,9 +72,24 @@ Singleton {
         return Quickshell.iconPath(name, true);
     }
 
+    // Ícono de una app por su appId: el del .desktop y, si no hay, variantes del nombre
+    // (minúsculas, última parte de "us.zoom.Zoom", guiones) antes del ícono genérico
+    function iconFor(appId) {
+        const generic = Quickshell.iconPath("application-x-executable", true);
+        if (!appId)
+            return generic;
+        const entry = DesktopEntries.heuristicLookup(appId);
+        const last = appId.substring(appId.lastIndexOf(".") + 1);
+        const tries = [entry?.icon, appId, appId.toLowerCase(), last, last.toLowerCase(), appId.toLowerCase().replace(/[ _]/g, "-")];
+        for (const n of tries) {
+            const p = iconPath(n);
+            if (p)
+                return p;
+        }
+        return generic;
+    }
+
     function appIcon(t) {
-        const appId = t.wayland?.appId || t.lastIpcObject?.class || "";
-        const entry = appId ? DesktopEntries.heuristicLookup(appId) : null;
-        return iconPath(entry?.icon || appId) || Quickshell.iconPath("application-x-executable", true);
+        return iconFor(t.wayland?.appId || t.lastIpcObject?.class || "");
     }
 }

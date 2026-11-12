@@ -33,11 +33,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 ## 🟡 Prioridad media: calidad de vida
 
-### Ventana activa
-- [ ] Mostrar el título o el nombre de la app enfocada en la barra.
-
-> `Hyprland.activeToplevel` o `ToplevelManager.activeToplevel`.
-
 ### Calendario y fecha
 - [ ] Mostrar la fecha en el reloj o en un tooltip.
 - [ ] Calendario mensual en un panel.

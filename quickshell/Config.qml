@@ -34,6 +34,13 @@ Singleton {
         readonly property int exclusiveZone: root.pill.top + root.pill.height + gapBelow
     }
 
+    // ===== Pill de la ventana activa =====
+    readonly property QtObject activeWindow: QtObject {
+        readonly property int maxWidth: 300          // la pill no pasa de este ancho (los paneles del centro empiezan en x ≈ 520)
+        readonly property int iconSize: 16
+        readonly property int tooltipDelay: 600
+    }
+
     // ===== Pills =====
     readonly property QtObject pill: QtObject {
         readonly property int top: 8

@@ -127,7 +127,12 @@ ShellRoot {
             anchors.left: parent.left
             anchors.leftMargin: App.Config.bar.marginLeft
             spacing: App.Config.bar.spacing
-            I.Workspaces {}
+            I.Workspaces {
+                id: workspacesPill
+            }
+            I.ActiveWindow {
+                workspacesOpen: workspacesPill.expanded
+            }
             I.Zoom {}
         }
         // ══ CENTRO: el reloj y, a su izquierda, la pill de música ══
