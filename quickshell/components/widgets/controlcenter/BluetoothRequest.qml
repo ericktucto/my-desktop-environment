@@ -84,38 +84,11 @@ Rectangle {
             anchors.right: parent.right
             spacing: 8
 
-            component Btn: Rectangle {
-                id: btn
-                property string label
-                property bool primary: false
-                signal clicked
-                width: t.implicitWidth + 32
-                height: 32
-                radius: 16
-                color: primary ? (m.containsMouse ? Qt.lighter(App.Theme.primary, 1.12) : App.Theme.primary) : (m.containsMouse ? App.Theme.surfaceActive : App.Theme.surface)
-                Text {
-                    id: t
-                    anchors.centerIn: parent
-                    text: btn.label
-                    color: App.Theme.white
-                    font.family: App.Config.fonts.text
-                    font.pixelSize: App.Config.fontSize.sm
-                    font.weight: Font.DemiBold
-                }
-                MouseArea {
-                    id: m
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: btn.clicked()
-                }
-            }
-
-            Btn {
+            SmallButton {
                 label: root.type === "authorize" ? "Rechazar" : "Cancelar"
                 onClicked: BT.BluetoothStore.answer(false, "")
             }
-            Btn {
+            SmallButton {
                 id: accept
                 primary: true
                 label: root.type === "authorize" ? "Permitir" : "Emparejar"

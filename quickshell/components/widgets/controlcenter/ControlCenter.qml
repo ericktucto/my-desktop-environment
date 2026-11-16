@@ -5,18 +5,19 @@ import "../../../services/audio/" as A
 import "../../../services/notify/" as N
 import "../../../services/brightness/" as B
 import "../../../services/bluetooth/" as BT
+import "../../../services/network/" as NS
 import "../../../services/idle/" as I
 import "../../../services/power/" as P
 import "../../../services/settings/" as ST
 import "../../../" as App
 
 // Centro de control: casillas rápidas, brillo, salida y micrófono, y abajo apagar, batería y ajustes.
-// La flecha de la casilla Bluetooth abre su vista (misma altura que esta). Wi-Fi, Luz nocturna y Captura
+// La flecha de las casillas Wi-Fi y Bluetooth abre su vista (misma altura que esta). Luz nocturna y Captura
 // son solo visuales por ahora ("Próximamente").
 Item {
     id: root
 
-    // "main" o "bluetooth"; el alto es siempre el de la vista principal
+    // "main", "bluetooth" o "network"; el alto es siempre el de la vista principal
     property string page: "main"
     implicitHeight: mainPage.implicitHeight
 
@@ -37,18 +38,29 @@ Item {
         btPage.forceActiveFocus();
     }
 
+    function openNetwork() {
+        page = "network";
+        NS.NetworkStore.scan();
+        netPage.forceActiveFocus();
+    }
+
     // Vuelve a la vista principal y deja de buscar y de ser visible
     function reset() {
         page = "main";
         btPage.cancelRename();
+        netPage.menuOpen = false;
+        netPage.hiddenOpen = false;
+        NS.NetworkStore.passwordFor = "";
         BT.BluetoothStore.leave();
+        NS.NetworkStore.leave();
     }
 
-    // Esc: primero cancela un renombrado y luego vuelve a la vista principal; true si hizo algo
+    // Esc: primero cierra lo que esté abierto (renombrado, contraseña, formularios) y luego vuelve a la vista
+    // principal; true si hizo algo
     function back() {
-        if (btPage.cancelRename())
+        if (btPage.cancelRename() || (page === "network" && netPage.cancelInner()))
             return true;
-        if (page === "bluetooth") {
+        if (page !== "main") {
             reset();
             return true;
         }
@@ -74,6 +86,13 @@ Item {
         onBackRequested: root.reset()
     }
 
+    NetworkPage {
+        id: netPage
+        anchors.fill: parent
+        visible: root.page === "network"
+        onBackRequested: root.reset()
+    }
+
     Column {
         id: mainPage
         width: parent.width
@@ -93,9 +112,13 @@ Item {
                 width: grid.tileWidth
                 glyph: root.glyph(0xf05a9)
                 title: "Wi-Fi"
-                subtitle: "Próximamente"
+                subtitle: NS.NetworkStore.statusText
+                checked: NS.NetworkStore.enabled
                 detail: true
-                ready: false
+                ready: NS.NetworkStore.wifiAvailable && !NS.NetworkStore.blocked
+                detailReady: true
+                onClicked: NS.NetworkStore.toggle()
+                onDetailClicked: root.openNetwork()
             }
             ControlTile {
                 width: grid.tileWidth

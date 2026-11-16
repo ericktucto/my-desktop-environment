@@ -202,6 +202,8 @@ ShellRoot {
 
             I.Tray {}
 
+            I.Network {}
+
             I.Bluetooth {}
 
             I.Battery {}

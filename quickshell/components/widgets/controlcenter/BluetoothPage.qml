@@ -1,5 +1,4 @@
 import QtQuick
-import "../../controls/" as C
 import "../../../services/bluetooth/" as BT
 import "../../../" as App
 
@@ -100,69 +99,16 @@ FocusScope {
     }
 
     // ── Encabezado: ‹ · Bluetooth · switch ──
-    Item {
+    PageHeader {
         id: header
         anchors.top: parent.top
         width: parent.width
-        height: 46
-
-        Rectangle {
-            id: back
-            width: 34
-            height: 34
-            radius: 17
-            anchors.verticalCenter: parent.verticalCenter
-            color: backMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surface
-
-            Text {
-                anchors.centerIn: parent
-                text: String.fromCodePoint(0xf0141)
-                color: App.Theme.white
-                font.family: App.Config.fonts.icons
-                font.pixelSize: App.Config.fontSize.iconLg
-            }
-            MouseArea {
-                id: backMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.backRequested()
-            }
-        }
-
-        Column {
-            anchors.left: back.right
-            anchors.leftMargin: 12
-            anchors.right: toggle.left
-            anchors.rightMargin: 12
-            anchors.verticalCenter: parent.verticalCenter
-
-            Text {
-                text: "Bluetooth"
-                color: App.Theme.white
-                font.family: App.Config.fonts.text
-                font.pixelSize: App.Config.fontSize.lg + 2
-                font.weight: Font.DemiBold
-            }
-            Text {
-                visible: root.store.enabled && root.store.hostName !== ""
-                width: parent.width
-                text: "Visible como «" + root.store.hostName + "»"
-                elide: Text.ElideRight
-                color: App.Theme.gray
-                font.family: App.Config.fonts.text
-                font.pixelSize: App.Config.fontSize.sm
-            }
-        }
-
-        C.Switch {
-            id: toggle
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            checked: root.store.enabled
-            opacity: root.store.available && !root.store.busy ? 1 : 0.4
-            onToggled: root.store.toggle()
-        }
+        title: "Bluetooth"
+        subtitle: root.store.enabled && root.store.hostName !== "" ? "Visible como «" + root.store.hostName + "»" : ""
+        checked: root.store.enabled
+        switchEnabled: root.store.available && !root.store.busy
+        onBackRequested: root.backRequested()
+        onToggled: root.store.toggle()
     }
 
     // ── Mensaje corto y pregunta del agente ──

@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../notify/" as N
+import "../region/" as RG
 import "../settings/" as ST
 import "../../" as App
 
@@ -16,7 +17,7 @@ Singleton {
     id: store
 
     readonly property string script: Quickshell.shellPath("scripts/screen-record.py")
-    readonly property string pickScript: Quickshell.shellPath("scripts/pick-folder.py")
+    readonly property string pickScript: Quickshell.shellPath("scripts/pick.py")
 
     property string phase: "idle"
     readonly property bool active: phase !== "idle"
@@ -54,8 +55,8 @@ Singleton {
     }
 
     // ── Región ──
-    // El selector (components/widgets/recorder/RegionSelector.qml) está abierto
-    property bool picking: false
+    // El selector (components/widgets/recorder/RegionSelector.qml, services/region) está abierto para el grabador
+    readonly property bool picking: RG.RegionStore.picking && RG.RegionStore.owner === "recorder"
     // "menu": al aceptar vuelve el menú; "record": al aceptar empieza la cuenta regresiva
     property string pickThen: "menu"
     // Coordenadas globales del escritorio, pares (el codificador no admite tamaños impares)
@@ -69,7 +70,19 @@ Singleton {
         setTarget("region");
         pickThen = then;
         closeMenu();
-        picking = true;
+        RG.RegionStore.pick("recorder", region);
+    }
+
+    Connections {
+        target: RG.RegionStore
+        function onAccepted(owner, screen, x, y, w, h) {
+            if (owner === "recorder")
+                store.acceptRegion(screen, x, y, w, h);
+        }
+        function onCanceled(owner) {
+            if (owner === "recorder")
+                store.openMenu();
+        }
     }
 
     function acceptRegion(screenName, x, y, w, h) {
@@ -80,7 +93,6 @@ Singleton {
             w: Math.max(2, Math.floor(w / 2) * 2),
             h: Math.max(2, Math.floor(h / 2) * 2)
         };
-        picking = false;
         if (pickThen === "record") {
             geometry = regionGeometry;
             startCountdown();
@@ -89,11 +101,10 @@ Singleton {
         }
     }
 
+    // Cancela el selector (la señal `canceled` vuelve a abrir el menú)
     function cancelPick() {
-        if (!picking)
-            return;
-        picking = false;
-        openMenu();
+        if (picking)
+            RG.RegionStore.cancel();
     }
 
     // ── Carpeta de destino ──
@@ -121,7 +132,7 @@ Singleton {
     // Diálogo de carpetas (GTK): la isla se cierra mientras está abierto y el menú vuelve al terminar
     function pickFolder() {
         closeMenu();
-        pickProc.command = ["python3", pickScript, folder, "Carpeta de las grabaciones"];
+        pickProc.command = ["python3", pickScript, "folder", folder, "Carpeta de las grabaciones"];
         pickProc.running = true;
     }
 

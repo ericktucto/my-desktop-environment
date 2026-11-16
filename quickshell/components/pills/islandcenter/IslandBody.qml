@@ -9,6 +9,7 @@ import "../../widgets/clipboard" as CB
 import "../../widgets/recorder" as RC
 import "../../../services/recorder" as RS
 import "../../../services/bluetooth" as BTS
+import "../../../services/network" as NTS
 import "../../../services/session" as SS
 
 Rectangle {
@@ -93,6 +94,20 @@ Rectangle {
             target: root
             function onClosed() {
                 control.reset();
+            }
+        }
+        // La vista de red se abre o se cierra desde el store (diálogo de archivos, selector de región, ícono de la barra)
+        Connections {
+            target: NTS.NetworkStore
+            function onOpenPanel() {
+                root.current = 'control';
+                control.refresh();
+                control.openNetwork();
+                root.open();
+            }
+            function onClosePanel() {
+                if (root.current === 'control')
+                    root.close();
             }
         }
         // Una pregunta de emparejamiento (o el ícono de la barra) abre la vista de Bluetooth

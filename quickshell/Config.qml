@@ -55,6 +55,23 @@ Singleton {
         readonly property int glyphDefault: 0xf00af
     }
 
+    // ===== Red: Wi-Fi y VPN (vista del centro de control, services/network) =====
+    readonly property QtObject network: QtObject {
+        readonly property int rowHeight: 52
+        readonly property int messageTime: 3000      // "Contraseña incorrecta", "No se pudo conectar la VPN"
+        readonly property int refreshDebounce: 400   // ms tras un evento de nmcli monitor antes de releer las VPN
+        // Interfaces virtuales (Docker y similares): no se muestran
+        readonly property var ignoredDevices: /^(docker|br-|veth|virbr|lo$)/
+        readonly property string portalUrl: "http://neverssl.com"
+        // Señal en cuatro niveles (de menos a más), sin conexión, cable, candado, VPN y ojo
+        readonly property var signalGlyphs: [0xf091f, 0xf0922, 0xf0925, 0xf0928]
+        readonly property int glyphOff: 0xf092e
+        readonly property int glyphWired: 0xf0200
+        readonly property int glyphLock: 0xf033e
+        readonly property int glyphVpn: 0xf0582
+        readonly property int glyphEye: 0xf06d0
+    }
+
     // ===== Pill de la ventana activa =====
     readonly property QtObject activeWindow: QtObject {
         readonly property int maxWidth: 300          // la pill no pasa de este ancho (los paneles del centro empiezan en x ≈ 520)

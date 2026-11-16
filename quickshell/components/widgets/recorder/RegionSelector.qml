@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../../../services/recorder/" as R
+import "../../../services/region/" as RG
 import "../../../" as App
 
 // Selector de región del grabador: una ventana a pantalla completa por monitor, con el escritorio oscurecido.
@@ -15,7 +15,7 @@ Variants {
 
         required property var modelData
         screen: modelData
-        visible: R.RecorderStore.picking
+        visible: RG.RegionStore.picking
 
         anchors {
             top: true
@@ -41,20 +41,20 @@ Variants {
 
             function accept() {
                 if (has)
-                    R.RecorderStore.acceptRegion(win.modelData.name, win.modelData.x + sel.x, win.modelData.y + sel.y, sel.width, sel.height);
+                    RG.RegionStore.accept(win.modelData.name, win.modelData.x + sel.x, win.modelData.y + sel.y, sel.width, sel.height);
             }
 
-            Keys.onEscapePressed: R.RecorderStore.cancelPick()
+            Keys.onEscapePressed: RG.RegionStore.cancel()
             Keys.onReturnPressed: accept()
             Keys.onEnterPressed: accept()
 
             // Al abrir, vuelve a marcarse la región anterior (si era de esta pantalla)
             Connections {
-                target: R.RecorderStore
+                target: RG.RegionStore
                 function onPickingChanged() {
-                    if (!R.RecorderStore.picking)
+                    if (!RG.RegionStore.picking)
                         return;
-                    const r = R.RecorderStore.region;
+                    const r = RG.RegionStore.initial;
                     root.sel = r && r.screen === win.modelData.name ? Qt.rect(r.x - win.modelData.x, r.y - win.modelData.y, r.w, r.h) : Qt.rect(0, 0, 0, 0);
                     root.forceActiveFocus();
                 }
