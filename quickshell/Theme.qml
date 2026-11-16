@@ -1,34 +1,72 @@
 pragma Singleton
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 Singleton {
     id: root
 
+    // Colores del wallpaper (services/theme, scripts/theme.py): ~/.cache/stixshell/theme.json.
+    // Sin ese archivo, o con los colores dinámicos apagados, quedan los fijos de abajo.
+    property var dyn: ({})
+    // Los colores solo se animan después de cargar el archivo (al arrancar no hay fundido desde los fijos)
+    property bool ready: false
+
+    function load() {
+        try {
+            root.dyn = JSON.parse(themeFile.text()).shell ?? {};
+        } catch (err) {
+            root.dyn = {};
+        }
+    }
+
+    FileView {
+        id: themeFile
+        path: Quickshell.env("HOME") + "/.cache/stixshell/theme.json"
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onLoaded: root.load()
+        onFileChanged: reload()
+        onLoadFailed: root.dyn = {}
+    }
+
+    Component.onCompleted: {
+        load();
+        Qt.callLater(() => root.ready = true);
+    }
+
+    component Fade: Behavior {
+        enabled: root.ready
+        ColorAnimation {
+            duration: Config.theme.fade
+        }
+    }
+
     // ===== Superficie =====
-    readonly property color island:     "#0a0a0f"
-    readonly property color islandEdge: Qt.rgba(1, 1, 1, 0.10)
+    property color island:     dyn.island ?? "#0a0a0f"
+    property color islandEdge: dyn.islandEdge ?? Qt.rgba(1, 1, 1, 0.10)
 
     // ===== Superficies y texto (launcher, inputs) =====
-    readonly property color surfaceHigh: "#3a3f4a"     // selección y hover del launcher, borde de inputs
-    readonly property color text:        "#cdd6f4"     // texto de listas e IconSvg por defecto
-    readonly property color subtext:     "#8a93a5"     // descripciones
-    readonly property color placeholder: "#888888"     // placeholder de inputs
+    property color surfaceHigh: dyn.surfaceHigh ?? "#3a3f4a"     // selección y hover del launcher, borde de inputs
+    property color text:        dyn.text ?? "#cdd6f4"     // texto de listas e IconSvg por defecto
+    property color subtext:     dyn.subtext ?? "#8a93a5"     // descripciones
+    property color placeholder: dyn.placeholder ?? "#888888"     // placeholder de inputs
 
     // ===== Blancos translúcidos =====
-    readonly property color surface:       Qt.rgba(1, 1, 1, 0.06)   // fondo de tarjetas y botones
-    readonly property color surfaceHover:  Qt.rgba(1, 1, 1, 0.08)   // hover suave / botón pequeño
-    readonly property color surfaceActive: Qt.rgba(1, 1, 1, 0.16)   // hover del botón pequeño
-    readonly property color track:         Qt.rgba(1, 1, 1, 0.14)   // parte inactiva del Slider
+    property color surface:       dyn.surface ?? Qt.rgba(1, 1, 1, 0.06)   // fondo de tarjetas y botones
+    property color surfaceHover:  dyn.surfaceHover ?? Qt.rgba(1, 1, 1, 0.08)   // hover suave / botón pequeño
+    property color surfaceActive: dyn.surfaceActive ?? Qt.rgba(1, 1, 1, 0.16)   // hover del botón pequeño
+    property color track:         dyn.track ?? Qt.rgba(1, 1, 1, 0.14)   // parte inactiva del Slider
 
     // ===== Neutros =====
     readonly property color white:  "#ffffff"
-    readonly property color gray:   "#b4bcd0"
-    readonly property color grayDark: "#6b7394"
+    property color gray:   dyn.gray ?? "#b4bcd0"
+    property color grayDark: dyn.grayDark ?? "#6b7394"
     readonly property color black:  "#0a0a0f"
 
     // ===== Nombrados =====
-    readonly property color primary:    "#2979ff"
+    property color primary:    dyn.primary ?? "#2979ff"
 
     // ===== Colores (vívidos) =====
     readonly property color red:     "#ff1744"
@@ -42,4 +80,19 @@ Singleton {
     readonly property color indigo:  "#3d5afe"
     readonly property color purple:  "#d500f9"
     readonly property color pink:    "#ff4081"
+
+    // ===== Fundido al cambiar de wallpaper =====
+    Fade on island {}
+    Fade on islandEdge {}
+    Fade on surfaceHigh {}
+    Fade on text {}
+    Fade on subtext {}
+    Fade on placeholder {}
+    Fade on surface {}
+    Fade on surfaceHover {}
+    Fade on surfaceActive {}
+    Fade on track {}
+    Fade on gray {}
+    Fade on grayDark {}
+    Fade on primary {}
 }

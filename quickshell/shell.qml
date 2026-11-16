@@ -19,6 +19,7 @@ import "./components/lock/" as LC
 import "./components/widgets/region/" as RG
 import "./components/widgets/screenshot/" as SC
 import "./services/screenshot/" as SH
+import "./services/theme/" as TH
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
@@ -37,6 +38,8 @@ ShellRoot {
     readonly property var mediaPlayer: MD.MediaStore.player
     // Instancia el capturador (IPC stixshell@screenshot para Impr Pant)
     readonly property var screenshotPhase: SH.ScreenshotStore.phase
+    // Instancia los colores del wallpaper (regenera al cambiar de wallpaper; IPC stixshell@theme)
+    readonly property var themeBusy: TH.ThemeStore.busy
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}

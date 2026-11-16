@@ -82,6 +82,13 @@ hl.window_rule({ "maximize", "class:.*" })
 -- MODO TABLET: ocultar/mostrar apps
 -- ============================================
 
+-- Colores del wallpaper: scripts/theme.py (de la shell) escribe colors.lua (fuera de git) y los aplica en caliente.
+-- Sin ese archivo quedan los bordes por defecto de Hyprland.
+local ok, colors = pcall(require, "colors")
+if ok and type(colors) == "table" then
+    hl.config({ general = { col = { active_border = colors.active, inactive_border = colors.inactive } } })
+end
+
 -- ============================================
 -- CAMBIAR ENTRE VENTANAS
 -- ============================================

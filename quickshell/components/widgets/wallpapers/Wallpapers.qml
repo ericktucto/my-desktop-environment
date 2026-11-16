@@ -51,12 +51,23 @@ Item {
         scanner.running = true;
     }
 
+    // Colores dinámicos (matugen): switch, estilo y color fuente
+    ThemeRow {
+        id: themeRow
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: App.Config.wallpaperPicker.themeRow
+    }
+
     // Grid de wallpapers
     GridView {
         id: gridView
-        anchors.fill: parent
+        anchors.top: themeRow.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
         flow: GridView.FlowTopToBottom
-        height: cellHeight * 2
 
         readonly property int spacing: App.Config.wallpaperPicker.spacingCell
         readonly property int imgWidth: App.Config.wallpaperPicker.imgWidth
@@ -85,8 +96,8 @@ Item {
             width: gridView.imgWidth
             height: gridView.imgHeight
             radius: App.Config.wallpaperPicker.radius
-            // Borde azul si está seleccionado, transparente si no
-            color: GridView.isCurrentItem ? App.Theme.blue : "transparent"
+            // Borde del acento si está seleccionado, transparente si no
+            color: GridView.isCurrentItem ? App.Theme.primary : "transparent"
 
             Image {
                 id: thumb

@@ -23,6 +23,7 @@ Singleton {
         readonly property int borderImg: 4
         readonly property int radius: 8
         readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers"   // carpeta de wallpapers
+        readonly property int themeRow: 44                // fila de colores del wallpaper (arriba del grid)
     }
 
     // ===== Barra =====
@@ -373,6 +374,20 @@ Singleton {
         readonly property int toolbarHeight: 48
         readonly property int barBottom: 56          // margen de la barra de modos al borde de abajo
         readonly property int barHeight: 52
+    }
+
+    // ===== Colores dinámicos según el wallpaper (matugen, scripts/theme.py, services/theme) =====
+    readonly property QtObject theme: QtObject {
+        readonly property int fade: 600                // ms del fundido de colores (igual que anim.wallpaper)
+        readonly property int debounce: 150            // ms tras cambiar de wallpaper antes de regenerar
+        readonly property string fallback: "2979ff"    // color fuente al apagar (el azul de siempre)
+        readonly property int row: 44                  // alto de la fila del selector de wallpapers
+        readonly property var schemes: [
+            { id: "scheme-tonal-spot", label: "Suave" },
+            { id: "scheme-fidelity", label: "Fiel" },
+            { id: "scheme-vibrant", label: "Vibrante" },
+            { id: "scheme-expressive", label: "Expresivo" }
+        ]
     }
 
     // ===== Animaciones (ms) =====

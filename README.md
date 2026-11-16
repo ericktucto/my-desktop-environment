@@ -24,7 +24,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── assets/        Íconos (svg) y la base de emojis (emoji)
     ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher, grabador y capturador de pantalla, selector de carpeta o archivo, agente de Bluetooth e importar VPN)
     ├── components/    base · controls · indicators · layouts · lock · pills · widgets
-    └── services/      audio · bluetooth · brightness · clipboard · idle · launcher · lock · media · network · notify · osd · power · recorder · region · screenshot · settings · share · panels · session · windows · workspaces
+    └── services/      audio · bluetooth · brightness · clipboard · idle · launcher · lock · media · network · notify · osd · power · recorder · region · screenshot · settings · share · theme · panels · session · windows · workspaces
 ```
 
 ## Funciones
@@ -46,6 +46,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **System tray:** íconos plegables y menú contextual propio.
 - **Zoom:** lanza, enfoca o restaura Zoom (flatpak) aunque esté en segundo plano.
 - **Wallpaper:** transición con fundido y esquinas redondeadas; todo configurable desde `Config.qml`.
+- **Colores del wallpaper** (matugen): una fila arriba del selector de wallpapers (`Super+W`) con el switch, el estilo (Suave, Fiel, Vibrante o Expresivo) y los colores que matugen encuentra en la imagen (el elegido manda y se recuerda por wallpaper). El acento (switches, sliders, botones), la isla, los bordes y los textos toman un tinte del wallpaper con un fundido de 600 ms; los colores con significado (rojo, ámbar, verde y naranja) y los blancos no cambian. También los toman los bordes de Hyprland, kitty, hyprlock y GTK. Apagado, todo vuelve al azul de siempre.
 
 ## Atajos
 
@@ -70,7 +71,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@recorder toggle ""|stop`, `stixshell@screenshot open|area|window|screen|cancel` y `edit <ruta>`, `stixshell@bluetooth open|toggle`, `stixshell@network open|toggle`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@recorder toggle ""|stop`, `stixshell@screenshot open|area|window|screen|cancel` y `edit <ruta>`, `stixshell@theme regen|toggle` y `scheme <id>`, `stixshell@bluetooth open|toggle`, `stixshell@network open|toggle`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
 `Esc` o un clic fuera cierran cualquier panel. El bloqueo se dispara con `qs ipc call stixshell@lock lock`.
 
 > Si la shell se cae estando bloqueado, Hyprland muestra su pantalla roja. Para recuperarte: `Ctrl+Alt+F2`, entra con tu usuario y ejecuta `hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("hyprlock")'` (o relanza `qs`); vuelve con `Ctrl+Alt+F1` (o la TTY de Hyprland) y desbloquea con tu contraseña.
@@ -110,6 +111,7 @@ sudo xbps-install -Su hyprland quickshell upower pipewire wireplumber brightness
 | **Multimedia** | `playerctl` (respaldo de las teclas multimedia si la shell no corre). Opcional: `mpv-mpris` (mpv no habla MPRIS sin él), que además hay que enlazar una vez: `mkdir -p ~/.config/mpv/scripts && ln -s /usr/lib/mpv-mpris/mpris.so ~/.config/mpv/scripts/` y reabrir mpv | sin él, mpv no se ve; las teclas solo funcionan con la shell |
 | **Grabador de pantalla** | `wf-recorder`, `pipewire-pulse` con `pactl` (audio), `mesa-vaapi` (grabar con la GPU), `python3-gobject` y `gtk+3` (diálogo de carpeta) y `libnotify` (aviso) | sin `wf-recorder`, avisa "No se pudo grabar"; sin VA-API, graba por la CPU |
 | **Capturador de pantalla** | `grim` (congelar la pantalla), `wl-clipboard` (copiar), `python3-Pillow` (recortar), `hyprland` (`hyprctl`, para las ventanas), `libnotify` (aviso), `python3-gobject` (stickers desde archivo) y `noto-fonts-emoji` | sin `grim`, avisa "No se pudo capturar la pantalla"; sin Pillow, no se guarda |
+| **Colores del wallpaper** | `matugen` (genera la paleta), `python3` y, para GTK, `adw-gtk3` (lo instala `system/adw-gtk3.sh`) | sin matugen, quedan los colores fijos y la fila lo avisa |
 | **Escribir en la ventana activa** (emojis y calculadora del launcher) | `wtype` | opcional: sin él, se copian |
 | **Fuentes** | `font-inter`, `nerd-fonts-ttf` (JetBrainsMono Nerd Font y Symbols Nerd Font), `noto-fonts-emoji` | íconos y emojis rotos |
 | **Opcional** | Zoom por flatpak (`us.zoom.Zoom`) para su botón. `gtk4` solo para regenerar los emojis (`scripts/emoji-data.py`) | |
@@ -121,6 +123,7 @@ Activos con `sudo ln -s /etc/sv/<nombre> /var/service/`: `dbus`, `udevd`, `elogi
 ### Ajustes de una vez (necesitan root)
 
 - `sudo sh system/acpi-shell-keys.sh`: `acpid` deja de apagar con el botón de encendido, de cambiar el brillo y de suspender al cerrar la tapa sin bloquear (mientras la shell corre). Con esto el botón abre el menú de sesión, las teclas de brillo las maneja la shell y la tapa bloquea y suspende. Sin `qs`, vuelve a funcionar como siempre.
+- `sh system/adw-gtk3.sh` (opcional, sin root): descarga adw-gtk3 y pasa GTK a oscuro (adw-gtk3-dark y Papirus-Dark) para que las apps tomen los colores del wallpaper; con `--restore` vuelve a WhiteSur-Light.
 - `sudo sh system/conservation-mode.sh`: regla de udev para el modo conservación del IdeaPad ("Cargar hasta 60 %"). Solo IdeaPad.
 
 - `sudo sh system/bluetooth-config.sh` (opcional): en `/etc/bluetooth/main.conf` pone `Experimental = true` (batería de los audífonos) y `Name = %h` (el celular ve el nombre del equipo, no "BlueZ 5.88"), y reinicia `bluetoothd`.
@@ -138,6 +141,7 @@ Activos con `sudo ln -s /etc/sv/<nombre> /var/service/`: `dbus`, `udevd`, `elogi
 git clone <este-repo> ~/proyectos/my-desktop-environment
 ln -s ~/proyectos/my-desktop-environment/quickshell ~/.config/quickshell
 ln -s ~/proyectos/my-desktop-environment/hypr ~/.config/hypr
+ln -s ~/proyectos/my-desktop-environment/kitty ~/.config/kitty
 ```
 
 `hypr/autostart.lua` lanza `qs` al iniciar Hyprland. Para probar la shell sin reiniciar: `qs`.
@@ -153,7 +157,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 ## Personalizar
 
 - **Tamaños, animaciones y fuentes:** `quickshell/Config.qml`.
-- **Colores:** `quickshell/Theme.qml`.
+- **Colores:** `quickshell/Theme.qml` (los fijos; con los colores del wallpaper encendidos, el tinte sale de `~/.cache/stixshell/theme.json`, que escribe `quickshell/scripts/theme.py`).
 - **Nueva pill con panel:** basta con usar `Base.Island` con un `body`; se registra sola en `services/panels/PanelStore.qml` y la barra le da el foco y el "clic fuera".
 
 ## Notas de funcionamiento
@@ -162,6 +166,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 - **Inactividad:** `hypridle` solo conecta el bloqueo con el sistema (`hypr/hypridle.conf`); los tiempos de atenuar, bloquear, apagar la pantalla y suspender los maneja la shell. Los videos en reproducción evitan el bloqueo, porque `IdleMonitor` respeta los inhibidores.
 - **Música e inactividad:** mientras suena algún reproductor, no se suspende por inactividad (sí se atenúa, se bloquea y se apaga la pantalla). Cerrar la tapa y el aviso de batería al 5 % siguen suspendiendo.
 - **Grabación:** `wf-recorder` corre aparte de la shell (`scripts/screen-record.py`), así que recargar `qs` no la corta; el estado queda en `$XDG_RUNTIME_DIR/stixshell/recorder.json`. Si grabas un monitor completo, la barra sale en el video (graba una región para evitarlo). Con el audio interno y el micrófono a la vez, se crea una salida temporal `stixshell_rec` en PipeWire que se quita al terminar.
+- **Colores del wallpaper:** `scripts/theme.py` corre matugen una vez por cambio y escribe `~/.cache/stixshell/theme.json` (la shell), `hypr/colors.lua` (se aplica en caliente con `hyprctl eval`, sin `reload`), `hypr/hyprlock-colors.conf`, `kitty/colors.conf` (las ventanas abiertas se actualizan con SIGUSR1) y, solo con adw-gtk3 en uso, `gtk.css` de gtk-3.0 y gtk-4.0. Los archivos de `hypr/` y `kitty/` están en `.gitignore`. El acento es el tono 50 de la paleta del wallpaper (40 si el blanco no contrasta 3:1).
 - **Capturas:** la pantalla congelada y lo anotado pasan por `$XDG_RUNTIME_DIR/stixshell/shot` y se borran al terminar. Una captura sin anotaciones es un recorte exacto de la imagen de `grim` (a la resolución real del monitor); con anotaciones se exporta lo dibujado sobre el área. Pixelar y difuminar quedan fijos en el PNG. Las ventanas salen de `hyprctl clients` (solo las visibles del monitor, las flotantes arriba) y se captura su contenido, sin el borde de Hyprland; si otra ventana la tapa, se ve lo que hay en ese rectángulo. El selector de región (`widgets/region`) lo comparten el grabador, la VPN y el capturador.
 - **Bluetooth:** el agente de emparejamiento es un proceso de la shell (`scripts/bt-agent.py`). Si activas `blueman-applet`, este pasa a ser el agente por defecto y las preguntas salen en sus ventanas. Un dispositivo que pide un PIN o un código solo se puede emparejar con el agente corriendo.
 - **Red:** el Wi-Fi sale de `Quickshell.Networking`; la VPN y las redes ocultas, de `nmcli` (Quickshell no cubre VPN). Las VPN se importan sin conexión automática y la configuración (con su clave privada) solo pasa por `$XDG_RUNTIME_DIR/stixshell/vpn` con permisos 600 mientras dura la importación. Los DNS de la configuración de WireGuard dependen de que NetworkManager gestione `resolv.conf`.

@@ -18,7 +18,7 @@ Base.Island {
         if (current === 'applist')
             return App.Config.panel.launcherHeight;
         if (current === 'wallpapers')
-            return App.Config.wallpaperPicker.imgHeight * 2 + App.Config.wallpaperPicker.spacingCell * 2 + 2 * App.Config.pill.padding;
+            return App.Config.wallpaperPicker.imgHeight * 2 + App.Config.wallpaperPicker.spacingCell * 2 + App.Config.wallpaperPicker.themeRow + 2 * App.Config.pill.padding;
         if (current === 'session')
             return App.Config.session.height;
         if (current === 'control')

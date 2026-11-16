@@ -21,6 +21,7 @@ Singleton {
     readonly property var recorder: data.recorder
     readonly property var bluetooth: data.bluetooth
     readonly property var screenshot: data.screenshot
+    readonly property var theme: data.theme
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -68,6 +69,11 @@ Singleton {
             property bool fill: false       // rectángulos y elipses rellenos
             property bool textBackground: false
             property bool blur: false       // false = pixelar, true = difuminar
+        }
+        property JsonObject theme: JsonObject {
+            property bool dynamic: true                     // colores según el wallpaper
+            property string scheme: "scheme-tonal-spot"
+            property var sources: ({})                      // ruta del wallpaper → color fuente elegido (0 a 3)
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery
