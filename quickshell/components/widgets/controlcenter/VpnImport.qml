@@ -2,8 +2,8 @@ import QtQuick
 import "../../../services/network/" as NS
 import "../../../" as App
 
-// Tarjeta con la configuración de WireGuard leída (archivo, QR o portapapeles): nombre editable, un resumen,
-// y [Cancelar] [Agregar].
+// Tarjeta con la configuración de WireGuard u OpenVPN leída (archivo, QR o portapapeles): nombre editable, un
+// resumen (tipo, servidor, qué tráfico pasa por la VPN), usuario y contraseña si el .ovpn los pide, y [Cancelar] [Agregar].
 Rectangle {
     id: root
 
@@ -23,9 +23,23 @@ Rectangle {
         }
     }
 
+    readonly property bool openvpn: pending !== null && pending.type === "openvpn"
+    readonly property bool needsAuth: openvpn && pending.needsAuth
+
+    onNeedsAuthChanged: {
+        userInput.text = "";
+        passInput.text = "";
+        passInput.showText = false;
+    }
+
     function add() {
-        if (nameInput.text.trim() !== "")
-            NS.NetworkStore.confirmImport(nameInput.text);
+        if (nameInput.text.trim() === "")
+            return;
+        if (needsAuth && (userInput.text.trim() === "" || passInput.text === "")) {
+            (userInput.text.trim() === "" ? userInput : passInput).focusInput();
+            return;
+        }
+        NS.NetworkStore.confirmImport(nameInput.text, userInput.text.trim(), passInput.text);
     }
 
     Column {
@@ -37,7 +51,7 @@ Rectangle {
         spacing: 8
 
         Text {
-            text: "Agregar VPN de WireGuard"
+            text: root.openvpn ? "Agregar VPN de OpenVPN" : "Agregar VPN de WireGuard"
             color: App.Theme.white
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.md
@@ -90,6 +104,30 @@ Rectangle {
             color: App.Theme.gray
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
+        }
+        Text {
+            visible: root.pending !== null
+            width: parent.width
+            elide: Text.ElideRight
+            text: !root.pending ? "" : (root.pending.fullTunnel ? "Todo el tráfico pasa por la VPN (y solo se usa su DNS)" : (root.pending.allowed.length > 0 ? "Solo " + root.pending.allowed.join(", ") : ""))
+            color: App.Theme.gray
+            font.family: App.Config.fonts.text
+            font.pixelSize: App.Config.fontSize.sm
+        }
+        NetField {
+            id: userInput
+            visible: root.needsAuth
+            width: parent.width
+            placeholder: "Usuario"
+            onAccepted: passInput.focusInput()
+        }
+        NetField {
+            id: passInput
+            visible: root.needsAuth
+            width: parent.width
+            secret: true
+            placeholder: "Contraseña"
+            onAccepted: root.add()
         }
 
         Row {

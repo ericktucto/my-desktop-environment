@@ -11,6 +11,8 @@ Item {
     property bool checked: false
     // El switch se atenúa si no se puede usar
     property bool switchEnabled: true
+    // Sin switch (la vista de detalles de una red)
+    property bool showSwitch: true
 
     signal backRequested
     signal toggled
@@ -68,6 +70,7 @@ Item {
 
     C.Switch {
         id: toggle
+        visible: root.showSwitch
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         checked: root.checked

@@ -3,7 +3,7 @@ import "../../../services/network/" as NS
 import "../../../" as App
 
 // Una red Wi-Fi: señal, nombre, estado y candado. Clic = conectar o desconectar; en una red segura sin guardar,
-// la fila se despliega con el campo de contraseña. En las guardadas, × para olvidar (pide un segundo clic).
+// la fila se despliega con el campo de contraseña. En las guardadas, ⚙ abre sus detalles y × olvida (pide un segundo clic).
 Rectangle {
     id: root
 
@@ -120,7 +120,7 @@ Rectangle {
         }
     }
 
-    // × (solo guardadas, al pasar el mouse) y candado
+    // ⚙ y × (solo guardadas, al pasar el mouse) y candado
     Row {
         id: right
         anchors.right: parent.right
@@ -129,7 +129,29 @@ Rectangle {
         spacing: 6
 
         Rectangle {
-            visible: root.network.known && (mouse.containsMouse || forgetMouse.containsMouse || root.confirming)
+            visible: root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
+            width: 26
+            height: 26
+            radius: 13
+            color: gearMouse.containsMouse ? App.Theme.surfaceActive : "transparent"
+
+            Text {
+                anchors.centerIn: parent
+                text: String.fromCodePoint(App.Config.network.glyphGear)
+                color: App.Theme.gray
+                font.family: App.Config.fonts.icons
+                font.pixelSize: App.Config.fontSize.icon
+            }
+            MouseArea {
+                id: gearMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.store.openDetails(root.network)
+            }
+        }
+        Rectangle {
+            visible: root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
             width: 26
             height: 26
             radius: 13

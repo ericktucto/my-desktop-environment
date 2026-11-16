@@ -6,7 +6,8 @@ import Quickshell.Networking
 import "../region/" as RG
 import "../../" as App
 
-// Red: Wi-Fi (Quickshell.Networking), conexión por cable y VPN de WireGuard (nmcli, que Quickshell no cubre).
+// Red: Wi-Fi (Quickshell.Networking), conexión por cable, VPN de WireGuard y OpenVPN, detalles de cada red (IP, DNS),
+// QR para compartir el Wi-Fi y redes de empresa 802.1X (nmcli, que Quickshell no cubre; los comandos largos, en scripts/net.py).
 // Las interfaces virtuales de Docker no se muestran (Config.network.ignoredDevices).
 Singleton {
     id: store
@@ -14,6 +15,9 @@ Singleton {
     readonly property var cfg: App.Config.network
     readonly property string vpnScript: Quickshell.shellPath("scripts/vpn-import.py")
     readonly property string pickScript: Quickshell.shellPath("scripts/pick.py")
+    readonly property string netScript: Quickshell.shellPath("scripts/net.py")
+    readonly property string qrScript: Quickshell.shellPath("scripts/clipboard-qr.py")
+    readonly property string netDir: Quickshell.env("XDG_RUNTIME_DIR") + "/stixshell/net"
 
     // La vista se abre o se cierra (el diálogo de archivos y el selector de región necesitan la pantalla libre)
     signal openPanel
@@ -69,7 +73,7 @@ Singleton {
         return n.security === WifiSecurityType.Open || n.security === WifiSecurityType.Owe;
     }
 
-    // Empresa (802.1X): se muestra pero no se configura aquí
+    // Empresa (802.1X): pide usuario y contraseña (formulario)
     function isEnterprise(n) {
         return n.security === WifiSecurityType.Wpa2Eap || n.security === WifiSecurityType.WpaEap || n.security === WifiSecurityType.Wpa3SuiteB192 || n.security === WifiSecurityType.Leap;
     }
@@ -84,8 +88,10 @@ Singleton {
             return "Conectando…";
         if (n.connected)
             return "Conectada · clic para desconectar";
+        if (n.known)
+            return "Guardada";
         if (isEnterprise(n))
-            return "Requiere configuración avanzada";
+            return "Empresa · clic para configurar";
         if (n.known)
             return "Guardada";
         return isOpen(n) ? "Abierta" : "Segura";
@@ -150,8 +156,9 @@ Singleton {
             return;
         if (n.connected) {
             n.disconnect();
-        } else if (isEnterprise(n)) {
-            say("Requiere configuración avanzada");
+        } else if (isEnterprise(n) && !n.known) {
+            passwordFor = "";
+            enterpriseFor = n.name;
         } else if (n.known || isOpen(n)) {
             passwordFor = "";
             n.connect();
@@ -225,8 +232,228 @@ Singleton {
         }
     }
 
-    // ── VPN (WireGuard y otras de NetworkManager) ──
-    // { name, uuid, type, state } con state = "activated" | "activating" | ""
+    // ── Detalles de una red (IP, DNS, conexión automática) ──
+    // { kind: "wifi"|"wired", key, title, subtitle, uuid, name, method, addresses, gateway, dns, ignoreAutoDns,
+    //   autoconnect, security, live: {device, ip, gateway, dns, mac} | null }
+    property var details: null
+    // /etc/resolv.conf enlaza al de NetworkManager (system/networkmanager.sh): si no, el DNS de la VPN no se aplica
+    property bool resolvOk: true
+
+    function openDetails(n) {
+        passwordFor = "";
+        closeShare();
+        run(["python3", netScript, "profile", "--ssid", n.name], function (out) {
+            store.gotDetails(out, {
+                kind: "wifi",
+                key: n.name,
+                title: n.name,
+                subtitle: n.connected ? "Conectada · Señal " + Math.round(n.signalStrength * 100) + " %" : "Guardada"
+            });
+        });
+        checkResolv();
+    }
+
+    function openWiredDetails(dev) {
+        closeShare();
+        run(["python3", netScript, "profile", "--dev", dev.name], function (out) {
+            store.gotDetails(out, {
+                kind: "wired",
+                key: dev.name,
+                title: "Cableada",
+                subtitle: dev.connected ? "Conectada · " + dev.name : dev.name
+            });
+        });
+        checkResolv();
+    }
+
+    function gotDetails(out, head) {
+        let r = null;
+        try {
+            r = JSON.parse(out);
+        } catch (err) {
+            // sin respuesta
+        }
+        if (!r || !r.ok || !r.found) {
+            say("Esta red no tiene un perfil guardado");
+            return;
+        }
+        for (const k in head)
+            r[k] = head[k];
+        details = r;
+    }
+
+    // Recarga los datos en vivo (tras guardar)
+    function reloadDetails() {
+        if (!details)
+            return;
+        const d = details;
+        const args = d.kind === "wifi" ? ["--ssid", d.key] : ["--dev", d.key];
+        run(["python3", netScript, "profile"].concat(args), function (out) {
+            store.gotDetails(out, {
+                kind: d.kind,
+                key: d.key,
+                title: d.title,
+                subtitle: d.subtitle
+            });
+        });
+    }
+
+    function checkResolv() {
+        run(["sh", "-c", '[ "$(readlink /etc/resolv.conf)" = /run/NetworkManager/resolv.conf ]'], function (out, code) {
+            store.resolvOk = code === 0;
+        });
+    }
+
+    // form: { method: "auto"|"manual", address, gateway, dns: "auto"|"1.1.1.1,…", autoconnect: bool }
+    function saveDetails(form) {
+        if (!details)
+            return;
+        const cmd = ["python3", netScript, "set-ip", details.uuid, "--method", form.method, "--dns", form.dns, "--autoconnect", form.autoconnect ? "yes" : "no"];
+        if (form.method === "manual")
+            cmd.push("--address", form.address, "--gateway", form.gateway);
+        if (details.live)
+            cmd.push("--dev", details.live.device);
+        run(cmd, function (out) {
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            if (r && r.ok) {
+                store.say(r.applied === "reconnected" ? "Guardado · la red se reconectó" : "Guardado");
+                store.reloadDetails();
+            } else {
+                store.say(r && r.error ? r.error : "No se pudo guardar");
+            }
+        });
+    }
+
+    function closeDetails() {
+        closeShare();
+        details = null;
+    }
+
+    function forgetDetails() {
+        if (!details || details.kind !== "wifi")
+            return;
+        const n = networks.find(x => x.name === details.key);
+        if (n)
+            n.forget();
+        closeDetails();
+    }
+
+    // ── Compartir el Wi-Fi con un QR ──
+    // share: { ssid, psk, png, security } | null
+    property var share: null
+    property int shareSerial: 0
+
+    function startShare() {
+        if (!details || details.kind !== "wifi")
+            return;
+        run(["python3", netScript, "share", details.uuid], function (out) {
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            if (!r || !r.ok) {
+                store.say(r && r.error ? r.error : "No se pudo leer la red");
+                return;
+            }
+            const png = store.netDir + "/wifi-qr.png";
+            store.run(["sh", "-c", 'mkdir -p "$1"; chmod 700 "$1"; python3 "$2" "$3"', "_", store.netDir, store.qrScript, png], function (o, code) {
+                if (code !== 0) {
+                    store.say("No se pudo generar el QR");
+                    return;
+                }
+                store.shareSerial++;
+                store.share = {
+                    ssid: r.ssid,
+                    psk: r.psk,
+                    security: r.security,
+                    png: png
+                };
+            }, r.payload);
+        });
+    }
+
+    function closeShare() {
+        if (!share)
+            return;
+        const png = share.png;
+        share = null;
+        run(["rm", "-f", png], function () {});
+    }
+
+    function copyPassword() {
+        if (share && share.psk !== "")
+            run(["wl-copy"], function () {
+                store.say("Contraseña copiada");
+            }, share.psk);
+    }
+
+    // ── Red de empresa (802.1X) ──
+    // enterpriseFor: SSID cuyo formulario está abierto; enterpriseDraft: lo escrito antes de un fallo (sin contraseña)
+    property string enterpriseFor: ""
+    property var enterpriseDraft: null
+    property bool enterpriseBusy: false
+
+    // form: { eap, phase2, identity, anonymous, password, ca: "system"|"none"|<ruta>, domain }
+    function connectEnterprise(form) {
+        const ssid = enterpriseFor;
+        const cmd = ["python3", netScript, "enterprise", ssid, "--eap", form.eap, "--phase2", form.phase2, "--identity", form.identity, "--ca", form.ca];
+        if (form.anonymous !== "")
+            cmd.push("--anonymous", form.anonymous);
+        if (form.domain !== "")
+            cmd.push("--domain", form.domain);
+        enterpriseBusy = true;
+        const draft = {
+            eap: form.eap,
+            phase2: form.phase2,
+            identity: form.identity,
+            anonymous: form.anonymous,
+            ca: form.ca,
+            domain: form.domain
+        };
+        run(cmd, function (out) {
+            store.enterpriseBusy = false;
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            if (r && r.ok) {
+                store.enterpriseFor = "";
+                store.enterpriseDraft = null;
+                store.say("Conectada a «" + ssid + "»");
+            } else {
+                // El formulario sigue abierto con lo escrito (menos la contraseña)
+                store.enterpriseDraft = draft;
+                store.say(r && r.error ? r.error : "No se pudo conectar a «" + ssid + "»");
+            }
+        }, form.password);
+    }
+
+    function cancelEnterprise() {
+        enterpriseFor = "";
+        enterpriseDraft = null;
+    }
+
+    // Certificado de la red: el diálogo de GTK necesita la pantalla libre (la isla se cierra y vuelve)
+    function pickCaCert(done) {
+        closePanel();
+        run(["python3", pickScript, "file", Quickshell.env("HOME"), "Certificado de la red", "*.pem", "*.crt", "*.cer", "*.der"], function (out, code) {
+            store.openPanel();
+            if (code === 0 && out.trim() !== "")
+                done(out.trim());
+        });
+    }
+
+    // ── VPN (WireGuard, OpenVPN y otras de NetworkManager) ──
+    // { name, uuid, type, kind, state } con kind = "wireguard" | "openvpn" | "vpn" y state = "activated" | "activating" | ""
     property var vpns: []
     readonly property bool vpnActive: vpns.some(v => v.state === "activated")
 
@@ -262,9 +489,25 @@ Singleton {
                     });
             }
             list.sort((a, b) => a.name.localeCompare(b.name));
+            for (const v of list)
+                v.kind = v.type === "wireguard" ? "wireguard" : ((store.vpnKinds[v.uuid] ?? "") || "vpn");
             store.vpns = list;
+            // Las "vpn" de NetworkManager son plugins: se pregunta cuál (OpenVPN…) una vez por conexión
+            const unknown = list.filter(v => v.type === "vpn" && !(v.uuid in store.vpnKinds)).map(v => v.uuid);
+            if (unknown.length > 0)
+                store.run(["sh", "-c", 'for u in "$@"; do echo "$u $(nmcli -g vpn.service-type connection show uuid "$u")"; done', "_"].concat(unknown), function (o) {
+                    const kinds = Object.assign({}, store.vpnKinds);
+                    for (const l of o.split("\n")) {
+                        const [u, svc] = l.trim().split(" ");
+                        if (u)
+                            kinds[u] = svc && svc.endsWith("openvpn") ? "openvpn" : "vpn";
+                    }
+                    store.vpnKinds = kinds;
+                    store.refreshVpns();
+                });
         });
     }
+    property var vpnKinds: ({})
 
     // Cada cambio en NetworkManager llega por `nmcli monitor`; se relee con un pequeño retraso
     Process {
@@ -325,7 +568,7 @@ Singleton {
             reading = true;
             closePanel();
             const qr = origin === "qr-file";
-            run(["python3", pickScript, "file", Quickshell.env("HOME"), qr ? "Imagen con el QR de WireGuard" : "Configuración de WireGuard"].concat(qr ? ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] : ["*.conf", "*.txt"]), function (out, code) {
+            run(["python3", pickScript, "file", Quickshell.env("HOME"), qr ? "Imagen con el QR de WireGuard" : "Configuración de VPN (WireGuard u OpenVPN)"].concat(qr ? ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] : ["*.conf", "*.ovpn", "*.txt"]), function (out, code) {
                 const path = out.trim();
                 if (code !== 0 || path === "") {
                     store.endReading("");
@@ -336,7 +579,7 @@ Singleton {
                     store.decodeQr(path, "");
                 else
                     store.run(["cat", path], function (text, c) {
-                        store.checkConfig(c === 0 ? text : "", hint);
+                        store.checkConfig(c === 0 ? text : "", hint, path);
                     });
             });
         }
@@ -369,7 +612,7 @@ Singleton {
     }
 
     // Valida la configuración y propone el nombre (el del archivo si vino de uno)
-    function checkConfig(text, hint) {
+    function checkConfig(text, hint, path) {
         const cmd = ["python3", vpnScript, "check"];
         if (hint !== "")
             cmd.push("--hint", hint);
@@ -381,13 +624,19 @@ Singleton {
                 // sin respuesta
             }
             if (!r || !r.ok)
-                store.endReading(r && r.error ? r.error : "No es una configuración de WireGuard");
+                store.endReading(r && r.error ? r.error : "No es una configuración de WireGuard ni de OpenVPN");
             else {
                 store.pending = {
                     text: text,
                     name: r.name,
+                    type: r.type,
                     endpoint: r.endpoint,
-                    address: r.address
+                    address: r.address,
+                    fullTunnel: r.fullTunnel,
+                    allowed: r.allowed,
+                    needsAuth: r.needsAuth,
+                    // Un .ovpn se importa desde su archivo (sus certificados suelen estar en la misma carpeta)
+                    path: r.type === "openvpn" && path ? path : ""
                 };
                 store.endReading("");
             }
@@ -406,12 +655,20 @@ Singleton {
         pending = null;
     }
 
-    function confirmImport(name) {
+    function confirmImport(name, user, password) {
         if (!pending)
             return;
-        const text = pending.text;
+        const p = pending;
         pending = null;
-        run(["python3", vpnScript, "import", name], function (out) {
+        const withAuth = p.type === "openvpn" && p.needsAuth && user !== "";
+        const cmd = ["python3", vpnScript, "import", name, "--type", p.type, "--dns-priority", String(cfg.vpnDnsPriority)];
+        if (p.path !== "")
+            cmd.push("--path", p.path);
+        if (withAuth)
+            cmd.push("--user", user);
+        // Con usuario, la contraseña va en la primera línea de stdin (no en la línea de órdenes)
+        const text = (withAuth ? password + "\n" : "") + p.text;
+        run(cmd, function (out) {
             let r = null;
             try {
                 r = JSON.parse(out);

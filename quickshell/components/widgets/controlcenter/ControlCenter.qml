@@ -52,6 +52,8 @@ Item {
         netPage.menuOpen = false;
         netPage.hiddenOpen = false;
         NS.NetworkStore.passwordFor = "";
+        NS.NetworkStore.cancelEnterprise();
+        NS.NetworkStore.closeDetails();
         BT.BluetoothStore.leave();
         NS.NetworkStore.leave();
     }

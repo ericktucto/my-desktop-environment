@@ -11,6 +11,8 @@ Rectangle {
 
     readonly property bool active: vpn.state === "activated"
     property bool confirming: false
+    // El tipo se dice solo si no es WireGuard
+    readonly property string kindText: vpn.kind === "openvpn" ? "OpenVPN · " : (vpn.kind === "vpn" ? "VPN · " : "")
 
     height: App.Config.network.rowHeight
     radius: 14
@@ -82,7 +84,7 @@ Rectangle {
         }
         Text {
             width: parent.width
-            text: root.confirming ? "¿Borrar? Vuelve a pulsar ×" : (root.active ? "Conectada · clic para desconectar" : (root.vpn.state === "activating" ? "Conectando…" : "Clic para conectar"))
+            text: root.confirming ? "¿Borrar? Vuelve a pulsar ×" : root.kindText + (root.active ? "Conectada · clic para desconectar" : (root.vpn.state === "activating" ? "Conectando…" : "Clic para conectar"))
             elide: Text.ElideRight
             color: root.confirming ? App.Theme.orange : App.Theme.gray
             font.family: App.Config.fonts.text

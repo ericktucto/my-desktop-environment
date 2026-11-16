@@ -3,7 +3,8 @@ import "../../../services/network/" as NS
 import "../../../" as App
 
 // Vista de red del centro de control: Wi-Fi (switch, redes, buscar, red oculta), conexión por cable y VPN de
-// WireGuard (conectar, borrar y agregar desde un archivo, una imagen con QR, el portapapeles o la pantalla).
+// WireGuard y OpenVPN (conectar, borrar y agregar desde un archivo, una imagen con QR, el portapapeles o la pantalla).
+// ⚙ en una red abre sus detalles (IP, DNS, QR); una red de empresa abre el formulario 802.1X.
 // Teclado: ↑ ↓, Enter (conectar o desconectar) y Supr (olvidar o borrar, dos veces). Esc: ControlCenter.back().
 FocusScope {
     id: root
@@ -21,7 +22,7 @@ FocusScope {
     readonly property int netCount: store.enabled ? shown.length : 0
     readonly property int total: netCount + store.vpns.length
     // Mientras se escribe algo (contraseña, red oculta, nombre de la VPN) las flechas no mueven la selección
-    readonly property bool typing: store.passwordFor !== "" || hiddenOpen || store.pending !== null
+    readonly property bool typing: store.passwordFor !== "" || hiddenOpen || store.pending !== null || store.enterpriseFor !== "" || store.details !== null
 
     onTotalChanged: current = Math.min(current, total - 1)
     onVisibleChanged: {
@@ -41,6 +42,12 @@ FocusScope {
     function cancelInner() {
         if (store.pending) {
             store.cancelImport();
+        } else if (store.enterpriseFor !== "") {
+            store.cancelEnterprise();
+        } else if (store.share) {
+            store.closeShare();
+        } else if (store.details) {
+            store.closeDetails();
         } else if (hiddenOpen) {
             hiddenOpen = false;
         } else if (menuOpen) {
@@ -145,11 +152,12 @@ FocusScope {
         id: header
         anchors.top: parent.top
         width: parent.width
-        title: "Red"
-        subtitle: root.store.enabled && root.store.current ? root.store.current.name : ""
+        title: root.store.details ? root.store.details.title : "Red"
+        subtitle: root.store.details ? "" : (root.store.enabled && root.store.current ? root.store.current.name : "")
+        showSwitch: root.store.details === null
         checked: root.store.enabled
         switchEnabled: root.store.wifiAvailable && !root.store.blocked
-        onBackRequested: root.backRequested()
+        onBackRequested: root.store.details ? root.cancelInner() : root.backRequested()
         onToggled: root.store.toggle()
     }
 
@@ -172,6 +180,10 @@ FocusScope {
         }
         VpnImport {
             visible: root.store.pending !== null
+            width: parent.width
+        }
+        EnterpriseForm {
+            visible: root.store.enterpriseFor !== ""
             width: parent.width
         }
         Rectangle {
@@ -300,9 +312,19 @@ FocusScope {
         }
     }
 
+    // ── Detalles de una red ──
+    NetworkDetails {
+        visible: root.store.details !== null
+        anchors.top: top.bottom
+        anchors.topMargin: 10
+        anchors.bottom: parent.bottom
+        width: parent.width
+    }
+
     // ── Listas (se desplazan dentro del alto fijo de la vista) ──
     Flickable {
         id: flick
+        visible: root.store.details === null
         anchors.top: top.bottom
         anchors.topMargin: 10
         anchors.bottom: parent.bottom
@@ -319,6 +341,7 @@ FocusScope {
 
             // Cableada
             Item {
+                id: wiredRow
                 visible: root.store.wiredConnected
                 width: parent.width
                 height: visible ? 52 : 0
@@ -350,6 +373,29 @@ FocusScope {
                         color: App.Theme.gray
                         font.family: App.Config.fonts.text
                         font.pixelSize: App.Config.fontSize.sm
+                    }
+                }
+                Rectangle {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 14
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 26
+                    height: 26
+                    radius: 13
+                    color: wiredGear.containsMouse ? App.Theme.surfaceActive : "transparent"
+                    Text {
+                        anchors.centerIn: parent
+                        text: String.fromCodePoint(App.Config.network.glyphGear)
+                        color: App.Theme.gray
+                        font.family: App.Config.fonts.icons
+                        font.pixelSize: App.Config.fontSize.icon
+                    }
+                    MouseArea {
+                        id: wiredGear
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.store.openWiredDetails(root.store.wired.find(d => d.connected) ?? root.store.wired[0])
                     }
                 }
             }
@@ -454,7 +500,7 @@ FocusScope {
                     model: [
                         {
                             g: 0xf0214,
-                            t: "Archivo .conf",
+                            t: "Archivo (.conf o .ovpn)",
                             o: "file"
                         },
                         {

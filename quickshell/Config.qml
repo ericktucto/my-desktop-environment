@@ -71,6 +71,25 @@ Singleton {
         readonly property int glyphLock: 0xf033e
         readonly property int glyphVpn: 0xf0582
         readonly property int glyphEye: 0xf06d0
+        readonly property int glyphGear: 0xf0493
+        readonly property int glyphQr: 0xf0432
+        // DNS que se pueden elegir en los detalles de una red ("Automático" y "Personalizado" van aparte)
+        readonly property var dnsPresets: [
+            {
+                label: "Cloudflare",
+                dns: "1.1.1.1,1.0.0.1"
+            },
+            {
+                label: "Google",
+                dns: "8.8.8.8,8.8.4.4"
+            },
+            {
+                label: "Quad9",
+                dns: "9.9.9.9,149.112.112.112"
+            }
+        ]
+        // Prioridad del DNS de una VPN de todo el tráfico (negativa = solo se usa el suyo); la aplica scripts/vpn-import.py
+        readonly property int vpnDnsPriority: -50
     }
 
     // ===== Pill de la ventana activa =====
