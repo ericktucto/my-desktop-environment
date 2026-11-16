@@ -71,6 +71,11 @@ Variants {
             // ── Atajos ──
             function pressEscape() {
                 const a = win.notes;
+                // Primero se cierra la tarjeta del texto leído
+                if (win.store.ocrState !== "") {
+                    win.store.closeOcr();
+                    return;
+                }
                 if (a.editingId >= 0) {
                     a.endEdit();
                     return;
@@ -160,6 +165,18 @@ Variants {
                 }, Qt.size(s.width * k, s.height * k));
             }
 
+            // Lee el texto (o el QR) del área, sin las anotaciones: el recorte de la imagen congelada
+            function readText() {
+                const s = Qt.rect(Math.round(frame.sel.x), Math.round(frame.sel.y), Math.round(frame.sel.width), Math.round(frame.sel.height));
+                if (s.width < conf.minSize || s.height < conf.minSize)
+                    return;
+                win.store.selScreen = name;
+                if (win.editMode)
+                    win.store.ocr(win.store.editSource, null);
+                else
+                    win.store.ocr(framePath, [(s.x - imageRect.x) * k, (s.y - imageRect.y) * k, s.width * k, s.height * k]);
+            }
+
             // ── Elegir el área ──
             function clearSelection() {
                 chosen = false;
@@ -239,6 +256,7 @@ Variants {
                     root.autoScreen();
                 }
                 function onModeChanged() {
+                    win.store.closeOcr();
                     root.clearSelection();
                     root.autoScreen();
                 }
@@ -252,7 +270,11 @@ Variants {
                         root.clearSelection();
                 }
                 function onActionRequested(action) {
-                    if (root.chosen && win.visible)
+                    if (!root.chosen || !win.visible)
+                        return;
+                    if (action === "text")
+                        root.readText();
+                    else
                         root.capture(action);
                 }
                 function onStickerPicked(path) {
@@ -327,16 +349,21 @@ Variants {
             R.RegionFrame {
                 id: frame
                 anchors.fill: parent
-                interactive: !win.editMode && root.mode === "area" && (!root.chosen || !root.editorOn || win.notes.tool === "move")
-                showHandles: !win.editMode && root.mode === "area"
+                interactive: !win.editMode && (root.mode === "area" || root.mode === "text") && (!root.chosen || !root.editorOn || win.notes.tool === "move")
+                showHandles: !win.editMode && (root.mode === "area" || root.mode === "text")
                 showSize: !win.editMode
-                hint: win.editMode ? "" : (root.mode === "area" ? "Arrastra para elegir el área" : (root.mode === "window" ? "Elige una ventana" : "Elige la pantalla"))
+                hint: win.editMode ? "" : (root.mode === "area" ? "Arrastra para elegir el área" : (root.mode === "text" ? "Arrastra sobre el texto" : (root.mode === "window" ? "Elige una ventana" : "Elige la pantalla")))
 
                 onStarted: {
                     root.chosen = false;
+                    win.store.closeOcr();
                     win.store.selScreen = root.name;
                 }
                 onReleased: {
+                    if (root.mode === "text") {
+                        root.readText();
+                        return;
+                    }
                     if (root.mode !== "area")
                         return;
                     win.store.selScreen = root.name;
@@ -357,7 +384,7 @@ Variants {
             // ── Elegir una ventana o la pantalla con el mouse ──
             MouseArea {
                 anchors.fill: parent
-                enabled: !win.editMode && root.mode !== "area" && !root.chosen
+                enabled: !win.editMode && (root.mode === "window" || root.mode === "screen") && !root.chosen
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onPositionChanged: function (e) {
@@ -394,6 +421,24 @@ Variants {
                 y: toolbar.y - height - 8 >= 12 ? toolbar.y - height - 8 : toolbar.y + toolbar.height + 8
                 onPicked: function (emoji, src) {
                     root.placeSticker(emoji, src);
+                }
+            }
+
+            // ── Texto leído ──
+            OcrCard {
+                id: ocrCard
+                visible: win.store.ocrState !== "" && win.store.selScreen === root.name
+                width: Math.max(conf.ocrCardMin, Math.min(conf.ocrCardMax, frame.sel.width))
+                maxTextHeight: Math.max(120, root.height / 2 - 130)
+                readonly property real limit: win.isBar ? root.height - conf.barBottom - conf.barHeight - 12 : root.height - 12
+                // Con la barra del editor debajo del área, la tarjeta va debajo de la barra
+                readonly property real below: (toolbar.visible && toolbar.y > frame.sel.y ? toolbar.y + toolbar.height : frame.sel.y + frame.sel.height) + 10
+                x: Math.max(12, Math.min(root.width - width - 12, frame.sel.x))
+                // Debajo del área; si no cabe, encima; si tampoco, dentro (sin tapar la barra de modos)
+                y: below + height <= limit ? below : (frame.sel.y - height - 10 >= 12 ? frame.sel.y - height - 10 : Math.max(12, Math.min(frame.sel.y + frame.sel.height - height - 12, limit - height)))
+                onCloseRequested: {
+                    win.store.closeOcr();
+                    root.forceActiveFocus();
                 }
             }
 

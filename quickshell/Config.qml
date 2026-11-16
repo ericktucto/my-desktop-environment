@@ -374,6 +374,10 @@ Singleton {
         readonly property int toolbarHeight: 48
         readonly property int barBottom: 56          // margen de la barra de modos al borde de abajo
         readonly property int barHeight: 52
+        readonly property string ocrLang: "spa+eng"  // idiomas del OCR (tesseract-ocr-spa y tesseract-ocr-eng)
+        readonly property int ocrUpscaleBelow: 1200  // px de ancho: debajo de eso el OCR prueba también agrandando 2×
+        readonly property int ocrCardMin: 360        // ancho de la tarjeta del texto leído
+        readonly property int ocrCardMax: 640
     }
 
     // ===== Colores dinámicos según el wallpaper (matugen, scripts/theme.py, services/theme) =====

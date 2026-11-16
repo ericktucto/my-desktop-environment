@@ -10,6 +10,11 @@
   screenshot.py deliver <imagen> [--crop x,y,w,h] [--dest ruta] [--copy]
       Recorta (px reales de la imagen), guarda en <ruta> (si no existe, se agrega " 2", " 3"… al nombre) y
       copia al portapapeles con wl-copy. Responde con JSON: { "dest": ruta o "", "w": ancho, "h": alto }.
+
+  screenshot.py ocr <imagen> [--crop x,y,w,h] [--lang spa+eng] [--upscale 1200]
+      Lee el texto de la imagen: primero un código QR (pyzbar) y, si no hay, OCR con tesseract (en Void el
+      programa se llama tesseract-ocr). Antes de leer se pasa a grises, se invierte si el fondo es oscuro y se
+      agranda 2× si es chica. Responde con JSON: { ok, kind: "qr" | "text", text } o { ok: false, error }.
 """
 import json
 import os
@@ -118,12 +123,102 @@ def deliver(args):
     print(json.dumps({"dest": final, "w": img.width, "h": img.height}))
 
 
+def ocr(args):
+    src = args[0]
+    crop = None
+    lang = "spa+eng"
+    upscale = 1200
+    i = 1
+    while i + 1 < len(args):
+        if args[i] == "--crop":
+            crop = [int(round(float(v))) for v in args[i + 1].split(",")]
+        elif args[i] == "--lang":
+            lang = args[i + 1]
+        elif args[i] == "--upscale":
+            upscale = int(args[i + 1])
+        i += 2
+
+    from PIL import Image, ImageOps, ImageStat
+
+    img = Image.open(src).convert("RGB")
+    if crop:
+        x, y, w, h = crop
+        img = img.crop((max(0, x), max(0, y), min(img.width, x + w), min(img.height, y + h)))
+
+    # Código QR primero (uno por línea)
+    try:
+        from pyzbar import pyzbar
+
+        codes = pyzbar.decode(img) or pyzbar.decode(ImageOps.invert(img))
+        found = [c.data.decode("utf-8", "replace") for c in codes if c.type == "QRCODE"]
+        if found:
+            print(json.dumps({"ok": True, "kind": "qr", "text": "\n".join(found)}))
+            return
+    except ImportError:
+        pass
+
+    # En Void el programa se llama tesseract-ocr
+    exe = shutil.which("tesseract") or shutil.which("tesseract-ocr")
+    if not exe:
+        print(json.dumps({"ok": False, "error": "Instala tesseract-ocr (y los idiomas spa y eng)"}))
+        return
+    have = subprocess.run([exe, "--list-langs"], capture_output=True, text=True).stdout.split()
+    langs = [l for l in lang.split("+") if l in have]
+    if not langs:
+        print(json.dumps({"ok": False, "error": "Instala tesseract-ocr-spa o tesseract-ocr-eng"}))
+        return
+
+    # Tesseract lee mejor texto oscuro sobre claro y, hasta cierto tamaño, letras más grandes
+    gray = ImageOps.autocontrast(img.convert("L"))
+    if ImageStat.Stat(gray).mean[0] < 128:
+        gray = ImageOps.invert(gray)
+
+    def read(scale):
+        g = gray if scale == 1 else gray.resize((gray.width * scale, gray.height * scale), Image.LANCZOS)
+        g = ImageOps.expand(g, border=16, fill=255)
+        work = src + ".ocr.png"
+        g.save(work, "PNG")
+        try:
+            out = subprocess.run([exe, work, "stdout", "-l", "+".join(langs), "--psm", "3", "tsv"], capture_output=True, text=True, timeout=60)
+        finally:
+            os.remove(work)
+        # tsv: nivel, página, bloque, párrafo, línea, palabra, x, y, w, h, confianza, texto
+        words, confs = [], []
+        for row in out.stdout.splitlines()[1:]:
+            c = row.split("\t")
+            if len(c) < 12 or c[0] != "5" or c[11].strip() == "":
+                continue
+            words.append((c[2], c[3], c[4], c[11]))
+            confs.append(float(c[10]))
+        lines, last = [], None
+        for blk, par, line, w in words:
+            key = (blk, par, line)
+            if key != last:
+                # Línea nueva; una línea en blanco entre bloques y párrafos distintos
+                if last is not None and (blk, par) != last[:2]:
+                    lines.append("")
+                lines.append("")
+                last = key
+            lines[-1] = (lines[-1] + " " + w).strip()
+        return "\n".join(lines).strip(), (sum(confs) / len(confs) if confs else 0)
+
+    # Si es chica se prueba agrandada, y si la confianza no es buena también a su tamaño; gana la más segura
+    best = read(2 if gray.width < upscale else 1)
+    if gray.width < upscale and best[1] < 90:
+        other = read(1)
+        if other[1] > best[1]:
+            best = other
+    print(json.dumps({"ok": True, "kind": "text", "text": best[0]}))
+
+
 def main():
     a = sys.argv[1:]
     if len(a) >= 2 and a[0] == "freeze":
         freeze(a[1], a[2:])
     elif len(a) >= 2 and a[0] == "deliver":
         deliver(a[1:])
+    elif len(a) >= 2 and a[0] == "ocr":
+        ocr(a[1:])
     else:
         print(__doc__, file=sys.stderr)
         sys.exit(2)

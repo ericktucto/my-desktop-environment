@@ -43,7 +43,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 ## 🟢 Prioridad baja / extras
 
-- [ ] **Capturador, lo que quedó fuera:** OCR (copiar el texto de una captura), captura con desplazamiento, subir la captura a internet, selector de color (`hyprpicker`), fijar una captura flotando y capturar una ventana tapada sin lo que la cubre (`ScreencopyView`).
 - [ ] **Multi-monitor:** hoy hay una sola barra (`PanelWindow`). Crear una por pantalla con `Variants { model: Quickshell.screens }`.
 - [ ] **Monitor del sistema:** CPU, RAM, temperatura y disco, leyendo `/proc` y `/sys`. Para temperaturas detalladas falta `lm_sensors` (`sensors`).
 - [ ] **Luz nocturna:** **falta** `hyprsunset` o `wlsunset`.

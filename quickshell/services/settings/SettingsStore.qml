@@ -60,7 +60,7 @@ Singleton {
         }
         property JsonObject screenshot: JsonObject {
             property string folder: ""      // vacío = ~/Imágenes/Capturas
-            property string mode: "area"    // area | window | screen
+            property string mode: "area"    // area | window | screen | text
             property bool editor: false
             property int delay: 0           // segundos antes de congelar la pantalla (0, 3 o 5)
             property string tool: "arrow"

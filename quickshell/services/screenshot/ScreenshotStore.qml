@@ -163,6 +163,7 @@ Singleton {
 
     // Vuelve a empezar sin cerrar del todo (el retardo dentro del capturador)
     function discard() {
+        ocrState = "";
         AnnotationStore.reset();
         frames = {};
         windows = [];
@@ -227,6 +228,70 @@ Singleton {
         }
     }
 
+    // ── Texto (OCR) ──
+    // "" · "reading" · "done" · "error". scripts/screenshot.py ocr lee un QR y, si no hay, el texto (tesseract).
+    property string ocrState: ""
+    property string ocrKind: ""
+    property string ocrText: ""
+    property string ocrError: ""
+
+    // `src`: PNG; `crop` = [x, y, w, h] en px reales de la imagen, o null para leerla entera
+    function ocr(src, crop) {
+        if (ocrProc.running)
+            return;
+        ocrState = "reading";
+        ocrText = "";
+        ocrError = "";
+        const cmd = ["python3", script, "ocr", src, "--lang", conf.ocrLang, "--upscale", String(conf.ocrUpscaleBelow)];
+        if (crop)
+            cmd.push("--crop", crop.map(v => Math.round(v)).join(","));
+        ocrProc.command = cmd;
+        ocrProc.running = true;
+    }
+
+    function closeOcr() {
+        ocrState = "";
+    }
+
+    Process {
+        id: ocrProc
+        stdout: StdioCollector {
+            id: ocrOut
+        }
+        onExited: function (code) {
+            // Si se cerró la tarjeta mientras leía, el resultado ya no interesa
+            if (store.ocrState !== "reading")
+                return;
+            let r = null;
+            try {
+                r = JSON.parse(ocrOut.text);
+            } catch (err) {
+                r = null;
+            }
+            if (code === 0 && r && r.ok) {
+                store.ocrKind = r.kind;
+                store.ocrText = r.text;
+                store.ocrState = "done";
+            } else {
+                store.ocrError = (r && r.error) ? r.error : "No se pudo leer el texto";
+                store.ocrState = "error";
+            }
+        }
+    }
+
+    // Copia el texto (con las correcciones que le hayas hecho) y cierra el capturador
+    function copyText(text) {
+        Quickshell.execDetached(["sh", "-c", 'printf %s "$1" | wl-copy', "_", text]);
+        const one = text.replace(/\s+/g, " ").trim();
+        Quickshell.execDetached(["notify-send", "-a", "Capturas", "-i", "edit-copy", "Texto copiado", one.length > 80 ? one.substring(0, 80) + "…" : one]);
+        finish();
+    }
+
+    function openLink(url) {
+        Quickshell.execDetached(["xdg-open", url]);
+        finish();
+    }
+
     // ── Entregar: guardar y/o copiar ──
     // `src`: PNG ya listo (con `crop` = [x, y, w, h] en px reales para recortarlo, o null)
     // `action`: "both" | "copy" | "save"
@@ -283,6 +348,7 @@ Singleton {
     function finish() {
         countTimer.stop();
         freezeTimer.stop();
+        ocrState = "";
         AnnotationStore.reset();
         phase = "idle";
         frames = {};
@@ -372,7 +438,7 @@ Singleton {
     }
 
     // ── IPC ──
-    // qs ipc call stixshell@screenshot open|area|window|screen|cancel   ·   edit <ruta>
+    // qs ipc call stixshell@screenshot open|area|window|screen|text|cancel   ·   edit <ruta>
     IpcHandler {
         target: "stixshell@screenshot"
         function open(): void {
@@ -386,6 +452,9 @@ Singleton {
         }
         function screen(): void {
             store.start("screen");
+        }
+        function text(): void {
+            store.start("text");
         }
         function cancel(): void {
             store.cancel();

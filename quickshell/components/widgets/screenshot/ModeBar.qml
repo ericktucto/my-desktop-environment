@@ -104,6 +104,13 @@ Rectangle {
             active: root.store.mode === "screen"
             onClicked: root.store.setMode("screen")
         }
+        ModeButton {
+            visible: root.store.editSource === ""
+            glyph: root.glyph(0xf113d)
+            label: "Texto"
+            active: root.store.mode === "text"
+            onClicked: root.store.setMode("text")
+        }
 
         Sep {
             visible: root.store.editSource === ""
@@ -155,6 +162,12 @@ Rectangle {
         Sep {
             visible: root.store.editorOn && root.chosen
             anchors.verticalCenter: parent.verticalCenter
+        }
+        ModeButton {
+            visible: root.store.editorOn && root.chosen
+            glyph: root.glyph(0xf113d)
+            label: "Texto"
+            onClicked: root.store.actionRequested("text")
         }
         ModeButton {
             visible: root.store.editorOn && root.chosen
