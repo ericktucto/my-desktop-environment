@@ -352,6 +352,29 @@ Singleton {
         readonly property int checkInterval: 3000    // ms entre revisiones de que wf-recorder sigue vivo
     }
 
+    // ===== Capturador de pantalla (services/screenshot, components/widgets/screenshot) =====
+    readonly property QtObject screenshot: QtObject {
+        readonly property string folderName: "Capturas"      // subcarpeta de Imágenes por defecto
+        readonly property string filePattern: "'Captura' yyyy-MM-dd HH-mm-ss"
+        readonly property int closeDelay: 420        // ms tras cerrar la isla antes de congelar (su animación dura anim.pill)
+        readonly property int hideDelay: 150         // ms tras la cuenta regresiva (la pill se oculta) antes de congelar
+        readonly property var delays: [0, 3, 5]      // segundos del retardo (el botón ⏱ los recorre)
+        // Colores de las anotaciones (los del tema) y grosores del trazo; el grosor también fija el texto y los números
+        readonly property var colors: ["#ff1744", "#ffb300", "#00e676", "#2979ff", "#d500f9", "#ffffff", "#0a0a0f"]
+        readonly property var strokes: [2, 4, 8]
+        readonly property var textSizes: [16, 24, 36]
+        readonly property var counterSizes: [24, 32, 44]
+        readonly property int stickerSize: 96
+        readonly property int pixelBlock: 12         // lado de cada bloque al pixelar
+        readonly property int blurRadius: 64
+        readonly property real highlighterOpacity: 0.4
+        readonly property int historyMax: 50
+        readonly property int minSize: 8             // área mínima (px)
+        readonly property int toolbarHeight: 48
+        readonly property int barBottom: 56          // margen de la barra de modos al borde de abajo
+        readonly property int barHeight: 52
+    }
+
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
         readonly property int pill: 280

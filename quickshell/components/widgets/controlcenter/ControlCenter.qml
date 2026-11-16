@@ -6,14 +6,15 @@ import "../../../services/notify/" as N
 import "../../../services/brightness/" as B
 import "../../../services/bluetooth/" as BT
 import "../../../services/network/" as NS
+import "../../../services/screenshot/" as SH
 import "../../../services/idle/" as I
 import "../../../services/power/" as P
 import "../../../services/settings/" as ST
 import "../../../" as App
 
 // Centro de control: casillas rápidas, brillo, salida y micrófono, y abajo apagar, batería y ajustes.
-// La flecha de las casillas Wi-Fi y Bluetooth abre su vista (misma altura que esta). Luz nocturna y Captura
-// son solo visuales por ahora ("Próximamente").
+// La flecha de las casillas Wi-Fi y Bluetooth abre su vista (misma altura que esta). Captura abre el capturador.
+// Luz nocturna es solo visual por ahora ("Próximamente").
 Item {
     id: root
 
@@ -169,8 +170,8 @@ Item {
                 width: grid.tileWidth
                 glyph: root.glyph(0xf019e)
                 title: "Captura"
-                subtitle: "Próximamente"
-                ready: false
+                subtitle: "Impr Pant"
+                onClicked: SH.ScreenshotStore.start("")
             }
             ControlTile {
                 width: grid.tileWidth

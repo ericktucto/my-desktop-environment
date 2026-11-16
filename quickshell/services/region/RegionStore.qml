@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// Selector de región de la pantalla (components/widgets/recorder/RegionSelector.qml), compartido por quien
+// Selector de región de la pantalla (components/widgets/region/RegionSelector.qml), compartido por quien
 // necesite marcar un área: el grabador y la importación de VPN por QR. Cada uno se identifica con un `owner`
 // y recibe `accepted`/`canceled` solo si es el suyo.
 Singleton {

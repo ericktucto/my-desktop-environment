@@ -43,6 +43,18 @@ Singleton {
             Quickshell.execDetached(t.command([].concat(files)));
     }
 
+    // Abre un archivo con la app predeterminada de su tipo (gio abre con la asociada: un visor, mpv…)
+    function openFile(path) {
+        Quickshell.execDetached(["gio", "open", path]);
+    }
+
+    // El gestor de archivos predeterminado, con el archivo seleccionado (org.freedesktop.FileManager1).
+    // No se usa xdg-open: en este equipo kitty-open queda como app de carpetas y las abriría en la terminal.
+    function showInFolder(path) {
+        const dir = path.substring(0, path.lastIndexOf("/"));
+        Quickshell.execDetached(["sh", "-c", 'gdbus call --session --dest org.freedesktop.FileManager1 --object-path /org/freedesktop/FileManager1 --method org.freedesktop.FileManager1.ShowItems "[\"$1\"]" "" >/dev/null 2>&1 || gio open "$2"', "_", encodeURI("file://" + path), dir]);
+    }
+
     function refresh() {
         checker.running = true;
     }

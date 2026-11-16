@@ -27,11 +27,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 ### Historial del portapapeles
 - [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
 
-### Capturas de pantalla
-- [ ] Captura de región, ventana o pantalla completa, con una notificación y copia al portapapeles.
-
-> Tienes `slurp`, pero **falta `grim`**. Alternativa nativa: `ScreencopyView` de Quickshell.
-
 ### Ayuda de atajos de teclado
 - [ ] Panel con todos los atajos (`Super+/`).
 - [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell.
@@ -42,12 +37,13 @@ Lo que la shell ya hace está en el [README](../README.md).
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
 ### Panel de controles rápidos (Control Center)
-- [ ] Dar función a las casillas que hoy dicen "Próximamente": Luz nocturna y Captura.
+- [ ] Dar función a la casilla que hoy dice "Próximamente": Luz nocturna.
 
 ---
 
 ## 🟢 Prioridad baja / extras
 
+- [ ] **Capturador, lo que quedó fuera:** OCR (copiar el texto de una captura), captura con desplazamiento, subir la captura a internet, selector de color (`hyprpicker`), fijar una captura flotando y capturar una ventana tapada sin lo que la cubre (`ScreencopyView`).
 - [ ] **Multi-monitor:** hoy hay una sola barra (`PanelWindow`). Crear una por pantalla con `Variants { model: Quickshell.screens }`.
 - [ ] **Monitor del sistema:** CPU, RAM, temperatura y disco, leyendo `/proc` y `/sys`. Para temperaturas detalladas falta `lm_sensors` (`sensors`).
 - [ ] **Luz nocturna:** **falta** `hyprsunset` o `wlsunset`.

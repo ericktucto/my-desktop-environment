@@ -5,6 +5,7 @@ import Quickshell.Io
 import "../notify/" as N
 import "../region/" as RG
 import "../settings/" as ST
+import "../share/" as SH
 import "../../" as App
 
 // Grabador de pantalla: monitor o región, con audio interno y/o micrófono. wf-recorder corre aparte de la
@@ -55,7 +56,7 @@ Singleton {
     }
 
     // ── Región ──
-    // El selector (components/widgets/recorder/RegionSelector.qml, services/region) está abierto para el grabador
+    // El selector (components/widgets/region/RegionSelector.qml, services/region) está abierto para el grabador
     readonly property bool picking: RG.RegionStore.picking && RG.RegionStore.owner === "recorder"
     // "menu": al aceptar vuelve el menú; "record": al aceptar empieza la cuenta regresiva
     property string pickThen: "menu"
@@ -359,27 +360,15 @@ Singleton {
         notifyProc.running = true;
     }
 
-    // El reproductor de video predeterminado (gio abre con la app asociada al tipo, p. ej. mpv)
-    function openVideo(path) {
-        Quickshell.execDetached(["gio", "open", path]);
-    }
-
-    // El gestor de archivos predeterminado, con el video seleccionado (org.freedesktop.FileManager1).
-    // No se usa xdg-open: en este equipo kitty-open queda como app de carpetas y las abriría en la terminal.
-    function showInFolder(path) {
-        const dir = path.substring(0, path.lastIndexOf("/"));
-        Quickshell.execDetached(["sh", "-c", 'gdbus call --session --dest org.freedesktop.FileManager1 --object-path /org/freedesktop/FileManager1 --method org.freedesktop.FileManager1.ShowItems "[\"$1\"]" "" >/dev/null 2>&1 || gio open "$2"', "_", encodeURI("file://" + path), dir]);
-    }
-
     Process {
         id: notifyProc
         stdout: StdioCollector {
             onStreamFinished: {
                 const a = text.trim();
                 if (a === "open")
-                    store.openVideo(store.lastFile);
+                    SH.ShareStore.openFile(store.lastFile);
                 else if (a === "folder")
-                    store.showInFolder(store.lastFile);
+                    SH.ShareStore.showInFolder(store.lastFile);
             }
         }
     }

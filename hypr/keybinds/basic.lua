@@ -26,3 +26,8 @@ map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper tog
 
 -- grabador de pantalla (abre el menú; con una grabación en curso, la detiene)
 map.add({ map.SUPER, "G" }, hl.dsp.exec_cmd("qs ipc call stixshell@recorder toggle \"\""), nil, "Grabar la pantalla")
+
+-- capturador de pantalla (área, ventana o pantalla; con Editor para anotar). Con el capturador abierto, lo cancela.
+map.add({ "Print" }, hl.dsp.exec_cmd("qs ipc call stixshell@screenshot open"), nil, "Capturar la pantalla")
+map.add({ map.SUPER, map.SHIFT, "S" }, hl.dsp.exec_cmd("qs ipc call stixshell@screenshot open"), nil,
+    "Capturar la pantalla")

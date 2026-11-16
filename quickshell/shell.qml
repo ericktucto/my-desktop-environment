@@ -16,7 +16,9 @@ import "./services/power/" as PW
 import "./services/settings/" as SE
 import "./services/media/" as MD
 import "./components/lock/" as LC
-import "./components/widgets/recorder/" as RC
+import "./components/widgets/region/" as RG
+import "./components/widgets/screenshot/" as SC
+import "./services/screenshot/" as SH
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
@@ -33,12 +35,17 @@ ShellRoot {
     readonly property var settingsData: SE.SettingsStore.idle
     // Instancia el reproductor (IPC stixshell@media para las teclas multimedia)
     readonly property var mediaPlayer: MD.MediaStore.player
+    // Instancia el capturador (IPC stixshell@screenshot para Impr Pant)
+    readonly property var screenshotPhase: SH.ScreenshotStore.phase
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}
 
-    // ── Selector de región del grabador (Super+G → Región ›) ──
-    RC.RegionSelector {}
+    // ── Selector de región (grabador y VPN) ──
+    RG.RegionSelector {}
+
+    // ── Capturador de pantalla (Impr Pant, Super+Shift+S o la casilla Captura) ──
+    SC.ScreenshotOverlay {}
 
     // ── Wallpaper de fondo ──
     PanelWindow {
@@ -112,6 +119,9 @@ ShellRoot {
                 item: recMask
             }
             Region {
+                item: shotMask
+            }
+            Region {
                 item: rightPill
             }
         }
@@ -176,6 +186,11 @@ ShellRoot {
                 id: recPill
                 x: clockPill.x + clockPill.width + centerPill.gap
             }
+            // La cuenta regresiva del capturador, tras el contador de la grabación (si lo hay)
+            I.Screenshot {
+                id: shotPill
+                x: recPill.x + (recPill.visible ? recPill.width + centerPill.gap : 0)
+            }
         }
         // La máscara de la pill de música: sin ancho si no se ve (no captura clics vacíos)
         Item {
@@ -192,6 +207,14 @@ ShellRoot {
             y: recPill.y
             width: recPill.visible ? recPill.width : 0
             height: recPill.visible ? recPill.height : 0
+        }
+        // La máscara de la cuenta regresiva del capturador
+        Item {
+            id: shotMask
+            x: shotPill.x
+            y: shotPill.y
+            width: shotPill.visible ? shotPill.width : 0
+            height: shotPill.visible ? shotPill.height : 0
         }
         Row {
             id: rightPill

@@ -20,6 +20,7 @@ Singleton {
     readonly property var launcher: data.launcher
     readonly property var recorder: data.recorder
     readonly property var bluetooth: data.bluetooth
+    readonly property var screenshot: data.screenshot
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -55,6 +56,18 @@ Singleton {
             property string target: ""      // nombre del monitor o "region"; vacío = el primero
             property bool internal: true
             property bool mic: false
+        }
+        property JsonObject screenshot: JsonObject {
+            property string folder: ""      // vacío = ~/Imágenes/Capturas
+            property string mode: "area"    // area | window | screen
+            property bool editor: false
+            property int delay: 0           // segundos antes de congelar la pantalla (0, 3 o 5)
+            property string tool: "arrow"
+            property int color: 0           // posición en Config.screenshot.colors
+            property int size: 1            // posición en Config.screenshot.strokes
+            property bool fill: false       // rectángulos y elipses rellenos
+            property bool textBackground: false
+            property bool blur: false       // false = pixelar, true = difuminar
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery
