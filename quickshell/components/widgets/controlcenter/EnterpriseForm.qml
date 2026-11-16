@@ -84,23 +84,23 @@ Rectangle {
         Flow {
             width: parent.width
             spacing: 6
-            NetChip {
+            Chip {
                 label: "PEAP"
                 selected: root.eap === "peap"
                 onClicked: root.eap = "peap"
             }
-            NetChip {
+            Chip {
                 label: "TTLS"
                 selected: root.eap === "ttls"
                 onClicked: root.eap = "ttls"
             }
-            NetChip {
+            Chip {
                 visible: root.eap === "ttls"
                 label: "PAP"
                 selected: root.phase2 === "pap"
                 onClicked: root.phase2 = "pap"
             }
-            NetChip {
+            Chip {
                 visible: root.eap === "ttls"
                 label: "MSCHAPv2"
                 selected: root.phase2 === "mschapv2"
@@ -133,12 +133,12 @@ Rectangle {
         Flow {
             width: parent.width
             spacing: 6
-            NetChip {
+            Chip {
                 label: "Del sistema"
                 selected: root.caMode === "system"
                 onClicked: root.caMode = "system"
             }
-            NetChip {
+            Chip {
                 label: root.caFile !== "" ? root.caFile.substring(root.caFile.lastIndexOf("/") + 1) : "Archivo…"
                 selected: root.caMode === "file"
                 onClicked: {
@@ -148,7 +148,7 @@ Rectangle {
                     });
                 }
             }
-            NetChip {
+            Chip {
                 label: "No verificar"
                 selected: root.caMode === "none"
                 onClicked: root.caMode = "none"

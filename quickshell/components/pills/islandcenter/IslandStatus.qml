@@ -4,6 +4,7 @@ import "../../indicators/" as I
 import "../../widgets/media/" as M
 import "../../../services/audio/" as A
 import "../../../services/brightness/" as B
+import "../../../services/nightlight/" as NL
 import "../../../services/osd/" as O
 import "../../../" as App
 
@@ -15,6 +16,8 @@ Item {
     readonly property var cfg: App.Config.osd
     readonly property string kind: O.OsdStore.kind
     readonly property bool showOsd: kind !== ""
+    // Solo texto, sin barra de nivel
+    readonly property bool textOnly: kind === "mic" || kind === "nightlight"
     // Círculo con el reloj analógico mini (la música está expandida)
     property bool circle: false
 
@@ -33,6 +36,8 @@ Item {
     readonly property bool muted: kind === "volume" && sinkMuted
 
     readonly property string iconName: {
+        if (kind === "nightlight")
+            return "night-light";
         if (kind === "brightness")
             return "brightness";
         if (kind === "mic")
@@ -40,6 +45,8 @@ Item {
         return A.AudioStore.volumeIcon(sink);
     }
     readonly property string label: {
+        if (kind === "nightlight")
+            return NL.NightLightStore.osdText;
         if (kind === "mic")
             return micMuted ? "Micrófono silenciado" : "Micrófono activo";
         if (kind === "brightness")
@@ -97,9 +104,9 @@ Item {
             color: App.Theme.white
         }
 
-        // Barra de nivel (no en el micrófono)
+        // Barra de nivel (no en el micrófono ni la luz nocturna)
         Rectangle {
-            visible: root.kind !== "mic"
+            visible: !root.textOnly
             anchors.verticalCenter: parent.verticalCenter
             width: root.cfg.barWidth
             height: root.cfg.barHeight
@@ -122,7 +129,7 @@ Item {
 
         // Porcentaje: ancho fijo para que la pill no tiemble
         Text {
-            visible: root.kind !== "mic"
+            visible: !root.textOnly
             anchors.verticalCenter: parent.verticalCenter
             width: root.cfg.percentWidth
             horizontalAlignment: Text.AlignRight
@@ -133,12 +140,12 @@ Item {
             font.weight: Font.Medium
         }
 
-        // Micrófono: solo texto
+        // Micrófono y luz nocturna: solo texto
         Text {
-            visible: root.kind === "mic"
+            visible: root.textOnly
             anchors.verticalCenter: parent.verticalCenter
             text: root.label
-            color: root.micMuted ? App.Theme.gray : App.Theme.white
+            color: root.kind === "mic" && root.micMuted ? App.Theme.gray : App.Theme.white
             font.family: App.Config.fonts.mono
             font.pixelSize: App.Config.fontSize.sm
             font.weight: Font.Medium

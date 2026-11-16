@@ -36,16 +36,12 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 > Módulo: `Quickshell.Services.UPower` (ya lo usas).
 
-### Panel de controles rápidos (Control Center)
-- [ ] Dar función a la casilla que hoy dice "Próximamente": Luz nocturna.
-
 ---
 
 ## 🟢 Prioridad baja / extras
 
 - [ ] **Multi-monitor:** hoy hay una sola barra (`PanelWindow`). Crear una por pantalla con `Variants { model: Quickshell.screens }`.
 - [ ] **Monitor del sistema:** CPU, RAM, temperatura y disco, leyendo `/proc` y `/sys`. Para temperaturas detalladas falta `lm_sensors` (`sensors`).
-- [ ] **Luz nocturna:** **falta** `hyprsunset` o `wlsunset`.
 - [ ] **Indicador de distribución del teclado** (us/es): evento `activelayout` de Hyprland.
 - [ ] **Indicadores de privacidad:** avisar cuando el micrófono, la cámara o la pantalla están en uso. Para el micrófono, con `Pipewire.linkGroups`.
 - [ ] **Clima:** consulta a wttr.in u Open-Meteo con `Process`/`curl`, en el panel del reloj.

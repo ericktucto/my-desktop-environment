@@ -11,6 +11,8 @@ Item {
     property bool enabled: true
 
     signal moved(real value)
+    // Al soltar el botón (para aplicar una sola vez algo costoso)
+    signal released
 
     readonly property real ratio: to > 0 ? Math.max(0, Math.min(1, value / to)) : 0
     readonly property int trackHeight: 12
@@ -118,5 +120,6 @@ Item {
             if (pressed)
                 update(mouse.x);
         }
+        onReleased: root.released()
     }
 }

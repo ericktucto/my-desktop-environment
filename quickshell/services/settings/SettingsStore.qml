@@ -22,6 +22,7 @@ Singleton {
     readonly property var bluetooth: data.bluetooth
     readonly property var screenshot: data.screenshot
     readonly property var theme: data.theme
+    readonly property var nightLight: data.nightLight
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -74,6 +75,16 @@ Singleton {
             property bool dynamic: true                     // colores según el wallpaper
             property string scheme: "scheme-tonal-spot"
             property var sources: ({})                      // ruta del wallpaper → color fuente elegido (0 a 3)
+        }
+        property JsonObject nightLight: JsonObject {
+            property bool enabled: false
+            property string mode: "sun"                     // sun (atardecer a amanecer) | custom (horas fijas) | always
+            property int temperature: App.Config.nightLight.temperature
+            property string start: App.Config.nightLight.start
+            property string end: App.Config.nightLight.end
+            property string latitude: ""                    // vacío = de la zona horaria
+            property string longitude: ""
+            property real pausedUntil: 0                    // ms desde 1970; la pausa vuelve sola
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery

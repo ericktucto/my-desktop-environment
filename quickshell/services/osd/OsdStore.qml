@@ -3,7 +3,7 @@ import QtQuick
 import Quickshell
 import "../../" as App
 
-// Qué muestra el OSD de la isla central contraída: "", "volume", "brightness" o "mic".
+// Qué muestra el OSD de la isla central contraída: "", "volume", "brightness", "mic" o "nightlight".
 Singleton {
     id: store
 

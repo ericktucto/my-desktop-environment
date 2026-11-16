@@ -6,6 +6,7 @@ import "../../../services/notify/" as N
 import "../../../services/brightness/" as B
 import "../../../services/bluetooth/" as BT
 import "../../../services/network/" as NS
+import "../../../services/nightlight/" as NL
 import "../../../services/screenshot/" as SH
 import "../../../services/idle/" as I
 import "../../../services/power/" as P
@@ -13,12 +14,11 @@ import "../../../services/settings/" as ST
 import "../../../" as App
 
 // Centro de control: casillas rápidas, brillo, salida y micrófono, y abajo apagar, batería y ajustes.
-// La flecha de las casillas Wi-Fi y Bluetooth abre su vista (misma altura que esta). Captura abre el capturador.
-// Luz nocturna es solo visual por ahora ("Próximamente").
+// La flecha de las casillas Wi-Fi, Bluetooth y Luz nocturna abre su vista (misma altura que esta). Captura abre el capturador.
 Item {
     id: root
 
-    // "main", "bluetooth" o "network"; el alto es siempre el de la vista principal
+    // "main", "bluetooth", "network" o "nightlight"; el alto es siempre el de la vista principal
     property string page: "main"
     implicitHeight: mainPage.implicitHeight
 
@@ -43,6 +43,11 @@ Item {
         page = "network";
         NS.NetworkStore.scan();
         netPage.forceActiveFocus();
+    }
+
+    function openNightLight() {
+        page = "nightlight";
+        nlPage.forceActiveFocus();
     }
 
     // Vuelve a la vista principal y deja de buscar y de ser visible
@@ -86,6 +91,13 @@ Item {
         id: btPage
         anchors.fill: parent
         visible: root.page === "bluetooth"
+        onBackRequested: root.reset()
+    }
+
+    NightLightPage {
+        id: nlPage
+        anchors.fill: parent
+        visible: root.page === "nightlight"
         onBackRequested: root.reset()
     }
 
@@ -156,8 +168,13 @@ Item {
                 width: grid.tileWidth
                 glyph: root.glyph(0xf0594)
                 title: "Luz nocturna"
-                subtitle: "Próximamente"
-                ready: false
+                subtitle: NL.NightLightStore.statusText
+                checked: NL.NightLightStore.enabled && !NL.NightLightStore.paused
+                detail: true
+                ready: NL.NightLightStore.available
+                detailReady: true
+                onClicked: NL.NightLightStore.toggle()
+                onDetailClicked: root.openNightLight()
             }
             ControlTile {
                 width: grid.tileWidth
@@ -181,7 +198,6 @@ Item {
                 title: "Ahorro"
                 subtitle: !P.ProfileStore.available ? "No disponible" : (P.ProfileStore.saver ? "Activado" : "Desactivado")
                 checked: P.ProfileStore.saver
-                activeColor: root.saverProfile.color
                 ready: P.ProfileStore.available
                 onClicked: P.ProfileStore.toggleSaver()
             }

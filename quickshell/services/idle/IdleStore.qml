@@ -6,6 +6,7 @@ import Quickshell.Services.UPower
 import "../brightness/" as B
 import "../lock/" as L
 import "../media/" as MD
+import "../nightlight/" as NL
 import "../recorder/" as R
 import "../session/" as S
 import "../settings/" as ST
@@ -37,6 +38,9 @@ Singleton {
 
     function dpms(on) {
         Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.dpms({ action = \"" + (on ? "on" : "off") + "\" })"]);
+        // Al encender la pantalla el color puede perderse: wlsunset se vuelve a aplicar
+        if (on)
+            NL.NightLightStore.reapply();
     }
 
     function dim() {

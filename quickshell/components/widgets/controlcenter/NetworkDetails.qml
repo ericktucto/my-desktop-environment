@@ -141,12 +141,12 @@ Item {
             Flow {
                 width: parent.width
                 spacing: 6
-                NetChip {
+                Chip {
                     label: "Automática"
                     selected: root.ipMethod === "auto"
                     onClicked: root.ipMethod = "auto"
                 }
-                NetChip {
+                Chip {
                     label: "Manual"
                     selected: root.ipMethod === "manual"
                     onClicked: root.ipMethod = "manual"
@@ -174,14 +174,14 @@ Item {
             Flow {
                 width: parent.width
                 spacing: 6
-                NetChip {
+                Chip {
                     label: "Automático"
                     selected: root.dnsMode === "auto"
                     onClicked: root.dnsMode = "auto"
                 }
                 Repeater {
                     model: root.presets
-                    delegate: NetChip {
+                    delegate: Chip {
                         required property var modelData
                         required property int index
                         label: modelData.label
@@ -189,7 +189,7 @@ Item {
                         onClicked: root.dnsMode = String(index)
                     }
                 }
-                NetChip {
+                Chip {
                     label: "Personalizado"
                     selected: root.dnsMode === "custom"
                     onClicked: {

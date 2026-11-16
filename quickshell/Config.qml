@@ -92,6 +92,26 @@ Singleton {
         readonly property int vpnDnsPriority: -50
     }
 
+    // ===== Luz nocturna (wlsunset) =====
+    readonly property QtObject nightLight: QtObject {
+        readonly property int tempMin: 2500          // K de noche (el slider)
+        readonly property int tempMax: 5500
+        readonly property int tempStep: 100
+        readonly property int temperature: 4000      // por defecto
+        readonly property int dayTemperature: 6500   // sin filtro; de aquí parte la transición
+        readonly property string start: "19:00"     // horas fijas: empieza a entibiar
+        readonly property string end: "07:00"
+        readonly property int transition: 1800      // s que tarda en pasar de día a noche y al revés
+        readonly property int timeStep: 15          // min de cada paso de las horas
+        readonly property int previewTime: 3000     // ms de vista previa al cambiar la temperatura de día
+        readonly property int tick: 60000           // revisión: pausa vencida, cambio de día, reintentos
+        readonly property int restartDelay: 3000    // ms antes de relanzar hyprsunset si se cierra solo
+        // Si no se encuentra la zona horaria (Lima)
+        readonly property real latitude: -12.05
+        readonly property real longitude: -77.05
+        readonly property int glyph: 0xf0594
+    }
+
     // ===== Pill de la ventana activa =====
     readonly property QtObject activeWindow: QtObject {
         readonly property int maxWidth: 300          // la pill no pasa de este ancho (los paneles del centro empiezan en x ≈ 520)
