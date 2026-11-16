@@ -283,6 +283,14 @@ Singleton {
         readonly property int confirmTimeout: 3000  // ms del "¿Apagar?"
         readonly property int errorShake: 300       // ms de la sacudida al fallar la contraseña
         readonly property int margin: 24
+        // Notificaciones, Bloq Mayús/Num y música del bloqueo
+        readonly property int notifyWidth: 380
+        readonly property int notifyMax: 4          // apps (tarjetas); el resto, "+N más"
+        readonly property int notifyMaxAge: 86400   // s: solo las no leídas de las últimas 24 h
+        readonly property int keyPoll: 2000         // ms entre lecturas de Bloq Mayús, Bloq Num y la tapa
+        readonly property int mediaArt: 48
+        readonly property var laptopOutputs: /^eDP/ // las notificaciones salen en la pantalla de la laptop
+        readonly property string lidState: "/proc/acpi/button/lid/LID/state"
         // > 0 = al bloquear se desbloquea solo a los N s (solo para probar sin quedarte fuera)
         readonly property int testAutoUnlock: 0
     }

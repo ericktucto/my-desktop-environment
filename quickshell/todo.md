@@ -11,11 +11,6 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
-### Pantalla de bloqueo e inactividad
-- [ ] Opcional: huella digital, Bloq Mayús y notificaciones en la pantalla de bloqueo.
-
-> Módulos: `Quickshell.Wayland` (`WlSessionLock`, `IdleMonitor`) y `Quickshell.Services.Pam`.
-
 ---
 
 ## 🟡 Prioridad media: calidad de vida
@@ -48,6 +43,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 - [ ] **Agente de polkit propio** con el estilo de la shell, usando `Quickshell.Services.Polkit`. Hoy usas `hyprpolkitagent`.
 - [ ] **Colores del wallpaper, lo que quedó fuera:** modo claro de la shell, Firefox (pywalfox), Neovim y apps Qt (`qt6ct`); y probar hyprlock con los colores nuevos.
 - [ ] **Widgets de escritorio:** reloj grande sobre el wallpaper.
+- [ ] **Huella digital en la pantalla de bloqueo:** solo si llegas a tener lector (esta laptop no lo tiene); sería con `Quickshell.Services.Pam`.
 - [ ] **Visualizador de audio** (cava) en la isla o en el fondo.
 
 ---

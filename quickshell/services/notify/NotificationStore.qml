@@ -25,6 +25,32 @@ Singleton {
 
     readonly property int unreadCount: history.filter(e => !e.read).length
 
+    // No leídas de las últimas Config.lock.notifyMaxAge s, por app (para la pantalla de bloqueo):
+    // { id, keys, latest, count, critical }, las críticas primero y luego la más nueva
+    readonly property var unreadGroups: {
+        const limit = now - App.Config.lock.notifyMaxAge * 1000;
+        const groups = {};
+        for (const e of history) {
+            if (e.read || e.time < limit)
+                continue;
+            const id = e.desktopEntry || e.appName || "?";
+            const g = groups[id] ?? (groups[id] = {
+                id: id,
+                keys: [],
+                latest: e,
+                count: 0,
+                critical: false
+            });
+            g.keys.push(e.key);
+            g.count++;
+            if (e.time > g.latest.time)
+                g.latest = e;
+            if (e.urgency === NotificationUrgency.Critical)
+                g.critical = true;
+        }
+        return Object.values(groups).sort((a, b) => (b.critical - a.critical) || (b.latest.time - a.latest.time));
+    }
+
     // key -> Notification vivo (solo en memoria)
     property var liveMap: ({})
     property int seq: 0
@@ -59,6 +85,15 @@ Singleton {
 
     function hidePopup(key) {
         popups = popups.filter(k => k !== key);
+    }
+
+    // Marca como leídas las entradas con esas keys (siguen en el historial)
+    function markRead(keys) {
+        const set = new Set(keys);
+        history = history.map(e => set.has(e.key) && !e.read ? Object.assign({}, e, {
+                read: true
+            }) : e);
+        save();
     }
 
     function markAllRead() {

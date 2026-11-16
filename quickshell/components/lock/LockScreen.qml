@@ -7,8 +7,11 @@ WlSessionLock {
     locked: L.LockStore.locked
 
     WlSessionLockSurface {
+        id: surface
         color: "black"
 
-        LockSurface {}
+        LockSurface {
+            screenName: surface.screen ? surface.screen.name : ""
+        }
     }
 }

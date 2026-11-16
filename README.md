@@ -2,7 +2,7 @@
 
 Mi entorno de escritorio personal sobre **Hyprland**, con una shell propia hecha en **Quickshell (QML)** y la configuración de Hyprland escrita en **Lua**. Corre en **Void Linux**.
 
-La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía, el portapapeles, el grabador de pantalla y las notificaciones, y un capturador de pantalla con editor. Al bloquear, la shell muestra su propia pantalla de bloqueo.
+La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esquinas redondeadas. Algunas pills se expanden en paneles: el launcher, el selector de wallpapers, el menú de sesión, los workspaces, el centro de control, la energía, el portapapeles, el grabador de pantalla y las notificaciones, y un capturador de pantalla con editor. Al bloquear, la shell muestra su propia pantalla de bloqueo: reloj, tarjeta de música (⏮ ⏯ ⏭), contraseña con aviso de **Bloq Mayús** (ámbar; con una clave mala, "Contraseña incorrecta · Bloq Mayús activado") y de **Bloq Num** apagado (solo si tecleas en el teclado numérico), y debajo las **notificaciones no leídas de las últimas 24 h**, una tarjeta por app (las críticas primero, "+N más"; con No molestar también se ven). La `×` y "Marcar todas como leídas" las marcan leídas (siguen en el historial del panel); no abren nada. Salen solo en la pantalla de la laptop (o en el monitor externo si la tapa está cerrada). El respaldo de hyprlock también avisa del Bloq Mayús.
 
 ## Contenido
 
