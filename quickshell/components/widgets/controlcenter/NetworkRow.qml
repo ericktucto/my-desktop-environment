@@ -2,24 +2,31 @@ import QtQuick
 import "../../../services/network/" as NS
 import "../../../" as App
 
-// Una red Wi-Fi: señal, nombre, estado y candado. Clic = conectar o desconectar; en una red segura sin guardar,
-// la fila se despliega con el campo de contraseña. En las guardadas, ⚙ abre sus detalles y × olvida (pide un segundo clic).
+// Una red Wi-Fi: señal, nombre, estado y candado. Clic = conectar o desconectar; en una red segura sin guardar
+// abre la pantalla de contraseña (WifiPassword). En las guardadas, ⚙ abre sus detalles y × olvida (pide un segundo clic).
+// Recibe el nombre y lee la red de store.byName: la fila no se vuelve a crear cuando cambia la señal. Si la red
+// desaparece un instante, se queda con la última que vio.
 Rectangle {
     id: root
 
-    required property var network
+    required property string name
     property bool selected: false
 
     readonly property var store: NS.NetworkStore
-    readonly property bool asking: store.passwordFor === network.name
+    readonly property var live: store.byName[name]
+    property var network: null
+    onLiveChanged: if (live)
+        network = live
+    Component.onCompleted: network = live ?? null
+
     property bool confirming: false
-    property bool showPassword: false
 
     readonly property real mainHeight: App.Config.network.rowHeight
-    height: mainHeight + (asking ? 46 : 0)
+    readonly property bool warn: !!network && network.connected && (store.portal || store.limited)
+    height: mainHeight
     radius: 14
     clip: true
-    color: network.connected ? App.Theme.surfaceActive : (selected || mouse.containsMouse ? App.Theme.surfaceHover : "transparent")
+    color: network && network.connected ? App.Theme.surfaceActive : (selected || mouse.containsMouse ? App.Theme.surfaceHover : "transparent")
 
     Behavior on height {
         NumberAnimation {
@@ -32,17 +39,9 @@ Rectangle {
         }
     }
 
-    onAskingChanged: {
-        if (asking) {
-            showPassword = false;
-            keyInput.text = "";
-            keyInput.forceActiveFocus();
-        }
-    }
-
     // Supr (o la ×): el primero pide confirmar y el segundo olvida
     function askForget() {
-        if (!network.known)
+        if (!network || !network.known)
             return;
         if (confirming) {
             confirming = false;
@@ -51,11 +50,6 @@ Rectangle {
             confirming = true;
             confirmTimer.restart();
         }
-    }
-
-    function connectNow() {
-        if (keyInput.text.length > 0)
-            store.connectWith(network, keyInput.text);
     }
 
     Timer {
@@ -73,9 +67,7 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             root.confirming = false;
-            if (root.asking)
-                root.store.passwordFor = "";
-            else
+            if (root.network)
                 root.store.activate(root.network);
         }
     }
@@ -87,8 +79,8 @@ Rectangle {
         y: (root.mainHeight - height) / 2
         width: 24
         horizontalAlignment: Text.AlignHCenter
-        text: root.store.glyphFor(root.network)
-        color: root.network.connected ? App.Theme.primary : App.Theme.white
+        text: root.network ? root.store.glyphFor(root.network, root.warn) : ""
+        color: root.warn ? App.Theme.amber : (root.network && root.network.connected ? App.Theme.primary : App.Theme.white)
         font.family: App.Config.fonts.icons
         font.pixelSize: App.Config.fontSize.iconLg + 2
     }
@@ -103,7 +95,7 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: root.network.name
+            text: root.name
             elide: Text.ElideRight
             color: App.Theme.white
             font.family: App.Config.fonts.text
@@ -112,9 +104,9 @@ Rectangle {
         }
         Text {
             width: parent.width
-            text: root.confirming ? "¿Olvidar? Vuelve a pulsar ×" : root.store.networkStatus(root.network)
+            text: root.confirming ? "¿Olvidar? Vuelve a pulsar ×" : (root.network ? root.store.networkStatus(root.network) : "")
             elide: Text.ElideRight
-            color: root.confirming ? App.Theme.orange : App.Theme.gray
+            color: root.confirming ? App.Theme.orange : (root.warn ? App.Theme.amber : App.Theme.gray)
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
         }
@@ -129,7 +121,7 @@ Rectangle {
         spacing: 6
 
         Rectangle {
-            visible: root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
+            visible: !!root.network && root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
             width: 26
             height: 26
             radius: 13
@@ -151,7 +143,7 @@ Rectangle {
             }
         }
         Rectangle {
-            visible: root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
+            visible: !!root.network && root.network.known && (mouse.containsMouse || gearMouse.containsMouse || forgetMouse.containsMouse || root.confirming)
             width: 26
             height: 26
             radius: 13
@@ -172,77 +164,12 @@ Rectangle {
             }
         }
         Text {
-            visible: !root.store.isOpen(root.network)
+            visible: !!root.network && !root.store.isOpen(root.network)
             anchors.verticalCenter: parent.verticalCenter
             text: String.fromCodePoint(App.Config.network.glyphLock)
             color: App.Theme.gray
             font.family: App.Config.fonts.icons
             font.pixelSize: App.Config.fontSize.icon
-        }
-    }
-
-    // Contraseña: Enter conecta; Esc la cierra (ControlCenter.back)
-    Row {
-        visible: root.asking
-        anchors.left: parent.left
-        anchors.leftMargin: 14 + 24 + 12
-        anchors.right: parent.right
-        anchors.rightMargin: 14
-        y: root.mainHeight - 4
-        spacing: 8
-
-        Rectangle {
-            width: parent.width - connectButton.width - parent.spacing
-            height: 36
-            radius: 10
-            color: "transparent"
-            border.width: 1
-            border.color: keyInput.activeFocus ? App.Theme.primary : App.Theme.surfaceHigh
-
-            TextInput {
-                id: keyInput
-                anchors.left: parent.left
-                anchors.right: eye.left
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: 10
-                anchors.rightMargin: 4
-                color: App.Theme.white
-                font.pixelSize: App.Config.fontSize.lg
-                echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
-                clip: true
-                // Se acepta el evento: si no, Enter llegaría a la vista y activaría otra fila
-                Keys.onReturnPressed: event => {
-                    event.accepted = true;
-                    root.connectNow();
-                }
-                Keys.onEnterPressed: event => {
-                    event.accepted = true;
-                    root.connectNow();
-                }
-            }
-            Text {
-                id: eye
-                anchors.right: parent.right
-                anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                text: String.fromCodePoint(App.Config.network.glyphEye)
-                color: root.showPassword ? App.Theme.primary : App.Theme.gray
-                font.family: App.Config.fonts.icons
-                font.pixelSize: App.Config.fontSize.icon
-
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.showPassword = !root.showPassword
-                }
-            }
-        }
-        SmallButton {
-            id: connectButton
-            primary: true
-            label: "Conectar"
-            onClicked: root.connectNow()
         }
     }
 }

@@ -16,7 +16,7 @@ Base.Island {
     Text {
         anchors.verticalCenter: parent.verticalCenter
         text: root.store.barGlyph
-        color: root.store.online ? App.Theme.white : App.Theme.grayDark
+        color: root.store.alert ? App.Theme.amber : (root.store.online ? App.Theme.white : App.Theme.grayDark)
         font.family: App.Config.fonts.icons
         font.pixelSize: App.Config.fontSize.icon
     }

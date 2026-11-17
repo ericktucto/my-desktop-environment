@@ -6,12 +6,16 @@
 #   - DNS: /etc/resolv.conf pasa a ser un enlace a /run/NetworkManager/resolv.conf (rc-manager=symlink). Sin esto,
 #     un archivo viejo de dhcpcd tapa el DNS que NetworkManager calcula, y el DNS de la VPN nunca se aplica.
 #     El archivo anterior se guarda como /etc/resolv.conf.dhcpcd.bak.
+#   - Internet: NetworkManager verifica cada 5 min (cada 10 s la shell, si hay portal) que hay salida, pidiendo un
+#     archivo de texto a nmcheck.gnome.org. Sin esto siempre dice "conectado", y la shell no puede avisar de una red
+#     que pide iniciar sesión (portal cautivo) ni de una sin internet. Para quitarlo: borra 92-stixshell-connectivity.conf.
 # Aplica los cambios con `nmcli general reload conf` (no tumba el Wi-Fi). Se puede ejecutar varias veces.
 # Uso: sudo sh system/networkmanager.sh
 set -e
 RULE=/etc/polkit-1/rules.d/50-stixshell-networkmanager.rules
 CONF=/etc/NetworkManager/conf.d/90-stixshell-unmanaged.conf
 DNSCONF=/etc/NetworkManager/conf.d/91-stixshell-dns.conf
+NETCONF=/etc/NetworkManager/conf.d/92-stixshell-connectivity.conf
 
 mkdir -p /etc/polkit-1/rules.d /etc/NetworkManager/conf.d
 
@@ -37,6 +41,16 @@ cat > "$DNSCONF" <<'EOT'
 rc-manager=symlink
 EOT
 echo "dns: $DNSCONF"
+
+cat > "$NETCONF" <<'EOT'
+# stixshell: verifica que hay internet (portal cautivo y "sin internet"). Misma dirección que Config.network.checkUrl.
+[connectivity]
+enabled=true
+uri=http://nmcheck.gnome.org/check_network_status.txt
+response=NetworkManager is online
+interval=300
+EOT
+echo "internet: $NETCONF"
 
 if [ ! -L /etc/resolv.conf ]; then
     [ -e /etc/resolv.conf.dhcpcd.bak ] || cp -p /etc/resolv.conf /etc/resolv.conf.dhcpcd.bak 2>/dev/null || true

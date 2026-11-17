@@ -18,9 +18,10 @@ import "../../../" as App
 Item {
     id: root
 
-    // "main", "bluetooth", "network" o "nightlight"; el alto es siempre el de la vista principal
+    // "main", "bluetooth", "network" o "nightlight"; el alto es el de la vista principal, salvo la pantalla
+    // de contraseña del Wi-Fi, que es corta y la isla se ajusta a ella
     property string page: "main"
-    implicitHeight: mainPage.implicitHeight
+    implicitHeight: page === "network" && netPage.compact ? netPage.compactHeight : mainPage.implicitHeight
 
     // El menú de sesión (botón de apagar) y cerrar la isla (tras abrir los ajustes)
     signal sessionRequested
@@ -56,7 +57,7 @@ Item {
         btPage.cancelRename();
         netPage.menuOpen = false;
         netPage.hiddenOpen = false;
-        NS.NetworkStore.passwordFor = "";
+        NS.NetworkStore.closePassword();
         NS.NetworkStore.cancelEnterprise();
         NS.NetworkStore.closeDetails();
         BT.BluetoothStore.leave();

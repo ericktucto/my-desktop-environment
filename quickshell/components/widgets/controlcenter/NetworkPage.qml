@@ -18,11 +18,20 @@ FocusScope {
     property bool hiddenOpen: false
     // Las 6 mejores (la conectada y las guardadas primero); "Mostrar todas" despliega el resto
     property bool showAll: false
-    readonly property var shown: showAll ? store.networks : store.networks.slice(0, 6)
-    readonly property int netCount: store.enabled ? shown.length : 0
+    readonly property int netCount: store.enabled ? (showAll ? store.order.count : Math.min(6, store.order.count)) : 0
     readonly property int total: netCount + store.vpns.length
     // Mientras se escribe algo (contraseña, red oculta, nombre de la VPN) las flechas no mueven la selección
     readonly property bool typing: store.passwordFor !== "" || hiddenOpen || store.pending !== null || store.enterpriseFor !== "" || store.details !== null
+
+    // La pantalla de contraseña es corta: la isla se ajusta a su alto en vez de dejar el de la vista principal
+    readonly property bool compact: store.passwordFor !== "" && store.details === null
+    readonly property real compactHeight: header.height + 10 + top.height + 10 + passwordScreen.implicitHeight
+
+    // Bajo el título de la pantalla de contraseña: "Segura · WPA2 · señal 72 %"
+    readonly property string passwordSubtitle: {
+        const n = store.byName[store.passwordFor];
+        return n ? store.securityText(n) + " · señal " + Math.round(n.signalStrength * 100) + " %" : "";
+    }
 
     onTotalChanged: current = Math.min(current, total - 1)
     onVisibleChanged: {
@@ -53,7 +62,7 @@ FocusScope {
         } else if (menuOpen) {
             menuOpen = false;
         } else if (store.passwordFor !== "") {
-            store.passwordFor = "";
+            store.closePassword();
         } else {
             return false;
         }
@@ -86,7 +95,7 @@ FocusScope {
         case Qt.Key_Return:
         case Qt.Key_Enter:
             if (current >= 0 && current < netCount)
-                store.activate(shown[current]);
+                store.activate(store.byName[store.order.get(current).name]);
             else if (current >= netCount)
                 store.toggleVpn(store.vpns[current - netCount]);
             break;
@@ -152,12 +161,12 @@ FocusScope {
         id: header
         anchors.top: parent.top
         width: parent.width
-        title: root.store.details ? root.store.details.title : "Red"
-        subtitle: root.store.details ? "" : (root.store.enabled && root.store.current ? root.store.current.name : "")
-        showSwitch: root.store.details === null
+        title: root.store.details ? root.store.details.title : (root.store.passwordFor !== "" ? root.store.passwordFor : "Red")
+        subtitle: root.store.details ? "" : (root.store.passwordFor !== "" ? root.passwordSubtitle : (root.store.enabled && root.store.current ? root.store.current.name : ""))
+        showSwitch: root.store.details === null && root.store.passwordFor === ""
         checked: root.store.enabled
         switchEnabled: root.store.wifiAvailable && !root.store.blocked
-        onBackRequested: root.store.details ? root.cancelInner() : root.backRequested()
+        onBackRequested: root.store.details || root.store.passwordFor !== "" ? root.cancelInner() : root.backRequested()
         onToggled: root.store.toggle()
     }
 
@@ -177,6 +186,50 @@ FocusScope {
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
             font.weight: Font.DemiBold
+        }
+        // La red pide iniciar sesión (portal cautivo) o no tiene internet
+        Rectangle {
+            visible: (root.store.portal || root.store.limited) && root.store.passwordFor === "" && root.store.details === null
+            width: parent.width
+            implicitHeight: portalRow.implicitHeight + 24
+            radius: 16
+            color: App.Theme.surfaceActive
+            border.width: 1
+            border.color: App.Theme.amber
+
+            Row {
+                id: portalRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: 14
+                spacing: 10
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: String.fromCodePoint(App.Config.network.glyphAlert)
+                    color: App.Theme.amber
+                    font.family: App.Config.fonts.icons
+                    font.pixelSize: App.Config.fontSize.iconLg + 2
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 28 - portalButton.width - 20
+                    text: root.store.portal ? "«" + root.store.netName + "» pide iniciar sesión" : "«" + root.store.netName + "» no tiene salida a internet"
+                    wrapMode: Text.Wrap
+                    color: App.Theme.white
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.sm
+                    font.weight: Font.DemiBold
+                }
+                SmallButton {
+                    id: portalButton
+                    anchors.verticalCenter: parent.verticalCenter
+                    primary: true
+                    label: root.store.portal ? "Iniciar sesión" : "Reintentar"
+                    onClicked: root.store.portal ? root.store.openPortal() : root.store.checkNow()
+                }
+            }
         }
         VpnImport {
             visible: root.store.pending !== null
@@ -312,6 +365,15 @@ FocusScope {
         }
     }
 
+    // ── Contraseña de una red ──
+    WifiPassword {
+        id: passwordScreen
+        visible: root.store.passwordFor !== "" && root.store.details === null
+        anchors.top: top.bottom
+        anchors.topMargin: 10
+        width: parent.width
+    }
+
     // ── Detalles de una red ──
     NetworkDetails {
         visible: root.store.details !== null
@@ -324,7 +386,7 @@ FocusScope {
     // ── Listas (se desplazan dentro del alto fijo de la vista) ──
     Flickable {
         id: flick
-        visible: root.store.details === null
+        visible: root.store.details === null && root.store.passwordFor === ""
         anchors.top: top.bottom
         anchors.topMargin: 10
         anchors.bottom: parent.bottom
@@ -422,11 +484,11 @@ FocusScope {
             }
             Repeater {
                 id: netRep
-                model: root.store.enabled ? root.shown : []
+                model: root.store.enabled ? root.store.order : null
                 delegate: NetworkRow {
-                    required property var modelData
                     required property int index
-                    network: modelData
+                    // Solo las primeras 6 hasta "Mostrar todas"; las demás no ocupan lugar
+                    visible: root.showAll || index < 6
                     width: lists.width
                     selected: root.current === index
                 }
@@ -436,9 +498,9 @@ FocusScope {
                 width: parent.width
                 spacing: 8
                 Action {
-                    visible: root.store.networks.length > 6
+                    visible: root.store.order.count > 6
                     glyph: String.fromCodePoint(root.showAll ? 0xf0143 : 0xf0140)
-                    label: root.showAll ? "Menos redes" : "Mostrar todas (" + root.store.networks.length + ")"
+                    label: root.showAll ? "Menos redes" : "Mostrar todas (" + root.store.order.count + ")"
                     onClicked: root.showAll = !root.showAll
                 }
                 Action {

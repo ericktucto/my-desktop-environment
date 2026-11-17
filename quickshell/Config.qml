@@ -63,9 +63,18 @@ Singleton {
         readonly property int refreshDebounce: 400   // ms tras un evento de nmcli monitor antes de releer las VPN
         // Interfaces virtuales (Docker y similares): no se muestran
         readonly property var ignoredDevices: /^(docker|br-|veth|virbr|lo$)/
-        readonly property string portalUrl: "http://neverssl.com"
-        // Señal en cuatro niveles (de menos a más), sin conexión, cable, candado, VPN y ojo
+        readonly property string portalUrl: "http://neverssl.com"        // respaldo si no se averigua la página del router
+        // Dirección que verifica NetworkManager (system/networkmanager.sh); el router la intercepta y nos da su página
+        readonly property string checkUrl: "http://nmcheck.gnome.org/check_network_status.txt"
+        readonly property int recheck: 10000         // ms entre verificaciones mientras hay portal o sin internet
+        readonly property int limitedDelay: 5000     // ms en "limited" antes de decir "Sin internet"
+        readonly property int pskTimeout: 30000      // ms esperando que conecte con la contraseña
+        // Solo para probar sin un portal real: "" | "portal" | "limited"
+        readonly property string testConnectivity: ""
+        // Señal en cuatro niveles (de menos a más), con alerta, sin conexión, cable, candado, VPN y ojo
         readonly property var signalGlyphs: [0xf091f, 0xf0922, 0xf0925, 0xf0928]
+        readonly property var signalGlyphsAlert: [0xf0920, 0xf0923, 0xf0926, 0xf0929]
+        readonly property int glyphAlert: 0xf0026
         readonly property int glyphOff: 0xf092e
         readonly property int glyphWired: 0xf0200
         readonly property int glyphLock: 0xf033e

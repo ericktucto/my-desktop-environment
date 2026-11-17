@@ -51,11 +51,11 @@ Singleton {
     }
 
     // ── Redes Wi-Fi ──
-    // Sin nombre (ocultas) no salen; si un nombre se repite, la de mejor señal. La conectada primero y luego las guardadas.
-    readonly property var networks: {
-        if (!wifi)
-            return [];
+    // Por nombre (las ocultas no salen; si un nombre se repite, la de mejor señal). Se actualiza con cada cambio de señal.
+    readonly property var byName: {
         const best = {};
+        if (!wifi)
+            return best;
         for (const n of wifi.networks.values) {
             if (!n.name)
                 continue;
@@ -63,9 +63,56 @@ Singleton {
             if (!o || (n.connected && !o.connected) || (!o.connected && n.signalStrength > o.signalStrength))
                 best[n.name] = n;
         }
-        return Object.values(best).sort((a, b) => (b.connected - a.connected) || (b.known - a.known) || (b.signalStrength - a.signalStrength) || a.name.localeCompare(b.name));
+        return best;
     }
-    readonly property var current: networks.find(n => n.connected) ?? null
+    readonly property var current: Object.values(byName).find(n => n.connected) ?? null
+    readonly property string currentName: current ? current.name : ""
+
+    // El orden que se ve (nombres) queda fijo: la lista no salta mientras se mira o se escribe una contraseña.
+    // Se reordena al abrir la vista, en "Buscar de nuevo" y al conectar o desconectar (la conectada va primero,
+    // luego las guardadas, la señal y el nombre). Una red nueva va al final y una que desaparece se quita.
+    property ListModel order: ListModel {}
+
+    function sortedNames() {
+        return Object.keys(byName).sort((a, b) => {
+            const x = byName[a], y = byName[b];
+            return (y.connected - x.connected) || (y.known - x.known) || (y.signalStrength - x.signalStrength) || a.localeCompare(b);
+        });
+    }
+
+    function syncOrder(resort) {
+        const first = order.count === 0;
+        const have = {};
+        for (let i = order.count - 1; i >= 0; i--) {
+            const nm = order.get(i).name;
+            if (byName[nm])
+                have[nm] = true;
+            else
+                order.remove(i);
+        }
+        for (const nm of Object.keys(byName)) {
+            if (!have[nm])
+                order.append({
+                    name: nm
+                });
+        }
+        if (!resort && !first)
+            return;
+        const want = sortedNames();
+        for (let i = 0; i < want.length; i++) {
+            if (order.get(i).name === want[i])
+                continue;
+            for (let j = i + 1; j < order.count; j++) {
+                if (order.get(j).name === want[i]) {
+                    order.move(j, i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    onByNameChanged: syncOrder(false)
+    onCurrentNameChanged: syncOrder(true)
 
     readonly property bool online: current !== null || wiredConnected
 
@@ -78,8 +125,8 @@ Singleton {
         return n.security === WifiSecurityType.Wpa2Eap || n.security === WifiSecurityType.WpaEap || n.security === WifiSecurityType.Wpa3SuiteB192 || n.security === WifiSecurityType.Leap;
     }
 
-    function glyphFor(n) {
-        const g = cfg.signalGlyphs;
+    function glyphFor(n, withAlert) {
+        const g = withAlert ? cfg.signalGlyphsAlert : cfg.signalGlyphs;
         return String.fromCodePoint(g[Math.max(0, Math.min(g.length - 1, Math.floor(n.signalStrength * g.length)))]);
     }
 
@@ -87,7 +134,7 @@ Singleton {
         if (n.state === ConnectionState.Connecting)
             return "Conectando…";
         if (n.connected)
-            return "Conectada · clic para desconectar";
+            return portal ? "Conectada · Iniciar sesión" : (limited ? "Conectada · Sin internet" : "Conectada · clic para desconectar");
         if (n.known)
             return "Guardada";
         if (isEnterprise(n))
@@ -99,9 +146,12 @@ Singleton {
 
     // Glifo para la barra: señal, cable o sin conexión
     readonly property string barGlyph: {
+        // Con cable y Wi-Fi a la vez, el cable (es la conexión principal)
+        if (wiredConnected)
+            return String.fromCodePoint(cfg.glyphWired);
         if (current)
-            return glyphFor(current);
-        return String.fromCodePoint(wiredConnected ? cfg.glyphWired : cfg.glyphOff);
+            return glyphFor(current, alert);
+        return String.fromCodePoint(cfg.glyphOff);
     }
 
     readonly property string statusText: {
@@ -116,6 +166,10 @@ Singleton {
             t = "Cableada";
         else
             t = enabled ? "Desconectado" : "Apagado";
+        if (portal)
+            t += " · Iniciar sesión";
+        else if (limited)
+            t += " · Sin internet";
         return vpnActive ? t + " · VPN" : t;
     }
 
@@ -137,6 +191,8 @@ Singleton {
     function scan() {
         if (!wifi || !enabled)
             return;
+        syncOrder(true);
+        checkNow();
         wifi.scannerEnabled = true;
         run(["nmcli", "device", "wifi", "rescan"], function () {});
     }
@@ -147,9 +203,19 @@ Singleton {
     }
 
     // ── Conectar ──
-    // SSID cuya contraseña se está pidiendo (la fila se despliega) y redes conectadas con contraseña nueva
+    // SSID cuya contraseña se está pidiendo (pantalla propia en la vista de red), si está conectando con ella ("connecting")
+    // y el error ("Contraseña incorrecta"). pskAttempts: redes que se conectan con una contraseña nueva.
     property string passwordFor: ""
+    property string pskState: ""
+    property string pskError: ""
     property var pskAttempts: ({})
+
+    function closePassword() {
+        passwordFor = "";
+        pskState = "";
+        pskError = "";
+        pskTimer.stop();
+    }
 
     function activate(n) {
         if (n.state === ConnectionState.Connecting)
@@ -157,20 +223,60 @@ Singleton {
         if (n.connected) {
             n.disconnect();
         } else if (isEnterprise(n) && !n.known) {
-            passwordFor = "";
+            closePassword();
             enterpriseFor = n.name;
         } else if (n.known || isOpen(n)) {
-            passwordFor = "";
+            closePassword();
             n.connect();
         } else {
+            pskState = "";
+            pskError = "";
             passwordFor = n.name;
         }
     }
 
     function connectWith(n, key) {
-        passwordFor = "";
         pskAttempts[n.name] = true;
+        pskError = "";
+        pskState = "connecting";
+        pskTimer.restart();
         n.connectWithPsk(key);
+    }
+
+    // Si no conecta ni falla en este tiempo, se avisa
+    Timer {
+        id: pskTimer
+        interval: store.cfg.pskTimeout
+        onTriggered: {
+            if (store.pskState === "connecting")
+                store.pskFail("No se pudo conectar");
+        }
+    }
+
+    function pskFail(text) {
+        pskTimer.stop();
+        pskState = "";
+        pskError = text;
+    }
+
+    function securityText(n) {
+        switch (n.security) {
+        case WifiSecurityType.Open:
+            return "Abierta";
+        case WifiSecurityType.Owe:
+            return "Abierta (cifrada)";
+        case WifiSecurityType.Sae:
+            return "Segura · WPA3";
+        case WifiSecurityType.Wpa2Psk:
+            return "Segura · WPA2";
+        case WifiSecurityType.WpaPsk:
+            return "Segura · WPA";
+        case WifiSecurityType.StaticWep:
+        case WifiSecurityType.DynamicWep:
+            return "Segura · WEP";
+        default:
+            return "Segura";
+        }
     }
 
     function forget(n) {
@@ -199,37 +305,104 @@ Singleton {
                 function onConnectionFailed(reason) {
                     const n = track.modelData;
                     const wrongKey = reason === ConnectionFailReason.NoSecrets || reason === ConnectionFailReason.WifiAuthTimeout;
+                    const open = store.passwordFor === n.name;
                     if (wrongKey && store.pskAttempts[n.name]) {
                         // La conexión quedó guardada con la clave mala: se borra y se vuelve a pedir
                         delete store.pskAttempts[n.name];
                         n.forget();
-                        store.say("Contraseña incorrecta");
-                        store.passwordFor = n.name;
+                        if (open) {
+                            store.pskFail("Contraseña incorrecta");
+                        } else {
+                            store.say("Contraseña incorrecta");
+                        }
+                    } else if (open) {
+                        store.pskFail("No se pudo conectar");
                     } else {
                         store.say("No se pudo conectar a «" + n.name + "»");
                     }
                 }
                 function onConnectedChanged() {
                     delete store.pskAttempts[track.modelData.name];
+                    if (track.modelData.connected && store.passwordFor === track.modelData.name) {
+                        store.closePassword();
+                        store.say("Conectada a «" + track.modelData.name + "»");
+                    }
                 }
             }
         }
     }
 
-    // ── Portal cautivo ──
-    property string portalNotified: ""
+    // ── Portal cautivo y "sin internet" ──
+    // NetworkManager verifica internet (system/networkmanager.sh) y dice Portal (la red pide iniciar sesión) o
+    // Limited (conecta, pero sin salida). Mientras tanto se vuelve a verificar cada Config.network.recheck.
+    readonly property int connectivity: cfg.testConnectivity === "portal" ? NetworkConnectivity.Portal : (cfg.testConnectivity === "limited" ? NetworkConnectivity.Limited : Networking.connectivity)
+    readonly property bool canCheck: Networking.canCheckConnectivity
+    readonly property bool portal: online && connectivity === NetworkConnectivity.Portal
+    readonly property bool limitedRaw: online && connectivity === NetworkConnectivity.Limited
+    // "limited" dura un instante al conectar: se espera antes de avisar
+    property bool limited: false
+    readonly property bool alert: portal || limited
+    readonly property string netName: current ? current.name : (wiredConnected ? "Cableada" : "")
+    property bool portalNotified: false
 
-    Connections {
-        target: Networking
-        function onConnectivityChanged() {
-            if (Networking.connectivity !== NetworkConnectivity.Portal || !store.current || store.portalNotified === store.current.name)
-                return;
-            store.portalNotified = store.current.name;
-            store.run(["notify-send", "-a", "Red", "-i", "network-wireless", "-A", "open=Abrir", "La red «" + store.current.name + "» pide iniciar sesión", "Abre el navegador para continuar."], function (out) {
-                if (out.trim() === "open")
-                    Quickshell.execDetached(["xdg-open", store.cfg.portalUrl]);
-            });
+    onLimitedRawChanged: {
+        if (limitedRaw) {
+            limitedTimer.restart();
+        } else {
+            limitedTimer.stop();
+            limited = false;
         }
+    }
+
+    Timer {
+        id: limitedTimer
+        interval: store.cfg.limitedDelay
+        onTriggered: store.limited = store.limitedRaw
+    }
+
+    function checkNow() {
+        if (canCheck)
+            Networking.checkConnectivity();
+    }
+
+    Timer {
+        interval: store.cfg.recheck
+        repeat: true
+        running: store.canCheck && (store.portal || store.limitedRaw)
+        onTriggered: store.checkNow()
+    }
+
+    onPortalChanged: {
+        if (portal) {
+            if (portalNotified)
+                return;
+            portalNotified = true;
+            const name = netName;
+            run(["notify-send", "-a", "Red", "-i", "network-wireless", "-A", "open=Iniciar sesión", "La red «" + name + "» pide iniciar sesión", "Inicia sesión para tener internet."], function (out) {
+                if (out.trim() === "open")
+                    store.openPortal();
+            });
+        } else if (portalNotified) {
+            if (!online) {
+                portalNotified = false;
+            } else if (connectivity === NetworkConnectivity.Full) {
+                portalNotified = false;
+                Quickshell.execDetached(["notify-send", "-a", "Red", "-i", "network-wireless", "-t", "4000", "Ya tienes internet", "«" + netName + "»"]);
+            }
+        }
+    }
+
+    // Abre la página de inicio de sesión del router (la que él pone en lugar de la dirección de verificación)
+    function openPortal() {
+        run(["python3", netScript, "portal-url", cfg.checkUrl], function (out) {
+            let url = cfg.portalUrl;
+            try {
+                const j = JSON.parse(out);
+                if (j.ok && j.url)
+                    url = j.url;
+            } catch (e) {}
+            Quickshell.execDetached(["xdg-open", url]);
+        });
     }
 
     // ── Detalles de una red (IP, DNS, conexión automática) ──
@@ -240,7 +413,7 @@ Singleton {
     property bool resolvOk: true
 
     function openDetails(n) {
-        passwordFor = "";
+        closePassword();
         closeShare();
         run(["python3", netScript, "profile", "--ssid", n.name], function (out) {
             store.gotDetails(out, {
@@ -337,7 +510,7 @@ Singleton {
     function forgetDetails() {
         if (!details || details.kind !== "wifi")
             return;
-        const n = networks.find(x => x.name === details.key);
+        const n = byName[details.key];
         if (n)
             n.forget();
         closeDetails();

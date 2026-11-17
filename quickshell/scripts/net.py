@@ -13,12 +13,19 @@
   net.py enterprise <ssid> --eap peap|ttls --phase2 mschapv2|pap --identity U [--anonymous A]
                            [--ca system|none|<archivo>] [--domain D] [--save-only]   (la contraseña por stdin)
       Crea el perfil 802.1X y conecta. { ok, uuid, error }.
+  net.py portal-url <dirección de verificación>
+      Página de inicio de sesión de un portal cautivo: { ok, url }. Pide la dirección de verificación sin seguir
+      redirecciones y devuelve a dónde la manda el router (o la de un meta refresh); si responde otra cosa,
+      la misma dirección. Sin respuesta, ok es false.
 """
 import ipaddress
 import json
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 
 
 def out(obj):
@@ -211,8 +218,34 @@ def cmd_enterprise(ssid, a):
     out({"ok": True, "uuid": uuid, "error": ""})
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def cmd_portal_url(check):
+    opener = urllib.request.build_opener(NoRedirect)
+    req = urllib.request.Request(check, headers={"User-Agent": "Mozilla/5.0", "Cache-Control": "no-cache"})
+    try:
+        r = opener.open(req, timeout=5)
+        status, headers, body = r.status, r.headers, r.read(65536).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        status, headers, body = e.code, e.headers, e.read(65536).decode("utf-8", "replace")
+    except (urllib.error.URLError, OSError, ValueError):
+        return out({"ok": False, "url": ""})
+    loc = headers.get("Location", "")
+    if status in (301, 302, 303, 307, 308) and loc:
+        return out({"ok": True, "url": urllib.parse.urljoin(check, loc)})
+    m = re.search(r"http-equiv=[\"']?refresh[\"']?[^>]*content=[\"'][^\"']*url=([^\"'>\s]+)", body, re.I) or re.search(r"(?:window\.)?location(?:\.href)?\s*=\s*[\"']([^\"']+)[\"']", body, re.I)
+    if m:
+        return out({"ok": True, "url": urllib.parse.urljoin(check, m.group(1))})
+    out({"ok": True, "url": check})
+
+
 def main():
     a = sys.argv[1:]
+    if len(a) >= 2 and a[0] == "portal-url":
+        return cmd_portal_url(a[1])
     if a and a[0] == "profile":
         return cmd_profile(a[1:])
     if len(a) >= 2 and a[0] == "set-ip":
