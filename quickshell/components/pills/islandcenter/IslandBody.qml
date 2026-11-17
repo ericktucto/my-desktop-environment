@@ -7,6 +7,8 @@ import "../../widgets/session" as SE
 import "../../widgets/controlcenter" as CC
 import "../../widgets/clipboard" as CB
 import "../../widgets/recorder" as RC
+import "../../widgets/productivity" as PR
+import "../../../services/calendar" as CAL
 import "../../../services/recorder" as RS
 import "../../../services/bluetooth" as BTS
 import "../../../services/network" as NTS
@@ -19,10 +21,18 @@ Rectangle {
     property var root
     readonly property real controlHeight: control.implicitHeight
     readonly property real recorderHeight: recorderMenu.implicitHeight
+    readonly property real productivityHeight: productivity.implicitHeight
 
     // Esc: en el centro de control vuelve atrás (renombrado → casillas) antes de cerrar la isla
     function escapeBack() {
+        if (root.current === 'productivity')
+            return productivity.back();
         return root.current === 'control' && control.back();
+    }
+
+    // Abrir Productividad (clic en el reloj, Super+P o IPC): hoy y, si toca, actualizar
+    function openProductivity() {
+        CAL.CalendarStore.opened();
     }
 
     // Abrir el centro de control (clic derecho en el reloj o IPC): vuelve a leer lo que no avisa
@@ -166,6 +176,27 @@ Rectangle {
             }
             function stop(): void {
                 RS.RecorderStore.stopOrCancel();
+            }
+        }
+    }
+    PR.Productivity {
+        id: productivity
+        visible: root.current === 'productivity'
+        width: parent.width
+        onCloseRequested: root.close()
+        IpcHandler {
+            target: "stixshell@productivity"
+            function toggle(mon: string): void {
+                if (root.expanded && root.current === 'productivity') {
+                    root.close();
+                    return;
+                }
+                root.current = 'productivity';
+                CAL.CalendarStore.opened();
+                root.open();
+            }
+            function refresh(): void {
+                CAL.CalendarStore.refresh(true);
             }
         }
     }

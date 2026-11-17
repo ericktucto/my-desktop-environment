@@ -20,6 +20,8 @@ Item {
     readonly property bool textOnly: kind === "mic" || kind === "nightlight"
     // Círculo con el reloj analógico mini (la música está expandida)
     property bool circle: false
+    // Mouse encima: la fecha en vez de la hora (no con un OSD)
+    property bool showDate: false
 
     readonly property var sink: A.AudioStore.sink
     readonly property var source: A.AudioStore.source
@@ -60,6 +62,7 @@ Item {
 
     I.ClockText {
         id: clock
+        showDate: root.showDate && !root.showOsd
         anchors.horizontalCenter: parent.horizontalCenter
         opacity: root.showOsd || root.circle ? 0 : 1
         visible: opacity > 0

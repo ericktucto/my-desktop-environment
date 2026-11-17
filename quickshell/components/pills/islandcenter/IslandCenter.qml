@@ -27,6 +27,8 @@ Base.Island {
             return App.Config.panel.clipboardHeight;
         if (current === 'recorder')
             return islandBody.recorderHeight + 2 * paddingContainer;
+        if (current === 'productivity')
+            return islandBody.productivityHeight + 2 * paddingContainer;
         return 300;
     }
     expandedWidth: {
@@ -42,6 +44,8 @@ Base.Island {
             return App.Config.panel.clipboardWidth;
         if (current === 'recorder')
             return App.Config.panel.recorderWidth;
+        if (current === 'productivity')
+            return App.Config.panel.productivityWidth;
         return 400;
     }
 
@@ -49,23 +53,33 @@ Base.Island {
     escapeBack: function () {
         return islandBody.escapeBack();
     }
-    // El launcher se abre solo con Super+R; el clic derecho abre el centro de control
+    // El launcher se abre solo con Super+R; el clic izquierdo abre Productividad (calendario) y el derecho
+    // el centro de control
     openOnClick: false
 
     IslandStatus {
         circle: root.circle
+        // Con el mouse encima, el reloj dice la fecha (y el próximo evento)
+        showDate: clockMouse.containsMouse
     }
 
-    // Clic derecho en el reloj: centro de control.
+    // Clic izquierdo en el reloj: Productividad. Clic derecho: centro de control.
     // parent: root porque los hijos de Island van a un Row (anchors.fill lo rompe).
     MouseArea {
+        id: clockMouse
         parent: root
         anchors.fill: parent
         enabled: !root.expanded && !root.compact
-        acceptedButtons: Qt.RightButton
-        onClicked: {
-            root.current = 'control';
-            islandBody.refreshControl();
+        hoverEnabled: true
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                root.current = 'control';
+                islandBody.refreshControl();
+            } else {
+                root.current = 'productivity';
+                islandBody.openProductivity();
+            }
             root.open();
         }
     }

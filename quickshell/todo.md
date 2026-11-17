@@ -11,13 +11,27 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
+### Productividad: tareas, temporizador y cronómetro
+El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) ya tiene la pestaña **Calendario** (vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj). Faltan las otras pestañas; la barra de pestañas se añadirá cuando haya más de una (`components/widgets/productivity/Productivity.qml`).
+
+**Fase 2: Tareas (locales)**
+- [ ] Agregar, marcar como hecha, editar y borrar. Se guardan en un JSON en `~/.config/stixshell/`.
+- [ ] Contador de pendientes en la pestaña y en el hover del reloj.
+
+**Fase 3: Temporizador y cronómetro**
+- [ ] Temporizador con tiempos rápidos y uno a medida. Al terminar, notificación y sonido.
+- [ ] Cronómetro con vueltas.
+- [ ] Ambos siguen corriendo con el panel cerrado, y la isla muestra el tiempo.
+
+**Fase 6: Google Calendar (escribir) y avisos**
+- [ ] Crear, editar y borrar eventos desde el panel (hoy se crean en el formulario web de Google; pedirá reconectar con permiso de escritura).
+- [ ] Aviso con notificación antes de cada evento, con el enlace de la reunión si lo tiene.
+
+> Herramientas: `FileView`/`JsonAdapter` y `Process` de Quickshell.
+
 ---
 
 ## 🟡 Prioridad media: calidad de vida
-
-### Calendario y fecha
-- [ ] Mostrar la fecha en el reloj o en un tooltip.
-- [ ] Calendario mensual en un panel.
 
 ### Historial del portapapeles
 - [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
@@ -39,12 +53,13 @@ Lo que la shell ya hace está en el [README](../README.md).
 - [ ] **Monitor del sistema:** CPU, RAM, temperatura y disco, leyendo `/proc` y `/sys`. Para temperaturas detalladas falta `lm_sensors` (`sensors`).
 - [ ] **Indicador de distribución del teclado** (us/es): evento `activelayout` de Hyprland.
 - [ ] **Indicadores de privacidad:** avisar cuando el micrófono, la cámara o la pantalla están en uso. Para el micrófono, con `Pipewire.linkGroups`.
-- [ ] **Clima:** consulta a wttr.in u Open-Meteo con `Process`/`curl`, en el panel del reloj.
+- [ ] **Clima:** consulta a wttr.in u Open-Meteo con `Process`/`curl`, en el panel de productividad (junto al calendario).
 - [ ] **Agente de polkit propio** con el estilo de la shell, usando `Quickshell.Services.Polkit`. Hoy usas `hyprpolkitagent`.
 - [ ] **Colores del wallpaper, lo que quedó fuera:** modo claro de la shell, Firefox (pywalfox), Neovim y apps Qt (`qt6ct`); y probar hyprlock con los colores nuevos.
 - [ ] **Widgets de escritorio:** reloj grande sobre el wallpaper.
 - [ ] **Huella digital en la pantalla de bloqueo:** solo si llegas a tener lector (esta laptop no lo tiene); sería con `Quickshell.Services.Pam`.
 - [ ] **Visualizador de audio** (cava) en la isla o en el fondo.
+- [ ] **Calendario, ideas que quedaron fuera:** vista Agenda (próximos 14 días), números de semana, horario laboral sombreado, gesto horizontal del touchpad para cambiar de período, cumpleaños de contactos con 🎂, "abrir Google en este día" y elegir los calendarios dentro del panel.
 
 ---
 

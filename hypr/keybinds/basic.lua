@@ -27,6 +27,9 @@ map.add({ map.SUPER, "W" }, hl.dsp.exec_cmd("qs ipc call stixshell@wallpaper tog
 -- grabador de pantalla (abre el menú; con una grabación en curso, la detiene)
 map.add({ map.SUPER, "G" }, hl.dsp.exec_cmd("qs ipc call stixshell@recorder toggle \"\""), nil, "Grabar la pantalla")
 
+-- productividad: calendario (y luego tareas y temporizador)
+map.add({ map.SUPER, "P" }, hl.dsp.exec_cmd("qs ipc call stixshell@productivity toggle \"\""), nil, "Productividad (calendario)")
+
 -- luz nocturna (wlsunset)
 map.add({ map.SUPER, "N" }, hl.dsp.exec_cmd("qs ipc call stixshell@nightlight toggle"), nil, "Luz nocturna")
 

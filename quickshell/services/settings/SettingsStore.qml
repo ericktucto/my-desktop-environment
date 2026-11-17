@@ -23,6 +23,7 @@ Singleton {
     readonly property var screenshot: data.screenshot
     readonly property var theme: data.theme
     readonly property var nightLight: data.nightLight
+    readonly property var calendar: data.calendar
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -85,6 +86,10 @@ Singleton {
             property string latitude: ""                    // vacío = de la zona horaria
             property string longitude: ""
             property real pausedUntil: 0                    // ms desde 1970; la pausa vuelve sola
+        }
+        property JsonObject calendar: JsonObject {
+            property string view: "month"                   // month | week | days3 | day
+            property int refresh: 0                         // minutos entre actualizaciones; 0 = al abrir, al iniciar y al despertar
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery

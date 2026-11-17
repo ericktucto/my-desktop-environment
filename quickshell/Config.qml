@@ -141,6 +141,7 @@ Singleton {
         readonly property int clipboardWidth: 880
         readonly property int clipboardHeight: 520
         readonly property int recorderWidth: 460
+        readonly property int productivityWidth: 680
     }
 
     // ===== Fuentes =====
@@ -293,6 +294,31 @@ Singleton {
         readonly property string lidState: "/proc/acpi/button/lid/LID/state"
         // > 0 = al bloquear se desbloquea solo a los N s (solo para probar sin quedarte fuera)
         readonly property int testAutoUnlock: 0
+    }
+
+    // ===== Calendario (panel Productividad, scripts/gcal.py) =====
+    readonly property QtObject calendar: QtObject {
+        readonly property int viewHeight: 320        // zona de la vista (mes u horas); igual en las cuatro
+        readonly property int listHeight: 200        // lista de eventos del día elegido
+        readonly property int headerHeight: 32
+        readonly property int hourHeight: 32         // alto de una hora en la cuadrícula
+        readonly property int gutterWidth: 44        // columna de las horas
+        readonly property int dots: 3                // puntos de color por día en la vista Mes
+        readonly property int minGap: 60             // s: al abrir no se repite la llamada antes de esto
+        readonly property int loginTimeout: 180      // s esperando que aceptes en el navegador
+        readonly property int resumeGap: 180         // s sin tick del reloj = la laptop despertó
+        readonly property int upcoming: 7200         // s hacia adelante para el aviso del reloj
+        readonly property int titleMax: 24           // letras del evento en el reloj
+        readonly property int defaultStartHour: 8    // hora inicial de la cuadrícula si el día no tiene eventos
+        readonly property int newEventHour: 9        // hora de un evento nuevo en un día que no es hoy
+        readonly property string timeZone: "America/Lima"
+        // Calendario público de feriados de Google (vacío = sin feriados)
+        readonly property string holidays: "es.pe#holiday@group.v.calendar.google.com"
+        readonly property int holidaysMaxAge: 7      // días antes de volver a bajarlos
+        readonly property string cache: Quickshell.cachePath("calendar.json")
+        readonly property string holidaysCache: Quickshell.cachePath("holidays.json")
+        // Ruta a un JSON de eventos de ejemplo (solo para probar sin Google); vacío = Google
+        readonly property string testSample: ""
     }
 
     // ===== Inactividad (segundos; 0 = nunca) =====
