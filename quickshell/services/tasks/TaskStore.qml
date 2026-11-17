@@ -61,6 +61,8 @@ Singleton {
     readonly property int todayEstimate: views.todayEstimate
     readonly property var tagNames: views.tagNames
     // Proyectos sin archivar, en su orden
+    // Colores para elegir en un proyecto
+    readonly property var projectColors: Model.COLORS
     readonly property var activeProjects: projects.filter(p => !p.archived).sort(Model.byOrder)
 
     SystemClock {
@@ -194,6 +196,18 @@ Singleton {
             return false;
         commit("Tarea movida", next, projects);
         return true;
+    }
+
+    // Lo mismo, pero justo después de `afterId`
+    function moveAfter(id, afterId) {
+        const sorted = tasks.slice().sort(Model.byOrder);
+        const i = sorted.findIndex(t => t.id === afterId);
+        if (i < 0)
+            return false;
+        let next = sorted[i + 1];
+        if (next && next.id === id)
+            next = sorted[i + 2];
+        return move(id, next ? next.id : "");
     }
 
     // ── Subtareas ──
