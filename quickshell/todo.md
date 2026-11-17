@@ -12,11 +12,30 @@ Lo que la shell ya hace está en el [README](../README.md).
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
 ### Productividad: tareas, temporizador y cronómetro
-El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) ya tiene la pestaña **Calendario** (vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj). Faltan las otras pestañas; la barra de pestañas se añadirá cuando haya más de una (`components/widgets/productivity/Productivity.qml`).
+El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas** (`Ctrl+Tab` alterna).
+- **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
+- **Tareas (fase 1 hecha):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim.
 
-**Fase 2: Tareas (locales)**
-- [ ] Agregar, marcar como hecha, editar y borrar. Se guardan en un JSON en `~/.config/stixshell/`.
-- [ ] Contador de pendientes en la pestaña y en el hover del reloj.
+**Tareas, fase 2: captura**
+- [ ] Lenguaje natural en español al crear (`mañana 9am +trabajo #bug p1 30m cada lunes` y URLs), con chips de lo que entendió. Analizador en `services/tasks/Parse.js`, probado con `node`.
+- [ ] Quick add global con `Super+Shift+T` (una línea en la isla) y la sugerencia del link copiado en el portapapeles.
+- [ ] Prefijo `td:` en el launcher.
+- [ ] `scripts/links.py`: título de la página y estado de un PR o issue de GitHub.
+- [ ] `scripts/task` para la terminal (`task "texto"` con el repo y la rama de git como link, `task hoy`, `task ls`).
+
+**Tareas, fase 3: el tiempo**
+- [ ] Recordatorios con notificación (Hecha · Posponer 10 min · Mañana), por defecto uno a la hora si la tarea tiene hora; los que se perdieron al dormir salen al despertar.
+- [ ] Repetición (cada día, laborable, semana, mes, año o cada N; desde la fecha o desde que la completas) y borrar "solo esta vez" o "todas".
+- [ ] Tablero Kanban con columnas por estado, arrastrando entre ellas, y el motivo al bloquear.
+
+**Tareas, fase 4: integraciones y extras**
+- [ ] Las tareas en el calendario (punto en el mes, fila con check en la lista del día y bloque en la cuadrícula).
+- [ ] Contador de tareas en el hover del reloj y resumen de la mañana al primer desbloqueo.
+- [ ] Standup (lo de ayer, lo de hoy y lo bloqueado, en Markdown al portapapeles), plantillas y archivo automático de lo hecho hace más de 30 días.
+- [ ] Estado de PR e issues de GitHub (sin login para repos públicos; token opcional para los privados).
+- [ ] Arrastrar para ordenar la lista con el mouse (hoy se ordena con `Alt+j`/`Alt+k`).
+- [ ] **Google Tasks (sincronizar):** la API guarda solo título, notas, fecha (sin hora), subtareas y hecho; prioridad, etiquetas y repetición se quedarían locales.
+- [ ] **Foco con el temporizador:** tiempo por tarea cuando exista la pestaña Temporizador.
 
 **Fase 3: Temporizador y cronómetro**
 - [ ] Temporizador con tiempos rápidos y uno a medida. Al terminar, notificación y sonido.

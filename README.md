@@ -22,9 +22,10 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── todo.md        Lo que falta por hacer
     ├── assets/        Íconos (svg) y la base de emojis (emoji)
+    ├── tests/         Pruebas con node de la lógica de las tareas (`node tests/tasks/dates.test.mjs`, y links, model y views)
     ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher, grabador y capturador de pantalla, selector de carpeta o archivo, agente de Bluetooth e importar VPN)
     ├── components/    base · controls · indicators · layouts · lock · pills · widgets
-    └── services/      audio · bluetooth · brightness · clipboard · idle · launcher · lock · media · network · notify · osd · power · recorder · region · screenshot · settings · share · theme · panels · session · windows · workspaces
+    └── services/      audio · bluetooth · brightness · clipboard · idle · launcher · lock · media · network · notify · osd · power · recorder · region · screenshot · settings · share · theme · panels · session · windows · workspaces · tasks
 ```
 
 ## Funciones
@@ -40,6 +41,24 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 - **Reproductor** (MPRIS: Firefox, mpv…): a la izquierda del reloj, la carátula en una pill redonda con un anillo de progreso. Con la rueda sobre ella cambia el volumen del reproductor. Al hacer clic pasa al centro y se expande (el reloj se vuelve un círculo con un reloj analógico mini a su derecha; solo uno tiene el foco): fondo con la carátula difuminada y su color de acento, carátula a la derecha, título y artista, barra de progreso que se puede arrastrar, anterior, −5 s, play/pausa, +15 s, siguiente, aleatorio, repetir y el volumen del reproductor; con dos o más reproductores, fichas para elegir cuál. Teclado con el panel abierto: `Espacio` play/pausa, `←` −5 s, `→` +15 s, `↑` y `↓` volumen. En transmisiones sin duración sale "EN VIVO". Al terminar la canción la pill queda atenuada y, tras 5 min sin sonar, se oculta; si el reproductor se cierra, desaparece. Los botones que el reproductor no permite se ven atenuados. Si el archivo no tiene etiquetas (mpv), el título es el nombre del archivo; sin carátula, se muestra el ícono de la app.
 - **Portapapeles** (`Super+H`): historial de `cliphist` en la isla central, con búsqueda y vista previa de texto e imágenes. Por elemento: copiar, eliminar, código QR (para pasar el texto al teléfono), compartir (hoy por Bluetooth; los destinos se agregan en `services/share/ShareStore.qml`), ejecutar en la terminal (kitty, con confirmación) y, en imágenes, abrir con otra aplicación. Las imágenes copiadas desde un gestor de archivos (Nemo guarda solo la ruta) también se muestran y copian como imagen, y los archivos de otro tipo (PDF, Word…), carpetas o varios archivos a la vez aparecen como una lista con ícono, tipo y tamaño (copiar, abrir con, compartir y eliminar). Arriba, Borrar todo.
 - **Productividad: calendario** (`Super+P`, clic izquierdo en el reloj o `qs ipc call stixshell@productivity toggle`; el clic derecho sigue abriendo el centro de control): un panel en la isla central con vistas **Mes**, **Semana**, **3 días** y **Día** (semana de lunes a domingo). El mes muestra puntos de color por evento y el número en rojo en los feriados; las otras vistas son una cuadrícula de 24 horas con desplazamiento, con los eventos que se cruzan lado a lado, la fila de todo el día y una línea roja en la hora actual. Abajo, la lista del día elegido: con un clic en un evento se despliega (lugar, descripción, **Unirse**, **Copiar enlace** y **Abrir en Google**) y se ve cuánto falta ("en 25 min", "termina en 10 min"). El título abre un selector de mes y año; el doble clic en un día del mes abre la vista Día. Un clic en una hora vacía de la cuadrícula, o **+ Evento**, abre el formulario de evento nuevo de Google con el día y la hora puestos. Teclas: `←` `→` cambian el período, `T` vuelve a hoy, `M` `S` `3` `D` cambian la vista y Esc cierra por partes. Con el mouse sobre el reloj de la isla se lee la fecha ("lun 16 nov") y, si hay uno en las próximas 2 horas, el próximo evento. Los eventos salen de los calendarios que tienes marcados en Google (solo lectura, ver abajo); los **feriados de Perú** se leen solos del calendario público de Google, sin iniciar sesión (`Config.calendar.holidays` los cambia o los quita). Se actualiza al abrir el panel, al iniciar la shell y al despertar de la suspensión, y cada N minutos si pones `calendar.refresh` en `settings.json` (`0` = solo lo anterior); la vista elegida (`calendar.view`) se recuerda. Hay un botón ↻ y el menú ⋮ (conectar, desconectar, abrir Google Calendar).
+- **Productividad: tareas** (pestaña **Tareas** del mismo panel; `Ctrl+Tab` alterna entre Calendario y Tareas, y `Super+P` abre la última usada): barra lateral con las vistas **Hoy** (vencidas arriba, las de hoy y las que están en curso, con la suma de estimaciones), **Próximos** (7 días por día), **Bandeja** (sin proyecto), **Tablero** (por estado) y **Hechas** (historial por día), más tus **proyectos** (con color y contador; `+` crea uno y el clic derecho renombra, cambia el color o archiva) y las **etiquetas**. Cada tarea tiene estado (pendiente, en curso, bloqueada con su motivo, hecha o cancelada), prioridad **P1–P4**, proyecto, etiquetas, fecha límite con hora opcional, fecha de inicio (no sale en Hoy hasta ese día), estimación (`30m`, `2h`, `1h30`), subtareas con progreso, notas en **Markdown** y links (PR e issues de GitHub o GitLab, Jira, Figma y Docs se reconocen y salen como chips). El detalle (Enter, `e` o doble clic) reemplaza a la lista; la fila **Añadir tarea…** crea en la vista actual (en Hoy con fecha de hoy, en un proyecto o etiqueta con ese proyecto o etiqueta). Todo se puede **deshacer** (aviso de 5 s, `u` o `Ctrl+Z`; guarda los últimos 20 cambios) y la búsqueda (`/`) entiende `+proyecto`, `#etiqueta`, `p1`–`p4`, `vencidas` y `en curso`. Los datos viven en `~/.config/stixshell/tasks.json` (una copia diaria en `tasks.json.bak`; si lo editas a mano se recarga solo, y si queda roto el panel avisa la línea del error y no guarda hasta que lo arregles). El orden por defecto es manual (`Alt+j`/`Alt+k` mueven la tarea); en ⋮ se elige por fecha o por prioridad (`tasks.sort` en `settings.json`). Teclas con la lista enfocada:
+
+  | Tecla | Acción |
+  |---|---|
+  | `j` `k` o `↓` `↑` | Mover la selección (`g`/`G` o `Inicio`/`Fin`: primera y última) |
+  | `x` o `Espacio` | Completar o reabrir |
+  | `n` | Escribir una tarea nueva |
+  | `Enter` o `e` | Abrir el detalle |
+  | `dd` | Borrar (el aviso permite deshacer) |
+  | `1`–`4` | Prioridad |
+  | `t` · `m` | Fecha de hoy · de mañana |
+  | `s` · `b` | En curso · bloqueada (alternan con pendiente) |
+  | `/` | Buscar |
+  | `u` o `Ctrl+Z` | Deshacer |
+  | `Alt+j` `Alt+k` | Reordenar (orden manual) |
+  | `Esc` | Cierra por partes: menú, campo, detalle y, al final, la isla |
+
+  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `done <id>`, `undo` y `open <vista>`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
 - **Luz nocturna** (casilla con `›`, `Super+N`, `qs ipc call stixshell@nightlight toggle|on|off|temperature <K>|mode <sun|custom|always>`): filtro de luz azul con `hyprsunset`, sin pill en la barra. La vista tiene el switch, el horario (**atardecer a amanecer**, con la ubicación de tu zona horaria sin internet; **horas fijas**, 19:00 a 07:00 por defecto, en pasos de 15 min; o **siempre**) y la temperatura (2500 a 5500 K, 4000 K por defecto; de día, al soltar el slider se ve 3 s). El paso entre día y noche es gradual (30 min). Con la casilla, de noche, se pausa hasta el próximo amanecer y vuelve sola; `Super+N` muestra un aviso en la isla. Se guarda en `settings.json` (`nightLight`; `latitude` y `longitude` fijan la ubicación a mano).
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
@@ -65,7 +84,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+H` | Historial del portapapeles |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
 | `Super+R` | Launcher de apps (abre y cierra) |
-| `Super+P` | Productividad: calendario (abre y cierra) |
+| `Super+P` | Productividad: la última pestaña usada, Calendario o Tareas (abre y cierra) |
 | Teclas multimedia (reproducir/pausa, siguiente, anterior) | Controlan el reproductor mostrado, también con la pantalla bloqueada |
 | `Super+W` | Selector de wallpapers |
 | `Super+1…4` | Ir al workspace |
@@ -74,7 +93,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+S` | Ver u ocultar el stash |
 | `Super+F` | Maximizar |
 
-El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@recorder toggle ""|stop`, `stixshell@screenshot open|area|window|screen|text|cancel` y `edit <ruta>`, `stixshell@theme regen|toggle` y `scheme <id>`, `stixshell@bluetooth open|toggle`, `stixshell@network open|toggle`, `stixshell@controlcenter toggle`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
+El launcher, el selector, el menú de sesión y la vista de workspaces se abren por IPC: `qs ipc call stixshell@launcher toggle ""`, `stixshell@wallpaper`, `stixshell@session` y `stixshell@workspaces` (mismo `toggle ""`). También `stixshell@media playPause|next|previous|seek <seg>|toggle`, `stixshell@clipboard toggle ""`, `stixshell@recorder toggle ""|stop`, `stixshell@screenshot open|area|window|screen|text|cancel` y `edit <ruta>`, `stixshell@theme regen|toggle` y `scheme <id>`, `stixshell@bluetooth open|toggle`, `stixshell@network open|toggle`, `stixshell@controlcenter toggle`, `stixshell@productivity toggle ""|tab calendar|tasks|refresh`, `stixshell@tasks add|list|done|undo|open`, `stixshell@audio up|down|mute|micMute` y `stixshell@brightness up|down`.
 `Esc` o un clic fuera cierran cualquier panel. El bloqueo se dispara con `qs ipc call stixshell@lock lock`.
 
 > Si la shell se cae estando bloqueado, Hyprland muestra su pantalla roja. Para recuperarte: `Ctrl+Alt+F2`, entra con tu usuario y ejecuta `hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("hyprlock")'` (o relanza `qs`); vuelve con `Ctrl+Alt+F1` (o la TTY de Hyprland) y desbloquea con tu contraseña.
@@ -156,6 +175,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 - Historial de notificaciones: `~/.local/state/quickshell/by-shell/*/notifications.json`.
 - Wallpaper actual: `~/.cache/quickshell/wallpaper`.
 - Historial del portapapeles: la base de `cliphist`. Las imágenes y los QR que se ven en el panel se decodifican a `$XDG_RUNTIME_DIR/stixshell/clipboard` (se vacía al arrancar la shell).
+- Tareas: `~/.config/stixshell/tasks.json` (proyectos, tareas y plantillas; fuera del repo) y su copia diaria `tasks.json.bak`.
 - Calendario: la caché de los eventos y de los feriados (`calendar.json` y `holidays.json`) vive en la carpeta de caché de la shell (`Quickshell.cachePath`); la sesión de Google, en `~/.config/stixshell/google/` (fuera del repo).
 - Log de la shell: `$(ls -td /run/user/$UID/quickshell/by-id/*/ | head -1)log.log`.
 
