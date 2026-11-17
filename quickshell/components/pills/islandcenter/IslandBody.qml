@@ -13,6 +13,8 @@ import "../../../services/recorder" as RS
 import "../../../services/bluetooth" as BTS
 import "../../../services/network" as NTS
 import "../../../services/session" as SS
+import "../../../services/settings" as SET
+import "../../../services/tasks" as TS
 
 Rectangle {
     anchors.fill: parent
@@ -22,6 +24,7 @@ Rectangle {
     readonly property real controlHeight: control.implicitHeight
     readonly property real recorderHeight: recorderMenu.implicitHeight
     readonly property real productivityHeight: productivity.implicitHeight
+    readonly property real productivityWidth: productivity.panelWidth
 
     // Esc: en el centro de control vuelve atrás (renombrado → casillas) antes de cerrar la isla
     function escapeBack() {
@@ -197,6 +200,26 @@ Rectangle {
             }
             function refresh(): void {
                 CAL.CalendarStore.refresh(true);
+            }
+            // Abre Productividad en esa pestaña: calendar | tasks
+            function tab(name: string): void {
+                if (!productivity.setTab(name))
+                    return;
+                root.current = 'productivity';
+                if (name === "calendar")
+                    CAL.CalendarStore.opened();
+                root.open();
+            }
+        }
+        // IPC stixshell@tasks open: Tareas en la vista pedida ("" = la última)
+        Connections {
+            target: TS.TaskStore
+            function onOpenRequested(view) {
+                productivity.setTab("tasks");
+                if (view !== "")
+                    SET.SettingsStore.tasks.view = view;
+                root.current = 'productivity';
+                root.open();
             }
         }
     }

@@ -45,7 +45,7 @@ Base.Island {
         if (current === 'recorder')
             return App.Config.panel.recorderWidth;
         if (current === 'productivity')
-            return App.Config.panel.productivityWidth;
+            return islandBody.productivityWidth;
         return 400;
     }
 
