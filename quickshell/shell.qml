@@ -21,6 +21,7 @@ import "./components/widgets/screenshot/" as SC
 import "./services/screenshot/" as SH
 import "./services/theme/" as TH
 import "./services/calendar/" as CAL
+import "./services/tasks/" as TK
 
 ShellRoot {
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
@@ -43,6 +44,8 @@ ShellRoot {
     readonly property var themeBusy: TH.ThemeStore.busy
     // Instancia el calendario (se actualiza al iniciar, al despertar y según calendar.refresh)
     readonly property var calendarUpdated: CAL.CalendarStore.updated
+    // Instancia las tareas (lee tasks.json; IPC stixshell@tasks)
+    readonly property var tasksReady: TK.TaskStore.ready
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}

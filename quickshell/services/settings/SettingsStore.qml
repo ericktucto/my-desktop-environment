@@ -24,6 +24,7 @@ Singleton {
     readonly property var theme: data.theme
     readonly property var nightLight: data.nightLight
     readonly property var calendar: data.calendar
+    readonly property var tasks: data.tasks
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -90,6 +91,12 @@ Singleton {
         property JsonObject calendar: JsonObject {
             property string view: "month"                   // month | week | days3 | day
             property int refresh: 0                         // minutos entre actualizaciones; 0 = al abrir, al iniciar y al despertar
+        }
+        property JsonObject tasks: JsonObject {
+            property string view: "today"                   // today | upcoming | inbox | board | done | project:<id> | tag:<nombre>
+            property string sort: "manual"                  // manual | due | priority
+            property string lastTab: "calendar"             // calendar | tasks
+            property string lastSummary: ""                 // AAAA-MM-DD del último resumen de la mañana
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery

@@ -330,6 +330,27 @@ Singleton {
         readonly property string testSample: ""
     }
 
+    // ===== Tareas (pestaña del panel Productividad, services/tasks/TaskStore.qml) =====
+    readonly property QtObject tasks: QtObject {
+        readonly property int panelWidth: 860        // ancho de la isla en la pestaña Tareas
+        readonly property int sidebarWidth: 190
+        readonly property int rowHeight: 44
+        readonly property int undoTime: 5000         // ms que dura el aviso "Deshacer"
+        readonly property int undoDepth: 20          // cambios que se pueden deshacer
+        readonly property int archiveDays: 30        // lo completado hace más se archiva
+        readonly property int upcomingDays: 7        // días de la vista Próximos
+        readonly property int saveDelay: 400         // ms de espera antes de guardar tras un cambio
+        readonly property string file: Quickshell.env("HOME") + "/.config/stixshell/tasks.json"
+        readonly property string archive: Quickshell.env("HOME") + "/.config/stixshell/tasks-archive.json"
+        // Color por prioridad (p4 = sin prioridad, sin color)
+        readonly property var priorityColors: ({
+                "1": "#ff1744",
+                "2": "#ffb300",
+                "3": "#2979ff",
+                "4": ""
+            })
+    }
+
     // ===== Inactividad (segundos; 0 = nunca) =====
     readonly property QtObject idle: QtObject {
         readonly property QtObject battery: QtObject {
