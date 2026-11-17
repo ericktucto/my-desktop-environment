@@ -61,4 +61,34 @@ eq("minutos 120", D.formatMinutes(120), "2 h");
 eq("minutos 150", D.formatMinutes(150), "2 h 30 m");
 eq("minutos 0", D.formatMinutes(0), "");
 
+// normTime / parseMinutes / ago / clock
+eq("normTime 9", D.normTime("9"), "09:00");
+eq("normTime 9:30", D.normTime("9:30"), "09:30");
+eq("normTime 0930", D.normTime("0930"), "09:30");
+eq("normTime 14.05", D.normTime("14.05"), "14:05");
+eq("normTime 25", D.normTime("25"), "");
+eq("normTime 9:75", D.normTime("9:75"), "");
+eq("normTime texto", D.normTime("tarde"), "");
+eq("normTime vacío", D.normTime(""), "");
+const pm = t => D.parseMinutes(t);
+eq("minutos vacío", pm(""), 0);
+eq("minutos 30", pm("30"), 30);
+eq("minutos 30m", pm("30m"), 30);
+eq("minutos 45 min", pm("45 min"), 45);
+eq("minutos 2h", pm("2h"), 120);
+eq("minutos 1.5h", pm("1.5h"), 90);
+eq("minutos 1,5h", pm("1,5h"), 90);
+eq("minutos 1h30", pm("1h30"), 90);
+eq("minutos 1h 30m", pm("1h 30m"), 90);
+eq("minutos basura", pm("mucho"), -1);
+const t0 = now.getTime();
+eq("ago ahora", D.ago(t0 - 20e3, now), "hace un momento");
+eq("ago min", D.ago(t0 - 5 * 60e3, now), "hace 5 min");
+eq("ago h", D.ago(t0 - 3 * 3600e3, now), "hace 3 h");
+eq("ago ayer", D.ago(t0 - 30 * 3600e3, now), "ayer");
+eq("ago días", D.ago(t0 - 4 * 86400e3, now), "hace 4 días");
+eq("ago semanas", D.ago(t0 - 21 * 86400e3, now), "hace 3 semanas");
+eq("ago meses", D.ago(t0 - 90 * 86400e3, now), "hace 3 meses");
+eq("clock", D.clock(new Date(2026, 10, 17, 9, 5).getTime()), "09:05");
+
 done();

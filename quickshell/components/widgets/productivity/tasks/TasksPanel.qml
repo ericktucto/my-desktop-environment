@@ -59,6 +59,8 @@ Item {
 
     property string query: ""
     property bool searching: false
+    // Tarea abierta en el detalle ("" = se ve la lista)
+    property string detailId: ""
     property bool sortMenuOpen: false
 
     readonly property var groups: store.list(effectiveView, query)
@@ -83,11 +85,13 @@ Item {
         else
             selectedId = ids.length > 0 ? ids[Math.min(selIndex, ids.length - 1)] : "";
     }
-    onSelectedIdChanged: Qt.callLater(() => list.ensureVisible(selectedId))
+    onSelectedIdChanged: Qt.callLater(() => root.effectiveView === "done" ? doneView.ensureVisible(selectedId) : list.ensureVisible(selectedId))
     onEffectiveViewChanged: {
         selIndex = 0;
+        detailId = "";
         selectedId = ids && ids.length > 0 ? ids[0] : "";
         list.positionViewAtBeginning();
+        doneView.positionViewAtBeginning();
     }
 
     function select(id) {
@@ -176,8 +180,26 @@ Item {
             select(id);
     }
 
+    function openDetail(id) {
+        if (id === "" || !store.get(id))
+            return;
+        select(id);
+        sortMenuOpen = false;
+        detailId = id;
+    }
+
+    function closeDetail() {
+        detailId = "";
+        focusList();
+    }
+
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
+        if (detailId !== "") {
+            if (!(detail.item?.back() ?? false))
+                closeDetail();
+            return true;
+        }
         if (sortMenuOpen) {
             sortMenuOpen = false;
             return true;
@@ -197,6 +219,8 @@ Item {
     }
 
     function reset() {
+        detail.item?.reset();
+        detailId = "";
         sortMenuOpen = false;
         sidebar.back();
         addInput.text = "";
@@ -223,7 +247,7 @@ Item {
     }
 
     Keys.onPressed: event => {
-        if (event.modifiers & Qt.MetaModifier)
+        if (event.modifiers & Qt.MetaModifier || detailId !== "")
             return;
         if (event.modifiers & Qt.ControlModifier) {
             if (event.key === Qt.Key_Z) {
@@ -286,6 +310,8 @@ Item {
             toggleStatus("blocked");
         else if (key === Qt.Key_U)
             store.undo();
+        else if (key === Qt.Key_E || key === Qt.Key_Return || key === Qt.Key_Enter)
+            openDetail(selectedId);
         else
             used = false;
         event.accepted = used;
@@ -334,6 +360,7 @@ Item {
 
         Item {
             id: head
+            visible: root.detailId === ""
             width: parent.width
             height: 32
 
@@ -422,7 +449,7 @@ Item {
         // Aviso si tasks.json está roto (no se guarda hasta que se arregle)
         Text {
             id: errorText
-            visible: root.store.error !== ""
+            visible: root.store.error !== "" && root.detailId === ""
             y: head.height + 4
             width: parent.width
             wrapMode: Text.Wrap
@@ -435,6 +462,7 @@ Item {
         // + Añadir tarea…
         Rectangle {
             id: addField
+            visible: root.detailId === "" && root.effectiveView !== "done"
             y: head.height + 8 + (errorText.visible ? errorText.height + 8 : 0)
             width: parent.width
             height: 38
@@ -489,6 +517,7 @@ Item {
 
         TaskList {
             id: list
+            visible: root.detailId === "" && root.effectiveView !== "done"
             y: addField.y + addField.height + 8
             width: parent.width
             height: parent.height - y
@@ -505,6 +534,40 @@ Item {
                 root.select(id);
                 root.focusList();
                 root.toggleDone();
+            }
+            onTaskOpened: id => root.openDetail(id)
+        }
+
+        DoneView {
+            id: doneView
+            visible: root.detailId === "" && root.effectiveView === "done"
+            y: head.height + 8 + (errorText.visible ? errorText.height + 8 : 0)
+            width: parent.width
+            height: parent.height - y
+            groups: root.groups
+            selectedId: root.selectedId
+            todayKey: root.store.todayKey
+            emptyText: root.emptyText
+            onTaskClicked: id => {
+                root.select(id);
+                root.focusList();
+            }
+            onTaskToggled: id => {
+                root.select(id);
+                root.focusList();
+                root.toggleDone();
+            }
+            onTaskOpened: id => root.openDetail(id)
+        }
+
+        // Detalle de la tarea (reemplaza a la lista)
+        Loader {
+            id: detail
+            anchors.fill: parent
+            active: root.detailId !== ""
+            sourceComponent: TaskDetail {
+                taskId: root.detailId
+                onCloseRequested: root.closeDetail()
             }
         }
 

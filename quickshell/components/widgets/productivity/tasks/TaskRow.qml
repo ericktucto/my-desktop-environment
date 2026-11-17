@@ -27,6 +27,11 @@ Rectangle {
     function buildChips(t, now, projects, withProject) {
         const out = [];
         const gray = App.Theme.gray;
+        if (closed && t.completed > 0)
+            out.push({
+                text: (t.status === "done" ? "hecha " : "cancelada ") + Dates.clock(t.completed),
+                color: gray
+            });
         if (t.status === "blocked")
             out.push({
                 text: "bloqueada" + (t.blockedReason !== "" ? ": " + t.blockedReason : ""),

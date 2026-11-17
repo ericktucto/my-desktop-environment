@@ -170,3 +170,52 @@ function formatMinutes(n) {
         return m + " m";
     return m === 0 ? h + " h" : h + " h " + m + " m";
 }
+
+// "9", "9:30", "0930", "14.05" → "HH:MM"; "" si no es una hora
+function normTime(text) {
+    var m = /^(\d{1,2})(?:[:.]?(\d{2}))?$/.exec(String(text || "").trim());
+    if (!m)
+        return "";
+    var h = Number(m[1]);
+    var mi = m[2] === undefined ? 0 : Number(m[2]);
+    return h > 23 || mi > 59 ? "" : pad(h) + ":" + pad(mi);
+}
+
+// "30", "30m", "45 min", "2h", "1.5h", "1h30", "1h 30m" → minutos; 0 si está vacío; -1 si no se entiende
+function parseMinutes(text) {
+    var s = String(text || "").trim().toLowerCase().replace(",", ".");
+    if (s === "")
+        return 0;
+    var m = /^(\d+(?:\.\d+)?)\s*h(?:oras?)?(?:\s*(\d+)\s*(?:m|min)?)?$/.exec(s);
+    if (m)
+        return Math.round(Number(m[1]) * 60 + (m[2] ? Number(m[2]) : 0));
+    m = /^(\d+)\s*(?:m|min|mins|minutos?)?$/.exec(s);
+    return m ? Number(m[1]) : -1;
+}
+
+// ms → "hace un momento", "hace 5 min", "hace 3 h", "hace 2 días", "hace 3 semanas"
+function ago(ms, ahora) {
+    var diff = Math.max(0, toDate(ahora).getTime() - ms);
+    var min = Math.floor(diff / 60000);
+    if (min < 1)
+        return "hace un momento";
+    if (min < 60)
+        return "hace " + min + " min";
+    var h = Math.floor(min / 60);
+    if (h < 24)
+        return "hace " + h + " h";
+    var d = Math.floor(h / 24);
+    if (d === 1)
+        return "ayer";
+    if (d < 14)
+        return "hace " + d + " días";
+    if (d < 60)
+        return "hace " + Math.floor(d / 7) + " semanas";
+    return "hace " + Math.floor(d / 30) + " meses";
+}
+
+// ms → "10:30" (hora local)
+function clock(ms) {
+    var d = new Date(ms);
+    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
