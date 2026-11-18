@@ -29,6 +29,8 @@ Base.Island {
             return islandBody.recorderHeight + 2 * paddingContainer;
         if (current === 'productivity')
             return islandBody.productivityHeight + 2 * paddingContainer;
+        if (current === 'quickadd')
+            return islandBody.quickAddHeight + 2 * paddingContainer;
         return 300;
     }
     expandedWidth: {
@@ -46,6 +48,8 @@ Base.Island {
             return App.Config.panel.recorderWidth;
         if (current === 'productivity')
             return islandBody.productivityWidth;
+        if (current === 'quickadd')
+            return App.Config.tasks.quickWidth;
         return 400;
     }
 

@@ -30,6 +30,9 @@ map.add({ map.SUPER, "G" }, hl.dsp.exec_cmd("qs ipc call stixshell@recorder togg
 -- productividad: calendario (y luego tareas y temporizador)
 map.add({ map.SUPER, "P" }, hl.dsp.exec_cmd("qs ipc call stixshell@productivity toggle \"\""), nil, "Productividad (calendario)")
 
+-- tareas: añadir una tarea desde cualquier lado (quick add)
+map.add({ map.SUPER, map.SHIFT, "T" }, hl.dsp.exec_cmd("qs ipc call stixshell@tasks quickadd"), nil, "Añadir una tarea")
+
 -- luz nocturna (wlsunset)
 map.add({ map.SUPER, "N" }, hl.dsp.exec_cmd("qs ipc call stixshell@nightlight toggle"), nil, "Luz nocturna")
 

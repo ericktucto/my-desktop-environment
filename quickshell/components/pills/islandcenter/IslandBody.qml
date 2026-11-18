@@ -8,6 +8,7 @@ import "../../widgets/controlcenter" as CC
 import "../../widgets/clipboard" as CB
 import "../../widgets/recorder" as RC
 import "../../widgets/productivity" as PR
+import "../../widgets/productivity/tasks" as TKW
 import "../../../services/calendar" as CAL
 import "../../../services/recorder" as RS
 import "../../../services/bluetooth" as BTS
@@ -25,6 +26,7 @@ Rectangle {
     readonly property real recorderHeight: recorderMenu.implicitHeight
     readonly property real productivityHeight: productivity.implicitHeight
     readonly property real productivityWidth: productivity.panelWidth
+    readonly property real quickAddHeight: quickAdd.implicitHeight
 
     // Esc: en el centro de control vuelve atrás (renombrado → casillas) antes de cerrar la isla
     function escapeBack() {
@@ -219,6 +221,24 @@ Rectangle {
                 if (view !== "")
                     SET.SettingsStore.tasks.view = view;
                 root.current = 'productivity';
+                root.open();
+            }
+        }
+    }
+    // Quick add de tareas (Super+Shift+T): una línea en la isla
+    TKW.QuickAdd {
+        id: quickAdd
+        visible: root.current === 'quickadd'
+        width: parent.width
+        onCloseRequested: root.close()
+        Connections {
+            target: TS.TaskStore
+            function onQuickAddRequested() {
+                if (root.expanded && root.current === 'quickadd') {
+                    root.close();
+                    return;
+                }
+                root.current = 'quickadd';
                 root.open();
             }
         }

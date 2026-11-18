@@ -40,6 +40,8 @@ Singleton {
     signal acted(string label)
     // IPC `open`: abre Productividad → Tareas en esa vista
     signal openRequested(string view)
+    // IPC `quickadd` (Super+Shift+T): abre o cierra el quick add
+    signal quickAddRequested
 
     // ── Vistas (se calculan una vez por cambio, el reloj las refresca cada minuto) ──
     readonly property date now: clock.date
@@ -220,6 +222,60 @@ Singleton {
             return "";
         commit("Tarea creada", tasks.concat([t]), newProjects);
         return t.id;
+    }
+
+    // Dónde cae una tarea nueva, para el aviso: "Hoy", "mañana", un proyecto o la Bandeja
+    function whereIs(t) {
+        const p = projectName(t.project);
+        if (t.due === todayKey)
+            return "Hoy";
+        if (t.due !== "")
+            return Dates.relative(t.due, t.dueTime, now);
+        return p !== "" ? p : "Bandeja";
+    }
+
+    // Aviso "Tarea creada en Hoy" con el botón Deshacer (para el quick add, que cierra la isla)
+    function notifyCreated(id) {
+        const t = get(id);
+        if (!t)
+            return;
+        run(["notify-send", "-a", "Tareas", "-i", "checkbox", "-t", "6000", "-A", "undo=Deshacer", "Tarea creada en " + whereIs(t), t.title], out => {
+            if (out.trim() === "undo")
+                undoCreated(id);
+        });
+    }
+
+    // Deshace la creación de `id`: con "Deshacer" si fue lo último; si no, la borra
+    function undoCreated(id) {
+        if (!get(id))
+            return;
+        if (undoStack.length > 0 && undoStack[undoStack.length - 1].label === "Tarea creada")
+            undo();
+        else
+            remove(id, "this");
+    }
+
+    function run(cmd, done) {
+        const p = runner.createObject(store, {
+            command: cmd,
+            done: done
+        });
+        p.running = true;
+    }
+
+    Component {
+        id: runner
+        Process {
+            id: rp
+            property var done
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    if (rp.done)
+                        rp.done(text);
+                    rp.destroy();
+                }
+            }
+        }
     }
 
     // Cambia campos de una tarea (título, notas, prioridad, proyecto, fechas, etiquetas…)
@@ -532,6 +588,11 @@ Singleton {
                 }
             }
             return lines.join("\n");
+        }
+
+        // Abre o cierra el quick add (Super+Shift+T)
+        function quickadd(): void {
+            store.quickAddRequested();
         }
 
         function done(id: string): string {

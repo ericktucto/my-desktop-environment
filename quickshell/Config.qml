@@ -334,6 +334,7 @@ Singleton {
     readonly property QtObject tasks: QtObject {
         readonly property int panelWidth: 860        // ancho de la isla en la pestaña Tareas
         readonly property int sidebarWidth: 190
+        readonly property int quickWidth: 560        // ancho de la isla en el quick add (Super+Shift+T)
         readonly property int rowHeight: 44
         readonly property int undoTime: 5000         // ms que dura el aviso "Deshacer"
         readonly property int undoDepth: 20          // cambios que se pueden deshacer
