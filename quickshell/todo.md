@@ -14,12 +14,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 ### Productividad: tareas, temporizador y cronómetro
 El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas** (`Ctrl+Tab` alterna).
 - **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
-- **Tareas (fases 1 y 2 hechas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`).
-
-**Tareas, fase 3: el tiempo**
-- [ ] Recordatorios con notificación (Hecha · Posponer 10 min · Mañana), por defecto uno a la hora si la tarea tiene hora; los que se perdieron al dormir salen al despertar.
-- [ ] Repetición (cada día, laborable, semana, mes, año o cada N; desde la fecha o desde que la completas) y borrar "solo esta vez" o "todas".
-- [ ] Tablero Kanban con columnas por estado, arrastrando entre ellas, y el motivo al bloquear.
+- **Tareas (fases 1 a 3 hechas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`), recordatorios con aviso, repetición y Tablero.
 
 **Tareas, fase 4: integraciones y extras**
 - [ ] Las tareas en el calendario (punto en el mes, fila con check en la lista del día y bloque en la cuadrícula).

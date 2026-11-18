@@ -49,16 +49,23 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
   | `x` o `Espacio` | Completar o reabrir |
   | `n` | Escribir una tarea nueva |
   | `Enter` o `e` | Abrir el detalle |
-  | `dd` | Borrar (el aviso permite deshacer) |
+  | `dd` | Borrar (el aviso permite deshacer; si la tarea se repite, pregunta «solo esta vez» o «todas») |
   | `1`–`4` | Prioridad |
   | `t` · `m` | Fecha de hoy · de mañana |
-  | `s` · `b` | En curso · bloqueada (alternan con pendiente) |
+  | `s` · `b` | En curso · bloqueada (alternan con pendiente; `b` pregunta qué la bloquea) |
+  | `h` · `l` | En el Tablero: pasa la tarjeta a la columna de la izquierda o la derecha |
   | `/` | Buscar |
   | `u` o `Ctrl+Z` | Deshacer |
   | `Alt+j` `Alt+k` | Reordenar (orden manual) |
   | `Esc` | Cierra por partes: menú, campo, detalle y, al final, la isla |
 
-  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `search <filtro>`, `done <id>`, `undo`, `open <vista>` y `quickadd`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
+  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `search <filtro>`, `done <id>`, `snooze <id> <minutos>`, `tomorrow <id>`, `undo`, `open <vista>` y `quickadd`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
+
+  **Recordatorios.** Una tarea con hora avisa **a la hora** por defecto; en el detalle (**Avisar**) se agregan otros (5, 10, 30 min, 1 h o 1 día antes) y se quitan con la ×. El aviso es una notificación con tres botones: **Hecha**, **Posponer 10 min** y **Mañana** (mueve la fecha a mañana con la misma hora). Se revisan cada minuto, también con la pantalla bloqueada; los que se perdieron mientras la laptop dormía o la shell estaba cerrada salen una vez con «(atrasado)» si pasaron menos de 12 h.
+
+  **Repetición.** En el detalle (**Repetir**) o escribiendo «cada lunes» al crearla: cada día, día laborable, semana (con los días que quieras), mes o año, cada N, contando **desde la fecha límite** (nunca cae en un día ya pasado) o **desde que la completas**. Al completarla queda una **copia hecha** en Hechas y la original pasa a la próxima fecha con las subtareas desmarcadas y los avisos reprogramados; una repetición mensual del 31 cae el último día en los meses cortos y vuelve al 31 después.
+
+  **Tablero.** Cuatro columnas (Pendiente · En curso · Bloqueada · Hecha hoy) con filtro por proyecto: arrastra una tarjeta a otra columna (o `h`/`l`) para cambiarle el estado. Al bloquear, pregunta el motivo, que se ve en la tarjeta y en la fila de la lista.
 
   **Captura en lenguaje natural.** Al crear una tarea (la fila **Añadir tarea…**, el quick add, `td:` en el launcher o la terminal) la frase se analiza y debajo salen los chips de lo que entendió, cada uno con su × por si se equivocó. Lo que no entiende se queda en el título.
 
