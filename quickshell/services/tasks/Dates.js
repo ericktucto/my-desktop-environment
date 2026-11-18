@@ -219,3 +219,61 @@ function clock(ms) {
     var d = new Date(ms);
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
 }
+
+// ── Repetición ──
+
+function lastDay(y, m) {
+    return new Date(y, m + 1, 0).getDate();
+}
+
+// Suma meses a una fecha; el día es `anchor` (o el de la fecha) y, si el mes es más corto, el último
+function addMonthsKey(key, n, anchor) {
+    var d = parseKey(key);
+    var t = new Date(d.getFullYear(), d.getMonth() + n, 1);
+    return keyOf(new Date(t.getFullYear(), t.getMonth(), Math.min(anchor || d.getDate(), lastDay(t.getFullYear(), t.getMonth()))));
+}
+
+// La repetición `r` avanza un paso desde `key` (siempre cae después de `key`)
+function stepRepeat(r, key, anchor) {
+    var n = Math.max(1, r.interval || 1);
+    if (r.freq === "daily")
+        return addDays(key, n);
+    if (r.freq === "weekdays") {
+        var k = addDays(key, 1);
+        while (!isWorkday(k))
+            k = addDays(k, 1);
+        return k;
+    }
+    if (r.freq === "weekly") {
+        var days = (r.days || []).slice().sort();
+        if (days.length === 0)
+            return addDays(key, 7 * n);
+        var wd = weekday(key);
+        for (var i = 0; i < days.length; i++)
+            if (days[i] > wd)
+                return addDays(key, days[i] - wd);
+        // Se acabó la semana: el primer día elegido, `n` semanas después
+        return addDays(addDays(key, 1 - wd), 7 * n + days[0] - 1);
+    }
+    if (r.freq === "monthly")
+        return addMonthsKey(key, n, anchor);
+    return addMonthsKey(key, 12 * n, anchor);
+}
+
+// Próxima fecha límite de una tarea que se repite, al completarla en `completedMs`. Cuenta desde la fecha
+// límite (o desde hoy, si `from` es "done" o no tiene fecha) y nunca cae en un día ya pasado.
+// "" si la tarea no se repite.
+function nextOccurrence(task, completedMs) {
+    var r = task.repeat;
+    if (!r)
+        return "";
+    var today = keyOf(toDate(completedMs));
+    var fromDone = r.from === "done" || !task.due;
+    var base = fromDone ? today : task.due;
+    var anchor = r.day || parseKey(base).getDate();
+    var next = stepRepeat(r, base, anchor);
+    var guard = 0;
+    while (!fromDone && next <= today && guard++ < 5000)
+        next = stepRepeat(r, next, anchor);
+    return next;
+}

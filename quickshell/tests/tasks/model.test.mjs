@@ -101,4 +101,21 @@ eq("json vacío", M.jsonErrorLine(""), 1);
 eq("json texto suelto", M.jsonErrorLine("hola"), 1);
 eq("json comillas simples", M.jsonErrorLine("{\n'a': 1}"), 2);
 
+// completeRepeating / skipRepeat
+const rt = M.normTask({ id: "t_r", title: "Pagar luz", due: "2026-11-17", dueTime: "10:00", start: "2026-11-15", repeat: { freq: "monthly" }, status: "doing", subtasks: [{ id: "s1", title: "a", done: true }, { id: "s2", title: "b", done: false }], reminders: [{ id: "r1", offset: 0, firedAt: 5 }, { id: "r2", at: "2026-11-17T09:45", firedAt: 6 }], notes: "n", order: 3000 }, NOW);
+const cr = M.completeRepeating(rt, "2026-12-17", NOW + 10, "t_copy");
+eq("copia: hecha y sin repetir", [cr.copy.id, cr.copy.status, cr.copy.completed, cr.copy.repeat, cr.copy.repeatOf, cr.copy.due], ["t_copy", "done", NOW + 10, null, "t_r", "2026-11-17"]);
+eq("copia conserva subtareas marcadas", cr.copy.subtasks.map(s => s.done), [true, false]);
+eq("copia sin avisos", cr.copy.reminders, []);
+eq("siguiente: misma id, a todo", [cr.next.id, cr.next.status, cr.next.completed, cr.next.due, cr.next.dueTime], ["t_r", "todo", 0, "2026-12-17", "10:00"]);
+eq("siguiente: subtareas desmarcadas", cr.next.subtasks.map(s => s.done), [false, false]);
+eq("siguiente: inicio corrido", cr.next.start, "2026-12-15");
+eq("siguiente: avisos reprogramados", cr.next.reminders.map(r => [r.id, r.firedAt]), [["r1", 0]]);
+eq("siguiente: recuerda el día del mes", cr.next.repeat.day, 17);
+eq("siguiente: sigue repitiendo", cr.next.repeat.freq, "monthly");
+eq("no muta la original", [rt.status, rt.due, rt.subtasks[0].done], ["doing", "2026-11-17", true]);
+eq("skipRepeat", [M.skipRepeat(rt, "2026-12-17", NOW).due, M.skipRepeat(rt, "2026-12-17", NOW).status], ["2026-12-17", "todo"]);
+eq("normRepeat conserva day", M.normTask({ title: "x", repeat: { freq: "monthly", day: 31 } }, NOW).repeat.day, 31);
+eq("normRepeat descarta day inválido", M.normTask({ title: "x", repeat: { freq: "monthly", day: 40 } }, NOW).repeat.day, undefined);
+
 done();

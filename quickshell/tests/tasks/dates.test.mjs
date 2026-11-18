@@ -91,4 +91,30 @@ eq("ago semanas", D.ago(t0 - 21 * 86400e3, now), "hace 3 semanas");
 eq("ago meses", D.ago(t0 - 90 * 86400e3, now), "hace 3 meses");
 eq("clock", D.clock(new Date(2026, 10, 17, 9, 5).getTime()), "09:05");
 
+// ── Repetición ──
+const rp = (r, due, done = now.getTime(), extra = {}) => D.nextOccurrence({ due, repeat: { interval: 1, days: [], from: "due", ...r }, ...extra }, done);
+eq("no se repite", D.nextOccurrence({ due: "2026-11-17", repeat: null }, now.getTime()), "");
+eq("cada día", rp({ freq: "daily" }, "2026-11-17"), "2026-11-18");
+eq("cada 3 días", rp({ freq: "daily", interval: 3 }, "2026-11-17"), "2026-11-20");
+eq("laborable de jueves", rp({ freq: "weekdays" }, "2026-11-19"), "2026-11-20");
+eq("laborable de viernes → lunes", rp({ freq: "weekdays" }, "2026-11-20", new Date(2026, 10, 20, 9).getTime()), "2026-11-23");
+eq("cada semana", rp({ freq: "weekly" }, "2026-11-17"), "2026-11-24");
+eq("cada 2 semanas", rp({ freq: "weekly", interval: 2 }, "2026-11-17"), "2026-12-01");
+eq("lunes y jueves: de lunes a jueves", rp({ freq: "weekly", days: [1, 4] }, "2026-11-16", new Date(2026, 10, 16, 9).getTime()), "2026-11-19");
+eq("lunes y jueves: de jueves al lunes", rp({ freq: "weekly", days: [1, 4] }, "2026-11-19", new Date(2026, 10, 19, 9).getTime()), "2026-11-23");
+eq("cada 2 semanas lunes y jueves, de jueves", rp({ freq: "weekly", interval: 2, days: [1, 4] }, "2026-11-19", new Date(2026, 10, 19, 9).getTime()), "2026-11-30");
+eq("cada mes", rp({ freq: "monthly" }, "2026-11-17"), "2026-12-17");
+eq("mensual el 31 → último día", rp({ freq: "monthly" }, "2026-01-31", new Date(2026, 0, 31, 9).getTime()), "2026-02-28");
+eq("mensual vuelve al 31 con day", rp({ freq: "monthly", day: 31 }, "2026-02-28", new Date(2026, 1, 28, 9).getTime()), "2026-03-31");
+eq("cada año", rp({ freq: "yearly" }, "2026-11-17"), "2027-11-17");
+eq("año bisiesto 29 feb", rp({ freq: "yearly" }, "2028-02-29", new Date(2028, 1, 29, 9).getTime()), "2029-02-28");
+eq("cada 2 meses", rp({ freq: "monthly", interval: 2 }, "2026-11-17"), "2027-01-17");
+eq("diaria atrasada salta a lo futuro", rp({ freq: "daily" }, "2026-11-10"), "2026-11-18");
+eq("semanal atrasada", rp({ freq: "weekly" }, "2026-10-01"), "2026-11-19");
+eq("completada antes de tiempo", rp({ freq: "daily" }, "2026-11-20"), "2026-11-21");
+eq("desde que la completo", rp({ freq: "weekly", from: "done" }, "2026-11-10"), "2026-11-24");
+eq("desde que la completo, diaria", rp({ freq: "daily", from: "done", interval: 2 }, "2026-11-01"), "2026-11-19");
+eq("sin fecha cuenta desde hoy", D.nextOccurrence({ due: "", repeat: { freq: "daily", interval: 1, days: [], from: "due" } }, now.getTime()), "2026-11-18");
+eq("cruza el año", rp({ freq: "daily" }, "2026-12-31", new Date(2026, 11, 31, 9).getTime()), "2027-01-01");
+
 done();

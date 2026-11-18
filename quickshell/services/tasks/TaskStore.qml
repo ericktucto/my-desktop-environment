@@ -415,6 +415,12 @@ Singleton {
     }
 
     function setStatus(id, status, reason) {
+        // Completar una tarea que se repite: queda una copia hecha y la original pasa a su próxima fecha
+        if (status === "done") {
+            const r = get(id);
+            if (r && r.repeat && completeRepeating(r))
+                return true;
+        }
         const labels = {
             todo: "Tarea reabierta",
             doing: "Tarea en curso",
@@ -433,11 +439,36 @@ Singleton {
         return setStatus(id, "todo", "");
     }
 
-    // mode: "this" | "all". Hasta la fase 3 (repetición) las dos borran la tarea.
-    function remove(id, mode) {
-        if (error !== "" || !get(id))
+    // Próxima fecha límite de una tarea que se repite (hoy, según su regla); "" si no se repite
+    function nextDate(t) {
+        return Dates.nextOccurrence(t, Date.now());
+    }
+
+    function completeRepeating(t) {
+        const nowMs = Date.now();
+        const next = nextDate(t);
+        if (next === "" || error !== "")
             return false;
-        commit("Tarea eliminada", tasks.filter(t => t.id !== id), projects);
+        const res = Model.completeRepeating(t, next, nowMs, Model.uniqueId("t_", tasks));
+        const arr = tasks.map(x => x.id === t.id ? res.next : x).concat([res.copy]);
+        commit("Tarea completada · próxima " + Dates.relative(next, "", now), arr, projects);
+        return true;
+    }
+
+    // mode: "this" | "all". Una tarea que se repite con "this" salta a su próxima fecha (sin hacerla);
+    // con "all" (o si no se repite) se borra.
+    function remove(id, mode) {
+        const t = get(id);
+        if (error !== "" || !t)
+            return false;
+        if (t.repeat && mode === "this") {
+            const next = nextDate(t);
+            if (next !== "") {
+                change(id, "Repetición omitida · próxima " + Dates.relative(next, "", now), x => Model.skipRepeat(x, next, Date.now()));
+                return true;
+            }
+        }
+        commit("Tarea eliminada", tasks.filter(x => x.id !== id), projects);
         return true;
     }
 

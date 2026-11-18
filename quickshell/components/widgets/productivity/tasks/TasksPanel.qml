@@ -2,6 +2,7 @@ import QtQuick
 import "../controlcenter/" as CC
 import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
+import "../../../../services/tasks/Parse.js" as Parse
 import "../../../../services/settings/" as ST
 import "../../../../" as App
 
@@ -131,8 +132,67 @@ Item {
 
     function toggleStatus(status) {
         const t = selected;
-        if (t)
+        if (!t)
+            return;
+        // Al bloquear se pregunta el motivo
+        if (status === "blocked" && t.status !== "blocked")
+            requestBlock(t.id);
+        else
             store.setStatus(t.id, t.status === status ? "todo" : status, "");
+    }
+
+    // ── Diálogos: motivo del bloqueo y borrar una tarea que se repite ──
+    property string dialogKind: ""
+    property string dialogId: ""
+
+    function requestBlock(id) {
+        const t = store.get(id);
+        if (!t)
+            return;
+        dialogKind = "block";
+        dialogId = id;
+        dialog.title = "Bloquear «" + t.title + "»";
+        dialog.message = "";
+        dialog.placeholder = "¿Qué la bloquea? (opcional)";
+        dialog.showInput = true;
+        dialog.buttons = [
+            {
+                id: "ok",
+                label: "Bloquear"
+            }
+        ];
+        dialog.open(t.blockedReason);
+    }
+
+    // Borra la tarea; si se repite, pregunta si solo esta vez (salta a la próxima) o todas
+    function requestDelete(id) {
+        const t = store.get(id);
+        if (!t)
+            return;
+        if (!t.repeat) {
+            store.remove(id, "this");
+            return;
+        }
+        dialogKind = "delete";
+        dialogId = id;
+        dialog.title = "Eliminar «" + t.title + "»";
+        dialog.message = "Esta tarea se repite (" + Parse.repeatLabel(t.repeat) + ").";
+        dialog.placeholder = "";
+        dialog.showInput = false;
+        dialog.buttons = [
+            {
+                id: "this",
+                label: "Solo esta vez (t)",
+                key: "t"
+            },
+            {
+                id: "all",
+                label: "Todas (a)",
+                key: "a",
+                danger: true
+            }
+        ];
+        dialog.open("");
     }
 
     function setDay(offset) {
@@ -144,9 +204,7 @@ Item {
     }
 
     function deleteSelected() {
-        const t = selected;
-        if (t)
-            store.remove(t.id, "this");
+        requestDelete(selectedId);
     }
 
     // Alt+j / Alt+k: sube o baja la tarea (solo en orden manual)
@@ -197,6 +255,10 @@ Item {
 
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
+        if (dialog.visible) {
+            dialog.close();
+            return true;
+        }
         if (detailId !== "") {
             if (!(detail.item?.back() ?? false))
                 closeDetail();
@@ -221,6 +283,7 @@ Item {
     }
 
     function reset() {
+        dialog.close();
         detail.item?.reset();
         detailId = "";
         sortMenuOpen = false;
@@ -249,7 +312,9 @@ Item {
     }
 
     Keys.onPressed: event => {
-        if (event.modifiers & Qt.MetaModifier || detailId !== "")
+        // Las teclas de la lista solo valen con la lista enfocada: un campo de texto no acepta Enter y lo
+        // deja subir hasta aquí (abriría el detalle al terminar de buscar o de añadir)
+        if (!root.activeFocus || event.modifiers & Qt.MetaModifier || detailId !== "" || dialog.visible)
             return;
         if (event.modifiers & Qt.ControlModifier) {
             if (event.key === Qt.Key_Z) {
@@ -414,7 +479,8 @@ Item {
                     font.pixelSize: App.Config.fontSize.md
                     clip: true
                     onTextChanged: root.query = text
-                    onAccepted: root.focusList()
+                    // Con callLater: si no, el mismo Enter llega a la lista y abre el detalle
+                    onAccepted: Qt.callLater(root.focusList)
                 }
                 Text {
                     visible: searchInput.text === ""
@@ -584,6 +650,7 @@ Item {
             sourceComponent: TaskDetail {
                 taskId: root.detailId
                 onCloseRequested: root.closeDetail()
+                onDeleteRequested: id => root.requestDelete(id)
             }
         }
 
@@ -731,5 +798,20 @@ Item {
                 }
             }
         }
+    }
+
+    // Motivo del bloqueo / borrar una tarea que se repite
+    TaskDialog {
+        id: dialog
+        anchors.fill: parent
+        onChosen: (id, text) => {
+            if (root.dialogKind === "block")
+                root.store.setStatus(root.dialogId, "blocked", text.trim());
+            else if (root.dialogKind === "delete")
+                root.store.remove(root.dialogId, id);
+            root.dialogKind = "";
+        }
+        onVisibleChanged: if (!visible)
+            root.focusList()
     }
 }

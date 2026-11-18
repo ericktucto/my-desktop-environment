@@ -60,12 +60,17 @@ function normRepeat(r) {
     var days = Array.isArray(r.days) ? r.days.map(Number).filter(function (d) {
         return d >= 1 && d <= 7;
     }) : [];
-    return {
+    var out = {
         freq: r.freq,
         interval: Math.max(1, Math.round(num(r.interval, 1))),
         days: days,
         from: r.from === "done" ? "done" : "due"
     };
+    // Día del mes al que vuelve una repetición mensual o anual (31 → el último día en meses cortos)
+    var day = Math.round(num(r.day, 0));
+    if (day >= 1 && day <= 31)
+        out.day = day;
+    return out;
 }
 
 function normReminders(list) {
@@ -295,6 +300,51 @@ function applyChanges(task, changes, now) {
     if (changes.status !== undefined && changes.status !== task.status)
         out = applyStatus(out, out.status, changes.blockedReason, now);
     return out;
+}
+
+// Completar una tarea que se repite: devuelve { copy, next }. `copy` es una copia hecha (queda en
+// Hechas y en el standup) y `next` es la misma tarea con la próxima fecha, sin subtareas marcadas y con
+// los avisos reprogramados.
+function completeRepeating(task, nextDue, now, copyId) {
+    var copy = Object.assign({}, task, {
+        id: copyId,
+        status: "done",
+        blockedReason: "",
+        completed: now,
+        updated: now,
+        repeat: null,
+        repeatOf: task.id,
+        reminders: []
+    });
+    return {
+        copy: copy,
+        next: skipRepeat(task, nextDue, now)
+    };
+}
+
+// La tarea que se repite pasa a su próxima fecha (sin hacerla)
+function skipRepeat(task, nextDue, now) {
+    var repeat = Object.assign({}, task.repeat);
+    if (!repeat.day && task.due)
+        repeat.day = Dates.parseKey(task.due).getDate();
+    var start = task.start;
+    if (start && task.due)
+        start = Dates.addDays(start, Dates.diffDays(task.due, nextDue));
+    return Object.assign({}, task, {
+        due: nextDue,
+        start: start,
+        status: "todo",
+        blockedReason: "",
+        completed: 0,
+        updated: now,
+        repeat: repeat,
+        subtasks: task.subtasks.map(function (s) {
+            return Object.assign({}, s, {
+                done: false
+            });
+        }),
+        reminders: Reminders.reschedule(task.reminders)
+    });
 }
 
 function makeProject(name, color, projects) {

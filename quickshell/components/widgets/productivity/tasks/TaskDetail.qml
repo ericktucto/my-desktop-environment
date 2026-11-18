@@ -2,6 +2,7 @@ import QtQuick
 import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../services/tasks/Reminders.js" as Reminders
+import "../../../../services/tasks/Parse.js" as Parse
 import "../../../../" as App
 
 // Detalle de una tarea (reemplaza a la lista): título, estado, prioridad, proyecto, etiquetas, fechas,
@@ -37,6 +38,8 @@ Item {
 
     // Volver a la lista (‹, Esc o la tarea ya no existe)
     signal closeRequested
+    // Eliminar desde el menú ⋮ (el panel pregunta si la tarea se repite)
+    signal deleteRequested(string id)
 
     onFoundChanged: {
         if (found === null)
@@ -67,7 +70,7 @@ Item {
 
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
-        if (picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible) {
+        if (picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible || repeatPicker.visible) {
             closePopups();
             return true;
         }
@@ -92,6 +95,7 @@ Item {
         projectMenu.visible = false;
         moreMenu.visible = false;
         remindMenu.visible = false;
+        repeatPicker.visible = false;
     }
 
     // ── Fechas ──
@@ -588,6 +592,35 @@ Item {
                 }
             }
 
+            // Repetición
+            Flow {
+                width: parent.width
+                spacing: 6
+
+                Caption {
+                    height: 28
+                    verticalAlignment: Text.AlignVCenter
+                    rightPadding: 4
+                    text: "REPETIR"
+                }
+                Pill {
+                    id: repeatPill
+                    label: root.t.repeat ? Parse.repeatLabel(root.t.repeat) : "No se repite"
+                    selected: false
+                    dropdown: true
+                    onClicked: {
+                        const open = !repeatPicker.visible;
+                        root.closePopups();
+                        if (open) {
+                            const p = repeatPill.mapToItem(root, 0, repeatPill.height + 6);
+                            repeatPicker.x = Math.max(0, Math.min(p.x, root.width - repeatPicker.width));
+                            repeatPicker.y = Math.min(p.y, Math.max(0, root.height - repeatPicker.height));
+                            repeatPicker.visible = true;
+                        }
+                    }
+                }
+            }
+
             // Recordatorios
             Flow {
                 width: parent.width
@@ -772,7 +805,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         z: 40
-        visible: picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible
+        visible: picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible || repeatPicker.visible
         onClicked: root.closePopups()
     }
 
@@ -867,6 +900,22 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    RepeatPicker {
+        id: repeatPicker
+        z: 50
+        visible: false
+        repeat: root.t.repeat
+        onChanged: r => {
+            // Para repetirse, la tarea necesita una fecha: sin ella, hoy
+            const changes = {
+                repeat: r
+            };
+            if (r !== null && root.t.due === "")
+                changes.due = root.store.todayKey;
+            root.patch(changes);
         }
     }
 
@@ -983,7 +1032,7 @@ Item {
                         onClicked: {
                             moreMenu.visible = false;
                             if (action.modelData.id === "delete")
-                                root.store.remove(root.taskId, "this");
+                                root.deleteRequested(root.taskId);
                             else
                                 root.store.setStatus(root.taskId, root.cancelled ? "todo" : "cancelled", "");
                         }
