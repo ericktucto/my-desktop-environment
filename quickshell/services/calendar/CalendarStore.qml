@@ -385,6 +385,13 @@ Singleton {
             const name = ev.title.length > cfg.titleMax ? ev.title.slice(0, cfg.titleMax - 1) + "…" : ev.title;
             t += " · " + name + " " + (ev.segStart <= now.getTime() ? "ahora" : "en " + minutesText(ev.segStart - now.getTime()));
         }
+        // Tareas: "3 tareas hoy" y "1 vencida"
+        const c = TK.TaskStore.counts;
+        const todayCount = c.today - c.overdue;
+        if (todayCount > 0)
+            t += " · " + todayCount + (todayCount === 1 ? " tarea" : " tareas") + " hoy";
+        if (c.overdue > 0)
+            t += " · " + c.overdue + (c.overdue === 1 ? " vencida" : " vencidas");
         return t;
     }
 

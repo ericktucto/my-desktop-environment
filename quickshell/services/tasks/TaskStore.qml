@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
+import "../lock/" as LK
 import "../../" as App
 import "Dates.js" as Dates
 import "Links.js" as Links
@@ -290,11 +291,43 @@ Singleton {
         return [t.id, t.title, Dates.relative(t.due, t.dueTime, now), p !== "" ? "+" + p : ""].join(" · ");
     }
 
+    // ── Resumen de la mañana ──
+    // Al primer momento desde las 8:00 con la pantalla desbloqueada (al arrancar la shell o al desbloquear),
+    // una vez por día: "Hoy: 5 tareas (2 vencidas) · 3 h 15 m" con el botón Abrir. La fecha del último se
+    // guarda en settings.json (tasks.lastSummary); sin tareas para hoy no avisa y lo intenta más tarde.
+    readonly property bool unlocked: !LK.LockStore.locked
+    onUnlockedChanged: maybeSummary()
+
+    function summaryText() {
+        const c = counts;
+        const n = c.today;
+        let t = "Hoy: " + n + (n === 1 ? " tarea" : " tareas");
+        if (c.overdue > 0)
+            t += " (" + c.overdue + (c.overdue === 1 ? " vencida" : " vencidas") + ")";
+        const est = Dates.formatMinutes(todayEstimate);
+        return est !== "" ? t + " · " + est : t;
+    }
+
+    function maybeSummary() {
+        if (!ready || error !== "" || !unlocked || now.getHours() < cfg.summaryHour)
+            return;
+        if (ST.SettingsStore.tasks.lastSummary === todayKey || counts.today === 0)
+            return;
+        ST.SettingsStore.tasks.lastSummary = todayKey;
+        run(["notify-send", "-a", "Tareas", "-i", "checkbox", "-t", "10000", "-A", "open=Abrir", "Buenos días", summaryText()], out => {
+            if (out.trim() === "open")
+                openRequested("today");
+        });
+    }
+
     // ── Recordatorios ──
     // Cada minuto (y al leer el archivo, al arrancar o al despertar) se revisan los avisos pendientes.
     // Los que se perdieron en las últimas 12 h salen una vez con "(atrasado)"; los más viejos solo se
     // marcan como avisados. Marcar un aviso no entra en deshacer.
-    onNowChanged: checkReminders()
+    onNowChanged: {
+        checkReminders();
+        maybeSummary();
+    }
 
     function checkReminders() {
         if (!ready || error !== "")
@@ -672,6 +705,7 @@ Singleton {
         ready = true;
         changed();
         Qt.callLater(checkReminders);
+        Qt.callLater(maybeSummary);
     }
 
     // Una copia diaria: tasks.json.bak se actualiza si tiene más de 24 h (antes de pisar nada)
