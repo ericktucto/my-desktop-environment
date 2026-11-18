@@ -14,13 +14,9 @@ Lo que la shell ya hace está en el [README](../README.md).
 ### Productividad: tareas, temporizador y cronómetro
 El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas** (`Ctrl+Tab` alterna).
 - **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
-- **Tareas (fases 1 a 3 hechas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`), recordatorios con aviso, repetición y Tablero.
+- **Tareas (completas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`), recordatorios con aviso, repetición, Tablero, tareas en el calendario y el reloj, resumen de la mañana, Standup, plantillas, archivo automático y estado de GitHub.
 
-**Tareas, fase 4: integraciones y extras**
-- [ ] Las tareas en el calendario (punto en el mes, fila con check en la lista del día y bloque en la cuadrícula).
-- [ ] Contador de tareas en el hover del reloj y resumen de la mañana al primer desbloqueo.
-- [ ] Standup (lo de ayer, lo de hoy y lo bloqueado, en Markdown al portapapeles), plantillas y archivo automático de lo hecho hace más de 30 días.
-- [ ] Estado de PR e issues de GitHub (sin login para repos públicos; token opcional para los privados).
+**Tareas: pendientes**
 - [ ] Arrastrar para ordenar la lista con el mouse (hoy se ordena con `Alt+j`/`Alt+k`).
 - [ ] **Google Tasks (sincronizar):** la API guarda solo título, notas, fecha (sin hora), subtareas y hecho; prioridad, etiquetas y repetición se quedarían locales.
 - [ ] **Foco con el temporizador:** tiempo por tarea cuando exista la pestaña Temporizador.

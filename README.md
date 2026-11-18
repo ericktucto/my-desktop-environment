@@ -59,13 +59,21 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
   | `Alt+j` `Alt+k` | Reordenar (orden manual) |
   | `Esc` | Cierra por partes: menú, campo, detalle y, al final, la isla |
 
-  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `search <filtro>`, `done <id>`, `snooze <id> <minutos>`, `tomorrow <id>`, `undo`, `open <vista>` y `quickadd`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
+  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `search <filtro>`, `done <id>`, `snooze <id> <minutos>`, `tomorrow <id>`, `standup`, `detail <id>`, `savetemplate <id>`, `applytemplate <nombre> <título>`, `undo`, `open <vista>` y `quickadd`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
 
   **Recordatorios.** Una tarea con hora avisa **a la hora** por defecto; en el detalle (**Avisar**) se agregan otros (5, 10, 30 min, 1 h o 1 día antes) y se quitan con la ×. El aviso es una notificación con tres botones: **Hecha**, **Posponer 10 min** y **Mañana** (mueve la fecha a mañana con la misma hora). Se revisan cada minuto, también con la pantalla bloqueada; los que se perdieron mientras la laptop dormía o la shell estaba cerrada salen una vez con «(atrasado)» si pasaron menos de 12 h.
 
   **Repetición.** En el detalle (**Repetir**) o escribiendo «cada lunes» al crearla: cada día, día laborable, semana (con los días que quieras), mes o año, cada N, contando **desde la fecha límite** (nunca cae en un día ya pasado) o **desde que la completas**. Al completarla queda una **copia hecha** en Hechas y la original pasa a la próxima fecha con las subtareas desmarcadas y los avisos reprogramados; una repetición mensual del 31 cae el último día en los meses cortos y vuelve al 31 después.
 
   **Tablero.** Cuatro columnas (Pendiente · En curso · Bloqueada · Hecha hoy) con filtro por proyecto: arrastra una tarjeta a otra columna (o `h`/`l`) para cambiarle el estado. Al bloquear, pregunta el motivo, que se ve en la tarjeta y en la fila de la lista.
+
+  **En el resto de la shell.** Las tareas con fecha salen en el **Calendario**: un punto cuadrado con el color del proyecto en el mes, una fila con círculo en la lista del día (el círculo la completa ahí mismo; un clic en la fila abre su detalle en la pestaña Tareas) y, si tienen hora, un bloque de 30 min en la cuadrícula. Con el mouse sobre el reloj se lee «3 tareas hoy · 1 vencida». Al primer momento desde las 8:00 con la pantalla desbloqueada (al arrancar o al desbloquear) sale una notificación «Hoy: 5 tareas (2 vencidas) · 3 h 15 m» con el botón **Abrir**, una vez por día (`tasks.lastSummary` en `settings.json`; sin tareas para hoy no avisa).
+
+  **Standup.** El botón **Standup** (en Hoy y en Hechas) copia al portapapeles, en Markdown, lo hecho desde el último día laborable (el lunes cuenta desde el viernes), lo de hoy y lo bloqueado con su motivo; los links de GitHub, GitLab o Jira van como `acme/api#412`. En la terminal: `task standup | wl-copy`.
+
+  **Plantillas.** **Guardar como plantilla** (al pie del detalle) guarda el título, proyecto, etiquetas, prioridad, estimación, notas y subtareas con un nombre (`revision-semanal`). Se usan con **Desde plantilla** en el menú ⋮ del panel (la × la borra) o escribiendo `/revision-semanal` al principio de la frase en el quick add, el launcher (`td:`) o la terminal; lo que escribas después se suma al título y lo demás de la frase (fecha, `p1`, `+proyecto`…) manda sobre la plantilla.
+
+  **Archivo y GitHub.** Lo hecho hace más de 30 días pasa solo a `~/.config/stixshell/tasks-archive.json` (al arrancar y una vez al día); la búsqueda de **Hechas** también mira ahí, y al reabrir o editar una tarea archivada vuelve a `tasks.json`. El estado de los PR e issues de GitHub (abierto, merged, cerrado o borrador) sale como chip en la fila y se vuelve a pedir al abrir el panel si tiene más de 30 min. Sin login funciona para repos públicos (60 consultas por hora); para los privados pon un token en `~/.config/stixshell/github-token` (una línea, `chmod 600`). Si el token no vale se usa la API pública y se avisa una vez.
 
   **Captura en lenguaje natural.** Al crear una tarea (la fila **Añadir tarea…**, el quick add, `td:` en el launcher o la terminal) la frase se analiza y debajo salen los chips de lo que entendió, cada uno con su × por si se equivocó. Lo que no entiende se queda en el título.
 
@@ -208,7 +216,7 @@ Quickshell recarga solo al guardar un archivo; si no lo hace, `touch quickshell/
 - Historial de notificaciones: `~/.local/state/quickshell/by-shell/*/notifications.json`.
 - Wallpaper actual: `~/.cache/quickshell/wallpaper`.
 - Historial del portapapeles: la base de `cliphist`. Las imágenes y los QR que se ven en el panel se decodifican a `$XDG_RUNTIME_DIR/stixshell/clipboard` (se vacía al arrancar la shell).
-- Tareas: `~/.config/stixshell/tasks.json` (proyectos, tareas y plantillas; fuera del repo) y su copia diaria `tasks.json.bak`.
+- Tareas: `~/.config/stixshell/tasks.json` (proyectos, tareas y plantillas; fuera del repo), su copia diaria `tasks.json.bak`, el archivo `tasks-archive.json` y, si lo creas, `github-token`.
 - Calendario: la caché de los eventos y de los feriados (`calendar.json` y `holidays.json`) vive en la carpeta de caché de la shell (`Quickshell.cachePath`); la sesión de Google, en `~/.config/stixshell/google/` (fuera del repo).
 - Log de la shell: `$(ls -td /run/user/$UID/quickshell/by-id/*/ | head -1)log.log`.
 
