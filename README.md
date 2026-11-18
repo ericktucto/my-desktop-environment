@@ -22,8 +22,8 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
     ├── Wallpaper.qml  Wallpaper actual (se recuerda entre sesiones)
     ├── todo.md        Lo que falta por hacer
     ├── assets/        Íconos (svg) y la base de emojis (emoji)
-    ├── tests/         Pruebas con node de la lógica de las tareas (`node tests/tasks/dates.test.mjs`, y links, model y views)
-    ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher, grabador y capturador de pantalla, selector de carpeta o archivo, agente de Bluetooth e importar VPN)
+    ├── tests/         Pruebas con node de la lógica de las tareas (`for f in dates links model views parse reminders; do node tests/tasks/$f.test.mjs; done`) y `make-sample.mjs`, que genera un `tasks.json` de ejemplo
+    ├── scripts/       Scripts de apoyo (código QR del portapapeles, base de emojis del launcher, grabador y capturador de pantalla, selector de carpeta o archivo, agente de Bluetooth e importar VPN), links.py (título y estado de un link de una tarea) y task (tareas desde la terminal)
     ├── components/    base · controls · indicators · layouts · lock · pills · widgets
     └── services/      audio · bluetooth · brightness · clipboard · idle · launcher · lock · media · network · notify · osd · power · recorder · region · screenshot · settings · share · theme · panels · session · windows · workspaces · tasks
 ```
@@ -171,6 +171,7 @@ sudo xbps-install -Su hyprland quickshell upower pipewire wireplumber brightness
 | **Bluetooth** (casilla, vista y agente de emparejamiento) | `bluez`, `python3`, `python3-gobject`, `rfkill` (desbloquear), tu usuario en el grupo `bluetooth` | sin adaptador, la casilla dice "Sin adaptador"; sin `python3-gobject`, no se puede emparejar lo que pide un código |
 | **Red (Wi-Fi y VPN)** | `NetworkManager` (activo por runit), `NetworkManager-openvpn` (VPN OpenVPN), `ca-certificates` (redes 802.1X con el certificado del sistema), `python3-pyzbar` (leer el QR), `grim` (QR en pantalla), `wl-clipboard`, `python3-gobject` (diálogo de archivos) y `libnotify` (aviso de portal cautivo) | sin NetworkManager, "Sin Wi-Fi"; sin `pyzbar`, no se leen QR (el `.conf` y el texto sí); sin `NetworkManager-openvpn`, un `.ovpn` dice "Instala NetworkManager-openvpn" |
 | **Compartir por Bluetooth** | `bluez`, `bluez-obex`, `blueman` (`blueman-sendto`) | no aparece el destino Bluetooth |
+| **Tareas** (avisos, resumen, standup, links) | `libnotify` (`notify-send` con botones de acción), `wl-clipboard` (copiar el standup y leer el link copiado), `python3` (`scripts/links.py`, solo librería estándar) y `wtype` (opcional) | sin `notify-send` no hay recordatorios ni resumen; sin `wl-clipboard`, no se copia el standup ni se sugiere el link copiado; sin `python3` no se traen títulos ni estados de links |
 | **Launcher y terminal** | `kitty` (`t:`, apps de terminal, ejecutar desde el portapapeles) | no abre terminales |
 | **Multimedia** | `playerctl` (respaldo de las teclas multimedia si la shell no corre). Opcional: `mpv-mpris` (mpv no habla MPRIS sin él), que además hay que enlazar una vez: `mkdir -p ~/.config/mpv/scripts && ln -s /usr/lib/mpv-mpris/mpris.so ~/.config/mpv/scripts/` y reabrir mpv | sin él, mpv no se ve; las teclas solo funcionan con la shell |
 | **Grabador de pantalla** | `wf-recorder`, `pipewire-pulse` con `pactl` (audio), `mesa-vaapi` (grabar con la GPU), `python3-gobject` y `gtk+3` (diálogo de carpeta) y `libnotify` (aviso) | sin `wf-recorder`, avisa "No se pudo grabar"; sin VA-API, graba por la CPU |

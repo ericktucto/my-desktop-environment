@@ -21,12 +21,12 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 - [ ] **Google Tasks (sincronizar):** la API guarda solo título, notas, fecha (sin hora), subtareas y hecho; prioridad, etiquetas y repetición se quedarían locales.
 - [ ] **Foco con el temporizador:** tiempo por tarea cuando exista la pestaña Temporizador.
 
-**Fase 3: Temporizador y cronómetro**
+**Temporizador y cronómetro**
 - [ ] Temporizador con tiempos rápidos y uno a medida. Al terminar, notificación y sonido.
 - [ ] Cronómetro con vueltas.
 - [ ] Ambos siguen corriendo con el panel cerrado, y la isla muestra el tiempo.
 
-**Fase 6: Google Calendar (escribir) y avisos**
+**Google Calendar (escribir) y avisos**
 - [ ] Crear, editar y borrar eventos desde el panel (hoy se crean en el formulario web de Google; pedirá reconectar con permiso de escritura).
 - [ ] Aviso con notificación antes de cada evento, con el enlace de la reunión si lo tiene.
 
