@@ -7,6 +7,7 @@ import "../../" as App
 import "Dates.js" as Dates
 import "Links.js" as Links
 import "Model.js" as Model
+import "Parse.js" as Parse
 import "Views.js" as Views
 
 // Tareas: datos de ~/.config/stixshell/tasks.json, operaciones con deshacer, vistas e IPC.
@@ -152,6 +153,72 @@ Singleton {
         if (t.project && !project(t.project))
             t.project = null;
         commit("Tarea creada", tasks.concat([t]), projects);
+        return t.id;
+    }
+
+    // ── Captura en lenguaje natural ──
+    // Texto → lo que entendió (ver Parse.js): título, fechas, +proyecto, #etiquetas, p1…
+    function parseText(text) {
+        return Parse.parse(text ?? "", {
+            now: now,
+            projects: activeProjects,
+            templates: templates
+        });
+    }
+
+    // Chips de lo entendido: [{ id, kind, label, spans }]
+    function chipsFor(parsed) {
+        return Parse.chips(parsed, {
+            now: now
+        });
+    }
+
+    // Texto sin los tramos de un chip (su ×)
+    function removeChip(text, chip) {
+        return Parse.removeSpans(text, chip.spans);
+    }
+
+    // Crea una tarea desde una frase y devuelve su id ("" si no hay título). `extra` trae los valores por
+    // defecto de donde se crea (due, project = id, tags); lo que diga la frase manda. Un +proyecto que
+    // no existe se crea en el mismo cambio, así un solo "Deshacer" lo deshace todo.
+    function addFromText(text, extra) {
+        if (error !== "")
+            return "";
+        const r = parseText(text);
+        const fields = Object.assign({}, extra ?? {});
+        let newProjects = projects;
+        if (r.due !== "") {
+            fields.due = r.due;
+            fields.dueTime = r.dueTime;
+        }
+        if (r.start !== "")
+            fields.start = r.start;
+        if (r.priority < 4)
+            fields.priority = r.priority;
+        if (r.estimate > 0)
+            fields.estimate = r.estimate;
+        if (r.repeat)
+            fields.repeat = r.repeat;
+        if (r.tags.length > 0)
+            fields.tags = (fields.tags ?? []).concat(r.tags);
+        if (r.links.length > 0)
+            fields.links = r.links;
+        if (r.project !== null) {
+            const found = activeProjects.find(p => Views.norm(p.name) === Views.norm(r.project));
+            if (found) {
+                fields.project = found.id;
+            } else {
+                const np = Model.makeProject(r.project, "", projects);
+                newProjects = projects.concat([np]);
+                fields.project = np.id;
+            }
+        }
+        // Solo un link: el título es su etiqueta corta (la fase 2.5 lo cambia por el título de la página)
+        fields.title = r.title !== "" ? r.title : (r.links.length > 0 ? Links.linkInfo(r.links[0]).label : "");
+        const t = Model.makeTask(fields, Date.now(), tasks);
+        if (t.title === "")
+            return "";
+        commit("Tarea creada", tasks.concat([t]), newProjects);
         return t.id;
     }
 
@@ -444,13 +511,11 @@ Singleton {
     IpcHandler {
         target: "stixshell@tasks"
 
-        // Crea una tarea; devuelve su id. (Desde la fase 2 el texto se analiza: fechas, +proyecto, p1…)
+        // Crea una tarea desde una frase (fechas, +proyecto, #etiqueta, p1, 30m, cada lunes…); devuelve su id
         function add(text: string): string {
             if (store.error !== "")
                 return "error: " + store.error;
-            const id = store.add({
-                title: text
-            });
+            const id = store.addFromText(text, {});
             return id !== "" ? id : "error: falta el título";
         }
 

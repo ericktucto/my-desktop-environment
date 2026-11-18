@@ -161,11 +161,9 @@ Item {
             store.move(selectedId, ids[j]);
     }
 
-    // Valores de una tarea nueva según la vista donde se crea
-    function addTask(text) {
-        const f = {
-            title: text
-        };
+    // Valores por defecto de una tarea nueva según la vista donde se crea (la frase manda sobre ellos)
+    function viewDefaults() {
+        const f = {};
         const v = effectiveView;
         if (v === "today")
             f.due = store.todayKey;
@@ -175,7 +173,11 @@ Item {
             f.project = v.slice(8);
         else if (v.startsWith("tag:"))
             f.tags = [v.slice(4)];
-        const id = store.add(f);
+        return f;
+    }
+
+    function addTask(text) {
+        const id = store.addFromText(text, viewDefaults());
         if (id !== "")
             select(id);
     }
@@ -502,7 +504,8 @@ Item {
                 anchors.fill: parent
                 anchors.leftMargin: 38
                 verticalAlignment: Text.AlignVCenter
-                text: "Añadir tarea…"
+                text: "Añadir tarea…   mañana 9am +proyecto #etiqueta p1 30m"
+                elide: Text.ElideRight
                 color: App.Theme.placeholder
                 font.family: App.Config.fonts.text
                 font.pixelSize: App.Config.fontSize.md
@@ -515,10 +518,23 @@ Item {
             }
         }
 
+        // Lo que entendió de lo que escribes (cada chip tiene su ×)
+        ParseChips {
+            id: addChips
+            visible: root.detailId === "" && root.effectiveView !== "done" && chips.length > 0
+            y: addField.y + addField.height + 6
+            width: parent.width
+            chips: root.store.chipsFor(root.store.parseText(addInput.text))
+            onRemoved: chip => {
+                addInput.text = root.store.removeChip(addInput.text, chip);
+                addInput.forceActiveFocus();
+            }
+        }
+
         TaskList {
             id: list
             visible: root.detailId === "" && root.effectiveView !== "done"
-            y: addField.y + addField.height + 8
+            y: addField.y + addField.height + 8 + (addChips.visible ? addChips.height + 4 : 0)
             width: parent.width
             height: parent.height - y
             groups: root.groups
