@@ -64,7 +64,19 @@ Item {
     property string detailId: ""
     property bool sortMenuOpen: false
 
-    readonly property var groups: store.list(effectiveView, query)
+    // Proyecto elegido en el filtro del Tablero ("" = todos)
+    property string boardProject: ""
+
+    readonly property var groups: {
+        const g = store.list(effectiveView, query);
+        if (effectiveView !== "board" || boardProject === "")
+            return g;
+        return g.map(x => ({
+                    key: x.key,
+                    label: x.label,
+                    tasks: x.tasks.filter(t => t.project === boardProject)
+                })).filter(x => x.tasks.length > 0);
+    }
     // Ids de las tareas en el orden en que se ven
     readonly property var ids: {
         const out = [];
@@ -86,7 +98,14 @@ Item {
         else
             selectedId = ids.length > 0 ? ids[Math.min(selIndex, ids.length - 1)] : "";
     }
-    onSelectedIdChanged: Qt.callLater(() => root.effectiveView === "done" ? doneView.ensureVisible(selectedId) : list.ensureVisible(selectedId))
+    onSelectedIdChanged: Qt.callLater(() => {
+        if (root.effectiveView === "done")
+            doneView.ensureVisible(selectedId);
+        else if (root.effectiveView === "board")
+            boardView.ensureVisible(selectedId);
+        else
+            list.ensureVisible(selectedId);
+    })
     onEffectiveViewChanged: {
         selIndex = 0;
         detailId = "";
@@ -201,6 +220,25 @@ Item {
             store.update(t.id, {
                 due: Dates.addDays(store.todayKey, offset)
             });
+    }
+
+    // Tablero: pasa la tarjeta elegida a la columna de al lado (h = izquierda, l = derecha)
+    function moveColumn(step) {
+        const t = selected;
+        if (!t)
+            return;
+        const order = ["todo", "doing", "blocked", "done"];
+        const i = order.indexOf(t.status === "cancelled" ? "done" : t.status) + step;
+        if (i >= 0 && i < order.length)
+            moveTo(t.id, order[i]);
+    }
+
+    // Cambia el estado de una tarea (a Bloqueada pregunta el motivo)
+    function moveTo(id, status) {
+        if (status === "blocked")
+            requestBlock(id);
+        else
+            store.setStatus(id, status, "");
     }
 
     function deleteSelected() {
@@ -377,6 +415,8 @@ Item {
             toggleStatus("blocked");
         else if (key === Qt.Key_U)
             store.undo();
+        else if (effectiveView === "board" && (key === Qt.Key_H || key === Qt.Key_L))
+            moveColumn(key === Qt.Key_L ? 1 : -1);
         else if (key === Qt.Key_E || key === Qt.Key_Return || key === Qt.Key_Enter)
             openDetail(selectedId);
         else
@@ -599,7 +639,7 @@ Item {
 
         TaskList {
             id: list
-            visible: root.detailId === "" && root.effectiveView !== "done"
+            visible: root.detailId === "" && root.effectiveView !== "done" && root.effectiveView !== "board"
             y: addField.y + addField.height + 8 + (addChips.visible ? addChips.height + 4 : 0)
             width: parent.width
             height: parent.height - y
@@ -618,6 +658,28 @@ Item {
                 root.toggleDone();
             }
             onTaskOpened: id => root.openDetail(id)
+        }
+
+        TaskBoard {
+            id: boardView
+            visible: root.detailId === "" && root.effectiveView === "board"
+            y: addField.y + addField.height + 8 + (addChips.visible ? addChips.height + 4 : 0)
+            width: parent.width
+            height: parent.height - y
+            groups: root.groups
+            selectedId: root.selectedId
+            project: root.boardProject
+            emptyText: root.emptyText
+            onTaskClicked: id => {
+                root.select(id);
+                root.focusList();
+            }
+            onTaskOpened: id => root.openDetail(id)
+            onMoved: (id, status) => {
+                root.select(id);
+                root.moveTo(id, status);
+            }
+            onProjectPicked: id => root.boardProject = id
         }
 
         DoneView {
