@@ -153,11 +153,37 @@ Rectangle {
         }
     }
 
+    // Botón para entrar al detalle
+    Rectangle {
+        id: detailButton
+        anchors.right: parent.right
+        anchors.rightMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+        width: 28
+        height: 28
+        radius: 14
+        color: detailMouse.containsMouse ? App.Theme.surfaceActive : "transparent"
+        Text {
+            anchors.centerIn: parent
+            text: String.fromCodePoint(0xf105)
+            color: detailMouse.containsMouse || root.selected ? App.Theme.white : App.Theme.gray
+            font.family: App.Config.fonts.icons
+            font.pixelSize: App.Config.fontSize.icon
+        }
+        MouseArea {
+            id: detailMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.opened()
+        }
+    }
+
     Column {
         anchors.left: dot.right
         anchors.leftMargin: 12
-        anchors.right: parent.right
-        anchors.rightMargin: 12
+        anchors.right: detailButton.left
+        anchors.rightMargin: 6
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
 
