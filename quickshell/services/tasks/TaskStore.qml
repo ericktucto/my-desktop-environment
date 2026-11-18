@@ -282,22 +282,59 @@ Singleton {
         } catch (e) {
             return;
         }
-        if (!j.ok)
+        // Token de GitHub inválido: se usó la API pública; se avisa una sola vez
+        if (j.tokenInvalid && !tokenWarned) {
+            tokenWarned = true;
+            Quickshell.execDetached(["notify-send", "-a", "Tareas", "-i", "dialog-warning", "El token de GitHub no vale", "Se usa la API pública (solo repos públicos). Revisa ~/.config/stixshell/github-token"]);
+        }
+        // Sin internet no se anota nada (se vuelve a intentar); otros errores (límite de consultas, 404)
+        // solo marcan la hora para no insistir antes de tiempo
+        if (!j.ok && j.error === "offline")
             return;
         quietChange(id, t => {
             if (!t.links.some(l => l.url === url))
                 return null;
             const patch = {
-                links: t.links.map(l => l.url === url ? Object.assign({}, l, {
+                links: t.links.map(l => l.url === url ? Object.assign({}, l, j.ok ? {
                     title: j.title !== "" ? j.title : l.title,
                     state: j.state !== "" ? j.state : l.state,
                     checked: Date.now()
+                } : {
+                    checked: Date.now()
                 }) : l)
             };
-            if (retitle !== "" && t.title === retitle && j.title !== "")
+            if (j.ok && retitle !== "" && t.title === retitle && j.title !== "")
                 patch.title = j.title;
             return Object.assign({}, t, patch);
         });
+    }
+
+    property bool tokenWarned: false
+
+    // Vuelve a pedir el estado de los PR e issues de GitHub de esas tareas (abiertas) si tiene más de
+    // `linkMaxAge` minutos. Como mucho `linkRefreshMax` por vez: sin token GitHub deja 60 consultas por hora.
+    function refreshStale(ids) {
+        const limit = Date.now() - cfg.linkMaxAge * 60000;
+        let left = cfg.linkRefreshMax;
+        for (const id of ids) {
+            const t = tasks.find(x => x.id === id);
+            if (!t || t.status === "done" || t.status === "cancelled")
+                continue;
+            for (const l of t.links) {
+                if (left <= 0)
+                    return;
+                if ((l.kind === "github-pr" || l.kind === "github-issue") && l.checked < limit) {
+                    left--;
+                    run(["python3", linksScript, "info", l.url], out => applyLinkInfo(id, l.url, out, ""));
+                    // Evita pedirlo dos veces mientras llega la respuesta
+                    quietChange(id, x => Object.assign({}, x, {
+                            links: x.links.map(y => y.url === l.url ? Object.assign({}, y, {
+                                    checked: Date.now()
+                                }) : y)
+                        }));
+                }
+            }
+        }
     }
 
     // Una tarea en una línea para el IPC y la terminal: id · título · fecha · +proyecto

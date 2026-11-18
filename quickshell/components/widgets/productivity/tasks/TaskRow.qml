@@ -89,6 +89,27 @@ Rectangle {
                 text: String(t.links.length),
                 color: gray
             });
+        // Estado del primer PR o issue de GitHub: abierto, merged, cerrado o borrador
+        const gh = t.links.find(l => l.state !== undefined && l.state !== "");
+        if (gh && !closed) {
+            const names = {
+                "open": "abierto",
+                "merged": "merged",
+                "closed": "cerrado",
+                "draft": "borrador"
+            };
+            const colors = {
+                "open": App.Theme.green,
+                "merged": App.Theme.purple,
+                "closed": App.Theme.red,
+                "draft": gray
+            };
+            out.push({
+                text: names[gh.state] ?? gh.state,
+                color: colors[gh.state] ?? gray,
+                dot: colors[gh.state] ?? gray
+            });
+        }
         return out;
     }
 

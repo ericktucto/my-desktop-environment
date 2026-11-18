@@ -44,10 +44,12 @@ Item {
     }
 
     function focusTab() {
-        if (tab === "tasks")
+        if (tab === "tasks") {
             tasksLoader.item?.forceActiveFocus();
-        else
+            tasksLoader.item?.refreshVisibleLinks();
+        } else {
             calendar.forceActiveFocus();
+        }
     }
 
     // Esc: true si cerró algo dentro del panel (menú, selector, evento desplegado, detalle…)

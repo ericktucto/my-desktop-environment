@@ -50,8 +50,12 @@ Item {
     onTaskIdChanged: {
         templateSaved = "";
         sync();
+        store.refreshStale([taskId]);
     }
-    Component.onCompleted: sync()
+    Component.onCompleted: {
+        sync();
+        store.refreshStale([taskId]);
+    }
 
     // Pone en los campos lo guardado, salvo el que se está escribiendo
     function sync() {

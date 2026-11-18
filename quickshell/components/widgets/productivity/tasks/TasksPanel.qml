@@ -294,7 +294,16 @@ Item {
         openDetail(id);
     }
 
-    Component.onCompleted: consumePending()
+    // Al abrir el panel: el estado de los PR de lo que se ve (si tiene más de 30 min)
+    function refreshVisibleLinks() {
+        if (store.ready)
+            store.refreshStale(ids);
+    }
+
+    Component.onCompleted: {
+        consumePending();
+        refreshVisibleLinks();
+    }
     Connections {
         target: root.store
         function onPendingDetailChanged() {

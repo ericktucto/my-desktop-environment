@@ -341,6 +341,8 @@ Singleton {
         readonly property int archiveDays: 30        // lo completado hace más se archiva
         readonly property int upcomingDays: 7        // días de la vista Próximos
         readonly property int summaryHour: 8         // hora desde la que sale el resumen de la mañana
+        readonly property int linkMaxAge: 30         // min: el estado de un PR de GitHub se vuelve a pedir pasado este tiempo
+        readonly property int linkRefreshMax: 8      // links que se refrescan de una vez al abrir el panel
         readonly property int saveDelay: 400         // ms de espera antes de guardar tras un cambio
         readonly property string file: Quickshell.env("HOME") + "/.config/stixshell/tasks.json"
         readonly property string archive: Quickshell.env("HOME") + "/.config/stixshell/tasks-archive.json"
