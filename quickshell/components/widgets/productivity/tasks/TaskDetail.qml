@@ -1,6 +1,7 @@
 import QtQuick
 import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
+import "../../../../services/tasks/Reminders.js" as Reminders
 import "../../../../" as App
 
 // Detalle de una tarea (reemplaza a la lista): título, estado, prioridad, proyecto, etiquetas, fechas,
@@ -66,7 +67,7 @@ Item {
 
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
-        if (picker.visible || projectMenu.visible || moreMenu.visible) {
+        if (picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible) {
             closePopups();
             return true;
         }
@@ -90,6 +91,7 @@ Item {
         picker.visible = false;
         projectMenu.visible = false;
         moreMenu.visible = false;
+        remindMenu.visible = false;
     }
 
     // ── Fechas ──
@@ -586,6 +588,82 @@ Item {
                 }
             }
 
+            // Recordatorios
+            Flow {
+                width: parent.width
+                spacing: 6
+
+                Caption {
+                    height: 28
+                    verticalAlignment: Text.AlignVCenter
+                    rightPadding: 4
+                    text: "AVISAR"
+                }
+                Repeater {
+                    model: root.t.reminders
+                    Rectangle {
+                        id: remChip
+                        required property var modelData
+                        width: remText.implicitWidth + 36
+                        height: 28
+                        radius: 14
+                        color: App.Theme.surface
+                        Text {
+                            id: remText
+                            x: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: String.fromCodePoint(0xf0f3) + "  " + Reminders.label(remChip.modelData, root.store.now)
+                            color: remChip.modelData.firedAt > 0 ? App.Theme.gray : App.Theme.white
+                            font.family: App.Config.fonts.text
+                            font.pixelSize: App.Config.fontSize.sm
+                        }
+                        Text {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: String.fromCodePoint(0xf00d)
+                            color: remRemove.containsMouse ? App.Theme.red : App.Theme.gray
+                            font.family: App.Config.fonts.icons
+                            font.pixelSize: App.Config.fontSize.xs
+                            MouseArea {
+                                id: remRemove
+                                anchors.fill: parent
+                                anchors.margins: -5
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.patch({
+                                    reminders: root.t.reminders.filter(r => r.id !== remChip.modelData.id)
+                                })
+                            }
+                        }
+                    }
+                }
+                Pill {
+                    id: remindPill
+                    visible: root.t.dueTime !== ""
+                    label: "+ aviso"
+                    onClicked: {
+                        const open = !remindMenu.visible;
+                        root.closePopups();
+                        if (open) {
+                            const p = remindPill.mapToItem(root, 0, remindPill.height + 6);
+                            remindMenu.x = Math.min(p.x, root.width - remindMenu.width);
+                            remindMenu.y = p.y;
+                            remindMenu.visible = true;
+                        }
+                    }
+                }
+                Text {
+                    visible: root.t.dueTime === "" && root.t.reminders.length === 0
+                    height: 28
+                    verticalAlignment: Text.AlignVCenter
+                    text: "Pon una hora para que avise"
+                    color: App.Theme.grayDark
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.sm
+                }
+            }
+
             Text {
                 visible: root.t.start !== "" && root.t.due !== "" && root.t.start > root.t.due
                 width: parent.width
@@ -694,7 +772,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         z: 40
-        visible: picker.visible || projectMenu.visible || moreMenu.visible
+        visible: picker.visible || projectMenu.visible || moreMenu.visible || remindMenu.visible
         onClicked: root.closePopups()
     }
 
@@ -785,6 +863,62 @@ Item {
                                 project: option.modelData.id === "" ? null : option.modelData.id
                             });
                             projectMenu.visible = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: remindMenu
+        z: 50
+        visible: false
+        width: 190
+        height: remindColumn.implicitHeight + 12
+        radius: 14
+        color: App.Theme.island
+        border.color: App.Theme.islandEdge
+        border.width: 1
+
+        Column {
+            id: remindColumn
+            x: 6
+            y: 6
+            width: parent.width - 12
+            spacing: 2
+
+            Repeater {
+                model: Reminders.PRESETS.filter(o => !root.t.reminders.some(r => !r.at && r.offset === o))
+                Rectangle {
+                    id: preset
+                    required property int modelData
+                    width: remindColumn.width
+                    height: 30
+                    radius: 8
+                    color: presetMouse.containsMouse ? App.Theme.surfaceActive : "transparent"
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 8
+                        text: Reminders.label({
+                            offset: preset.modelData,
+                            at: ""
+                        }, root.store.now)
+                        color: App.Theme.white
+                        font.family: App.Config.fonts.text
+                        font.pixelSize: App.Config.fontSize.sm
+                    }
+                    MouseArea {
+                        id: presetMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            remindMenu.visible = false;
+                            root.patch({
+                                reminders: root.t.reminders.concat([Reminders.make(preset.modelData)])
+                            });
                         }
                     }
                 }

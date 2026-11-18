@@ -1,6 +1,7 @@
 .pragma library
 .import "Dates.js" as Dates
 .import "Links.js" as Links
+.import "Reminders.js" as Reminders
 
 // Modelo de las tareas: valores por defecto, validación al leer tasks.json y cambios sin mutar.
 // Todo es puro (sin QML) para probarlo con node. Si hace falta un campo nuevo, se agrega aquí con un
@@ -257,7 +258,11 @@ function makeTask(fields, now, existing) {
         completed: 0,
         order: maxOrder + 1000
     });
-    return normTask(f, now);
+    var t = normTask(f, now);
+    // Con hora, avisa a la hora por defecto
+    if (t.dueTime && t.reminders.length === 0 && fields.reminders === undefined)
+        t.reminders = [Reminders.make(0)];
+    return t;
 }
 
 // Cambia el estado: pone o quita `completed` y el motivo del bloqueo
@@ -280,6 +285,13 @@ function applyChanges(task, changes, now) {
     merged.created = task.created;
     merged.updated = now;
     var out = normTask(merged, now);
+    if (changes.reminders === undefined) {
+        // Otra fecha u hora: los avisos se reprograman; si aparece una hora y no hay avisos, uno a la hora
+        if (task.due !== out.due || task.dueTime !== out.dueTime)
+            out.reminders = Reminders.reschedule(out.reminders);
+        if (!task.dueTime && out.dueTime && out.reminders.length === 0)
+            out.reminders = [Reminders.make(0)];
+    }
     if (changes.status !== undefined && changes.status !== task.status)
         out = applyStatus(out, out.status, changes.blockedReason, now);
     return out;

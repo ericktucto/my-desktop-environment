@@ -8,6 +8,7 @@ import "Dates.js" as Dates
 import "Links.js" as Links
 import "Model.js" as Model
 import "Parse.js" as Parse
+import "Reminders.js" as Reminders
 import "Views.js" as Views
 
 // Tareas: datos de ~/.config/stixshell/tasks.json, operaciones con deshacer, vistas e IPC.
@@ -287,6 +288,73 @@ Singleton {
         return [t.id, t.title, Dates.relative(t.due, t.dueTime, now), p !== "" ? "+" + p : ""].join(" · ");
     }
 
+    // ── Recordatorios ──
+    // Cada minuto (y al leer el archivo, al arrancar o al despertar) se revisan los avisos pendientes.
+    // Los que se perdieron en las últimas 12 h salen una vez con "(atrasado)"; los más viejos solo se
+    // marcan como avisados. Marcar un aviso no entra en deshacer.
+    onNowChanged: checkReminders()
+
+    function checkReminders() {
+        if (!ready || error !== "")
+            return;
+        const nowMs = Date.now();
+        const list = Reminders.due(tasks, nowMs);
+        if (list.length === 0)
+            return;
+        const byTask = {};
+        list.forEach(x => (byTask[x.task.id] = byTask[x.task.id] ?? []).push(x.reminder.id));
+        for (const id in byTask)
+            quietChange(id, t => Reminders.markFired(t, byTask[id], nowMs));
+        // Una notificación por tarea; con muchas juntas, un solo resumen
+        const shown = [];
+        list.filter(x => !x.stale).forEach(x => {
+            const f = shown.find(y => y.task.id === x.task.id);
+            if (!f)
+                shown.push(x);
+            else if (x.ms > f.ms)
+                shown[shown.indexOf(f)] = x;
+        });
+        if (shown.length > 5) {
+            run(["notify-send", "-a", "Tareas", "-i", "checkbox", "-t", "0", "-A", "open=Abrir", shown.length + " recordatorios atrasados", shown.slice(0, 5).map(x => x.task.title).join(" · ") + " …"], out => {
+                if (out.trim() === "open")
+                    openRequested("today");
+            });
+            return;
+        }
+        shown.forEach(x => notifyReminder(x.task, x.late));
+    }
+
+    // El aviso: Hecha · Posponer 10 min · Mañana
+    function notifyReminder(t, late) {
+        const p = projectName(t.project);
+        const when = t.dueTime !== "" ? "Vence " + Dates.relative(t.due, t.dueTime, now).replace(/^vencida /, "") : "Recordatorio";
+        const body = (late ? "(atrasado) " : "") + when + (p !== "" ? " · +" + p : "");
+        run(["notify-send", "-a", "Tareas", "-i", "checkbox", "-u", "normal", "-t", "30000", "-A", "done=Hecha", "-A", "snooze=Posponer 10 min", "-A", "tomorrow=Mañana", t.title, body], out => {
+            const a = out.trim();
+            if (a === "done")
+                complete(t.id);
+            else if (a === "snooze")
+                snooze(t.id, 10);
+            else if (a === "tomorrow")
+                tomorrow(t.id);
+        });
+    }
+
+    // Vuelve a avisar dentro de `minutes`
+    function snooze(id, minutes) {
+        return change(id, "Recordatorio pospuesto", t => Reminders.snooze(t, minutes, Date.now()));
+    }
+
+    // Pasa la fecha límite a mañana (con la misma hora) y reprograma los avisos
+    function tomorrow(id) {
+        const t = get(id);
+        if (!t)
+            return false;
+        return change(id, "Tarea movida a mañana", x => Model.applyChanges(x, {
+            due: Dates.addDays(todayKey, 1)
+        }, Date.now()));
+    }
+
     // Dónde cae una tarea nueva, para el aviso: "Hoy", "mañana", un proyecto o la Bandeja
     function whereIs(t) {
         const p = projectName(t.project);
@@ -562,6 +630,7 @@ Singleton {
         templates = data.templates;
         ready = true;
         changed();
+        Qt.callLater(checkReminders);
     }
 
     // Una copia diaria: tasks.json.bak se actualiza si tiene más de 24 h (antes de pisar nada)
@@ -663,6 +732,16 @@ Singleton {
         // Abre o cierra el quick add (Super+Shift+T)
         function quickadd(): void {
             store.quickAddRequested();
+        }
+
+        // Pospone el aviso de una tarea `minutes` minutos
+        function snooze(id: string, minutes: int): string {
+            return store.snooze(id, minutes) ? "ok" : "error: no existe la tarea " + id;
+        }
+
+        // Mueve la fecha límite a mañana
+        function tomorrow(id: string): string {
+            return store.tomorrow(id) ? "ok" : "error: no existe la tarea " + id;
         }
 
         function done(id: string): string {
