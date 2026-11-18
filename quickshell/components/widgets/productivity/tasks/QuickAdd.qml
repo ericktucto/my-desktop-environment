@@ -18,7 +18,9 @@ Item {
 
     // Link del portapapeles ("" = no hay)
     property string clipUrl: ""
-    readonly property string clipLabel: clipUrl !== "" ? Links.linkInfo(clipUrl).label : ""
+    // Título de la página del link copiado (llega después, de scripts/links.py)
+    property string clipTitle: ""
+    readonly property string clipLabel: clipUrl === "" ? "" : (clipTitle !== "" ? clipTitle : Links.linkInfo(clipUrl).label)
 
     // Lo que entendió de lo escrito
     readonly property var parsed: store.parseText(input.text)
@@ -28,7 +30,9 @@ Item {
     function open() {
         input.text = "";
         clipUrl = "";
+        clipTitle = "";
         input.forceActiveFocus();
+        infoProc.running = false;
         clipProc.running = false;
         clipProc.running = true;
     }
@@ -61,6 +65,23 @@ Item {
                 const t = text.trim();
                 const u = t.length < 2000 && !/\s/.test(t) && /^(https?|file):\/\//i.test(t) ? Links.normalizeUrl(t) : "";
                 root.clipUrl = u;
+                if (u !== "") {
+                    infoProc.command = ["python3", root.store.linksScript, "info", u];
+                    infoProc.running = true;
+                }
+            }
+        }
+    }
+
+    Process {
+        id: infoProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const j = JSON.parse(text);
+                    if (j.ok && j.title)
+                        root.clipTitle = j.title;
+                } catch (e) {}
             }
         }
     }

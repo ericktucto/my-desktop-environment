@@ -215,13 +215,70 @@ Singleton {
                 fields.project = np.id;
             }
         }
-        // Solo un link: el título es su etiqueta corta (la fase 2.5 lo cambia por el título de la página)
-        fields.title = r.title !== "" ? r.title : (r.links.length > 0 ? Links.linkInfo(r.links[0]).label : "");
+                const fallback = r.links.length > 0 ? Links.linkInfo(r.links[0]).label : "";
+        fields.title = r.title !== "" ? r.title : fallback;
         const t = Model.makeTask(fields, Date.now(), tasks);
         if (t.title === "")
             return "";
         commit("Tarea creada", tasks.concat([t]), newProjects);
+        refreshLinks(t.id, false, r.title === "" ? fallback : "");
         return t.id;
+    }
+
+    // ── Links: título de la página y estado en GitHub (scripts/links.py) ──
+    readonly property string linksScript: Quickshell.shellPath("scripts/links.py")
+
+    // Cambio sin pasar por deshacer (datos que llegan de internet): guarda y avisa, nada más
+    function quietChange(id, fn) {
+        const i = tasks.findIndex(t => t.id === id);
+        if (i < 0 || error !== "")
+            return;
+        const next = fn(tasks[i]);
+        if (!next)
+            return;
+        const arr = tasks.slice();
+        arr[i] = next;
+        tasks = arr;
+        changed();
+        save();
+    }
+
+    // Trae el título de los links que aún no lo tienen (`force`: de todos). `retitle`: si el título de la
+    // tarea sigue siendo ese texto (era solo el link), se cambia por el título de la página.
+    function refreshLinks(id, force, retitle) {
+        const t = get(id);
+        if (!t)
+            return;
+        t.links.forEach(l => {
+            if (!force && l.title !== "")
+                return;
+            run(["python3", linksScript, "info", l.url], out => applyLinkInfo(id, l.url, out, retitle ?? ""));
+        });
+    }
+
+    function applyLinkInfo(id, url, out, retitle) {
+        let j;
+        try {
+            j = JSON.parse(out);
+        } catch (e) {
+            return;
+        }
+        if (!j.ok)
+            return;
+        quietChange(id, t => {
+            if (!t.links.some(l => l.url === url))
+                return null;
+            const patch = {
+                links: t.links.map(l => l.url === url ? Object.assign({}, l, {
+                    title: j.title !== "" ? j.title : l.title,
+                    state: j.state !== "" ? j.state : l.state,
+                    checked: Date.now()
+                }) : l)
+            };
+            if (retitle !== "" && t.title === retitle && j.title !== "")
+                patch.title = j.title;
+            return Object.assign({}, t, patch);
+        });
     }
 
     // Dónde cae una tarea nueva, para el aviso: "Hoy", "mañana", un proyecto o la Bandeja
@@ -375,9 +432,12 @@ Singleton {
         const u = Links.normalizeUrl(url);
         if (u === "")
             return false;
-        return change(id, "Link añadido", t => t.links.some(l => l.url === u) ? null : touch(t, {
+        const ok = change(id, "Link añadido", t => t.links.some(l => l.url === u) ? null : touch(t, {
             links: t.links.concat([Links.makeLink(u)])
         }));
+        if (ok)
+            refreshLinks(id, false, "");
+        return ok;
     }
 
     function removeLink(id, index) {
