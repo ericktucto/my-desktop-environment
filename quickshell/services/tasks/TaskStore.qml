@@ -79,7 +79,7 @@ Singleton {
 
     // ── Consultas ──
     function get(id) {
-        return tasks.find(t => t.id === id) ?? null;
+        return tasks.find(t => t.id === id) ?? archived.find(t => t.id === id) ?? null;
     }
 
     function project(id) {
@@ -93,7 +93,17 @@ Singleton {
     // Vista → grupos [{ key, label, tasks }] sin vacíos. `query` filtra dentro de la vista.
     // view: today | upcoming | inbox | board | done | project:<id> | tag:<nombre>
     function list(view, query) {
-        return Views.list(views, view, query ?? "", projects, now);
+        const groups = Views.list(views, view, query ?? "", projects, now);
+        // Hechas con una búsqueda: también mira el archivo
+        if (view === "done" && (query ?? "").trim() !== "" && archived.length > 0) {
+            const old = Views.list(Views.compute(archived, projects, {
+                now: now,
+                sort: sortMode,
+                upcomingDays: cfg.upcomingDays
+            }), "done", query, projects, now);
+            return groups.concat(old).sort((a, b) => a.key < b.key ? 1 : (a.key > b.key ? -1 : 0));
+        }
+        return groups;
     }
 
     // Búsqueda global (todas las vistas): +proyecto, #etiqueta, p1–p4, vencidas, en curso y palabras
@@ -131,6 +141,7 @@ Singleton {
     function change(id, label, fn) {
         if (error !== "")
             return false;
+        unarchive(id);
         const i = tasks.findIndex(t => t.id === id);
         if (i < 0)
             return false;
@@ -331,6 +342,8 @@ Singleton {
     onNowChanged: {
         checkReminders();
         maybeSummary();
+        if (archiveDay !== todayKey)
+            archiveOld();
     }
 
     function checkReminders() {
@@ -392,6 +405,89 @@ Singleton {
         return change(id, "Tarea movida a mañana", x => Model.applyChanges(x, {
             due: Dates.addDays(todayKey, 1)
         }, Date.now()));
+    }
+
+    // ── Archivo: lo hecho hace más de `archiveDays` días pasa a tasks-archive.json ──
+    // Al arrancar y una vez al día. La búsqueda de Hechas lo incluye; si se toca una tarea archivada
+    // (reabrirla, editarla) vuelve a tasks.json.
+    property var archived: []
+    property bool archiveReady: false
+    property string archiveDay: ""
+
+    function loadArchive(text) {
+        let list = [];
+        try {
+            const j = JSON.parse(text);
+            list = (Array.isArray(j.tasks) ? j.tasks : []).filter(t => t && typeof t === "object").map(t => Model.normTask(t, Date.now()));
+        } catch (e) {
+            // Archivo roto: no se toca (no se pisa) y no se archiva más hasta arreglarlo
+            archiveBroken = true;
+            return;
+        }
+        archived = list;
+        archiveReady = true;
+        archiveOld();
+    }
+    property bool archiveBroken: false
+
+    function writeArchive(list) {
+        archived = list;
+        archiveSelfWrite.restart();
+        archiveFile.setText(JSON.stringify({
+            version: Model.VERSION,
+            tasks: list
+        }, null, 2));
+    }
+
+    function archiveOld() {
+        if (!ready || !archiveReady || archiveBroken || error !== "")
+            return 0;
+        archiveDay = todayKey;
+        const limit = Date.now() - cfg.archiveDays * 86400000;
+        const old = tasks.filter(t => (t.status === "done" || t.status === "cancelled") && t.completed > 0 && t.completed < limit);
+        if (old.length === 0)
+            return 0;
+        // Primero el archivo y después tasks.json: si algo falla, quedan repetidas (se limpian al leer), no perdidas
+        const have = new Set(archived.map(t => t.id));
+        writeArchive(archived.concat(old.filter(t => !have.has(t.id))));
+        const ids = new Set(old.map(t => t.id));
+        tasks = tasks.filter(t => !ids.has(t.id));
+        undoStack = [];
+        changed();
+        save();
+        return old.length;
+    }
+
+    // Una tarea archivada vuelve a tasks.json (para reabrirla o editarla)
+    function unarchive(id) {
+        const t = archived.find(x => x.id === id);
+        if (!t || archiveBroken || tasks.some(x => x.id === id))
+            return false;
+        writeArchive(archived.filter(x => x.id !== id));
+        tasks = tasks.concat([t]);
+        changed();
+        save();
+        return true;
+    }
+
+    Timer {
+        id: archiveSelfWrite
+        interval: 500
+    }
+
+    FileView {
+        id: archiveFile
+        path: store.cfg.archive
+        printErrors: false
+        onLoaded: store.loadArchive(text())
+        // Sin archivo: no hay nada archivado todavía
+        onLoadFailed: err => {
+            if (err === FileViewError.FileNotFound) {
+                store.archived = [];
+                store.archiveReady = true;
+                store.archiveOld();
+            }
+        }
     }
 
     // ── Plantillas ──
@@ -755,6 +851,7 @@ Singleton {
         changed();
         Qt.callLater(checkReminders);
         Qt.callLater(maybeSummary);
+        Qt.callLater(archiveOld);
     }
 
     // Una copia diaria: tasks.json.bak se actualiza si tiene más de 24 h (antes de pisar nada)

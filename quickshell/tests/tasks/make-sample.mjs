@@ -50,6 +50,7 @@ const tasks = [
     t({ title: "Revisar correos", status: "done", completed: ago(1, 17) }),
     t({ title: "Subir el release 1.4", project: "p_work01", status: "done", completed: ago(1, 12), tags: ["release"] }),
     t({ title: "Reunión cancelada", project: "p_work01", status: "cancelled", completed: ago(2) }),
+    t({ title: "Archivo de prueba (hecha hace 31 días)", status: "done", completed: ago(31) }),
     t({ title: "Hacer backup del NAS", project: "p_home01", status: "done", completed: ago(5), repeatOf: "t_s00006" }),
 ];
 console.log(JSON.stringify({ version: 1, projects, tasks, templates: [] }, null, 2));
