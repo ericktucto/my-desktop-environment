@@ -1,0 +1,79 @@
+#!/bin/sh
+# Tareas de la shell desde la terminal. Habla con la shell por IPC (qs ipc call stixshell@tasks …).
+#
+#   task "arreglar login mañana p1 +trabajo"   crea una tarea (lenguaje natural; sin comillas también sirve)
+#   task hoy                                    lista las de hoy (id · título · fecha · +proyecto)
+#   task ls [filtro]                            busca: +proyecto #etiqueta p1 vencidas "en curso" palabras…
+#   task done <id>                              completa una tarea
+#   task undo                                   deshace el último cambio
+#   task open [vista]                           abre el panel de tareas (today, upcoming, inbox, board, done…)
+#
+# Dentro de un repo de git, la tarea nueva lleva el link al repo y a la rama (de `git remote`).
+# Alias sugerido: alias t=task   (en ~/.bashrc o ~/.zshrc, con scripts/ en el PATH o la ruta completa)
+
+ipc() {
+    qs ipc call stixshell@tasks "$@" 2>/dev/null || {
+        echo "task: la shell no responde (¿está corriendo qs?)" >&2
+        exit 1
+    }
+}
+
+# Remoto de git → URL web (git@github.com:o/r.git, ssh://git@host/o/r.git, https://host/o/r.git)
+repo_url() {
+    remote=$(git remote get-url origin 2>/dev/null) || return 1
+    printf '%s\n' "$remote" | sed -E \
+        -e 's#^git@([^:]+):#https://\1/#' \
+        -e 's#^ssh://git@([^/]+)/#https://\1/#' \
+        -e 's#^git://#https://#' \
+        -e 's#\.git$##' \
+        -e 's#/$##'
+}
+
+# Texto de la tarea + links del repo y de la rama, si hay
+with_git_links() {
+    text=$1
+    url=$(repo_url) || { printf '%s\n' "$text"; return; }
+    case $url in
+        https://*) ;;
+        *) printf '%s\n' "$text"; return ;;
+    esac
+    branch=$(git symbolic-ref --short -q HEAD 2>/dev/null)
+    text="$text $url"
+    case $branch in
+        "" | main | master) ;;
+        *) text="$text $url/tree/$branch" ;;
+    esac
+    printf '%s\n' "$text"
+}
+
+cmd=${1:-}
+case $cmd in
+    "" | -h | --help | help)
+        sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+        ;;
+    hoy | today)
+        ipc list today
+        ;;
+    ls | list)
+        shift
+        if [ $# -eq 0 ]; then ipc list today; else ipc search "$*"; fi
+        ;;
+    done)
+        [ -n "${2:-}" ] || { echo "uso: task done <id>" >&2; exit 2; }
+        ipc done "$2"
+        ;;
+    undo)
+        ipc undo
+        ;;
+    open)
+        ipc open "${2:-}"
+        ;;
+    *)
+        text=$(with_git_links "$*")
+        id=$(ipc add "$text") || exit 1
+        case $id in
+            error:*) echo "task: ${id#error: }" >&2; exit 1 ;;
+        esac
+        echo "$id"
+        ;;
+esac

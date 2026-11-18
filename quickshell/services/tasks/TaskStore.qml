@@ -281,6 +281,12 @@ Singleton {
         });
     }
 
+    // Una tarea en una línea para el IPC y la terminal: id · título · fecha · +proyecto
+    function lineOf(t) {
+        const p = projectName(t.project);
+        return [t.id, t.title, Dates.relative(t.due, t.dueTime, now), p !== "" ? "+" + p : ""].join(" · ");
+    }
+
     // Dónde cae una tarea nueva, para el aviso: "Hoy", "mañana", un proyecto o la Bandeja
     function whereIs(t) {
         const p = projectName(t.project);
@@ -641,13 +647,17 @@ Singleton {
                 return "error: tasks.json aún no se leyó";
             const v = view === "" ? "today" : view;
             const lines = [];
-            for (const g of store.list(v, "")) {
-                for (const t of g.tasks) {
-                    const p = store.projectName(t.project);
-                    lines.push([t.id, t.title, Dates.relative(t.due, t.dueTime, store.now), p !== "" ? "+" + p : ""].join(" · "));
-                }
-            }
+            for (const g of store.list(v, ""))
+                for (const t of g.tasks)
+                    lines.push(store.lineOf(t));
             return lines.join("\n");
+        }
+
+        // Búsqueda global, con los mismos filtros que `/` en el panel: "+trabajo p1 vencidas revisar"
+        function search(query: string): string {
+            if (!store.ready)
+                return "error: tasks.json aún no se leyó";
+            return store.search(query).map(t => store.lineOf(t)).join("\n");
         }
 
         // Abre o cierra el quick add (Super+Shift+T)

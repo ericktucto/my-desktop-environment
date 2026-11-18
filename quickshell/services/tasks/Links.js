@@ -27,6 +27,14 @@ function hostOf(url) {
     return m ? m[1].replace(/^www\./i, "").toLowerCase() : "";
 }
 
+function decode(s) {
+    try {
+        return decodeURIComponent(s);
+    } catch (e) {
+        return s;
+    }
+}
+
 function pretty(s) {
     try {
         s = decodeURIComponent(s);
@@ -43,6 +51,13 @@ function linkInfo(url) {
         return {
             kind: m[3] === "pull" ? "github-pr" : "github-issue",
             label: m[1] + "/" + m[2] + "#" + m[4]
+        };
+    // Repo y rama de GitHub (para las tareas creadas desde la terminal): "acme/api" y "acme/api@fix-login"
+    m = /^https?:\/\/(?:www\.)?github\.com\/([^\/\s#?]+)\/([^\/\s#?]+?)(?:\.git)?(?:\/tree\/([^\s#?]+))?\/?(?:[#?]\S*)?$/i.exec(url);
+    if (m)
+        return {
+            kind: "url",
+            label: m[1] + "/" + m[2] + (m[3] ? "@" + decode(m[3]) : "")
         };
     m = /^https?:\/\/[^\/\s]*gitlab[^\/\s]*\/(.+?)\/-\/(merge_requests|issues)\/(\d+)/i.exec(url);
     if (m)

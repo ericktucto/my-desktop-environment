@@ -42,6 +42,9 @@ def link_info(url):
     if m:
         kind = "github-pr" if m.group(3) == "pull" else "github-issue"
         return kind, f"{m.group(1)}/{m.group(2)}#{m.group(4)}", {"repo": f"{m.group(1)}/{m.group(2)}", "n": m.group(4), "api": "pulls" if m.group(3) == "pull" else "issues"}
+    m = re.match(r"^https?://(?:www\.)?github\.com/([^/\s#?]+)/([^/\s#?]+?)(?:\.git)?(?:/tree/([^\s#?]+))?/?(?:[#?]\S*)?$", url, re.I)
+    if m:
+        return "url", f"{m.group(1)}/{m.group(2)}" + (f"@{urllib.parse.unquote(m.group(3))}" if m.group(3) else ""), {}
     m = re.match(r"^https?://[^/\s]*gitlab[^/\s]*/(.+?)/-/(merge_requests|issues)/(\d+)", url, re.I)
     if m:
         issue = m.group(2) == "issues"
