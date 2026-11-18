@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../" as App
 
@@ -24,6 +25,25 @@ ListView {
     spacing: 2
     model: rows
     cacheBuffer: 400
+
+    ScrollBar.vertical: ScrollBar {
+        id: bar
+        policy: ScrollBar.AsNeeded
+        visible: size < 1
+        width: 6
+        contentItem: Rectangle {
+            implicitWidth: 4
+            radius: 2
+            color: bar.pressed ? App.Theme.white : App.Theme.gray
+            opacity: bar.active || bar.pressed ? 0.9 : 0.4
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: App.Config.anim.hover
+                }
+            }
+        }
+        background: Item {}
+    }
 
     onGroupsChanged: rebuild()
     onShowHeadersChanged: rebuild()

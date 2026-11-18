@@ -1,5 +1,4 @@
 import QtQuick
-import "../controlcenter/" as CC
 import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../services/tasks/Parse.js" as Parse

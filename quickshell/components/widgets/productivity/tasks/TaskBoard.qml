@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import "../../../../services/tasks/" as TS
 import "../../../../" as App
 
@@ -160,9 +161,34 @@ Item {
                     spacing: 6
                     model: root.tasksOf(column.modelData.key)
                     boundsBehavior: Flickable.StopAtBounds
+                    flickableDirection: Flickable.VerticalFlick
+                    // Un poco de aire al final para que la última tarjeta no quede pegada
+                    footer: Item {
+                        width: 1
+                        height: 6
+                    }
+                    // Rueda del mouse y barra: la columna se desplaza sola cuando hay más tarjetas que alto
+                    ScrollBar.vertical: ScrollBar {
+                        id: bar
+                        policy: ScrollBar.AsNeeded
+                        visible: size < 1
+                        width: 6
+                        contentItem: Rectangle {
+                            implicitWidth: 4
+                            radius: 2
+                            color: bar.pressed ? App.Theme.white : App.Theme.gray
+                            opacity: bar.active || bar.pressed ? 0.9 : 0.4
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: App.Config.anim.hover
+                                }
+                            }
+                        }
+                        background: Item {}
+                    }
                     delegate: TaskCard {
                         required property var modelData
-                        width: list.width
+                        width: list.width - (bar.visible ? 8 : 0)
                         task: modelData
                         selected: root.selectedId === modelData.id
                         dragParent: root
