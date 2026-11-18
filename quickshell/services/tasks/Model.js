@@ -347,6 +347,53 @@ function skipRepeat(task, nextDue, now) {
     });
 }
 
+// "Revisión semanal" → "revision-semanal" (único entre las plantillas existentes)
+function templateName(title, templates) {
+    var base = String(title || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "plantilla";
+    var name = base;
+    var n = 2;
+    while (templates.some(function (t) {
+        return t.name === name;
+    }))
+        name = base + "-" + n++;
+    return name;
+}
+
+// Plantilla desde una tarea: título, proyecto, etiquetas, prioridad, estimación, notas y subtareas
+function makeTemplate(task, templates) {
+    return normTemplate({
+        id: uniqueId("tp_", templates),
+        name: templateName(task.title, templates),
+        title: task.title,
+        project: task.project,
+        tags: task.tags,
+        priority: task.priority,
+        estimate: task.estimate,
+        notes: task.notes,
+        subtasks: task.subtasks.map(function (s) {
+            return s.title;
+        })
+    });
+}
+
+// Campos de una tarea nueva a partir de una plantilla (las subtareas empiezan sin marcar)
+function templateFields(tp) {
+    return {
+        title: tp.title,
+        project: tp.project,
+        tags: tp.tags,
+        priority: tp.priority,
+        estimate: tp.estimate,
+        notes: tp.notes,
+        subtasks: tp.subtasks.map(function (t) {
+            return {
+                title: t,
+                done: false
+            };
+        })
+    };
+}
+
 function makeProject(name, color, projects) {
     var maxOrder = 0;
     projects.forEach(function (p) {

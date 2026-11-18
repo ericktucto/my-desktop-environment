@@ -192,6 +192,10 @@ Singleton {
             return "";
         const r = parseText(text);
         const fields = Object.assign({}, extra ?? {});
+        // /plantilla: sus valores van debajo de lo que diga la frase
+        const tp = r.template !== "" ? templates.find(t => t.name === r.template) : null;
+        if (tp)
+            Object.assign(fields, Model.templateFields(tp));
         let newProjects = projects;
         if (r.due !== "") {
             fields.due = r.due;
@@ -220,7 +224,7 @@ Singleton {
             }
         }
                 const fallback = r.links.length > 0 ? Links.linkInfo(r.links[0]).label : "";
-        fields.title = r.title !== "" ? r.title : fallback;
+        fields.title = tp ? (r.title !== "" ? tp.title + " " + r.title : tp.title) : (r.title !== "" ? r.title : fallback);
         const t = Model.makeTask(fields, Date.now(), tasks);
         if (t.title === "")
             return "";
@@ -388,6 +392,39 @@ Singleton {
         return change(id, "Tarea movida a mañana", x => Model.applyChanges(x, {
             due: Dates.addDays(todayKey, 1)
         }, Date.now()));
+    }
+
+    // ── Plantillas ──
+    // Guardar una tarea como plantilla (se pide por su nombre: "/release" en el quick add)
+    function saveTemplate(id) {
+        const t = get(id);
+        if (!t || error !== "")
+            return "";
+        const tp = Model.makeTemplate(t, templates);
+        templates = templates.concat([tp]);
+        lastAction = "Plantilla /" + tp.name + " guardada";
+        changed();
+        acted(lastAction);
+        save();
+        return tp.name;
+    }
+
+    function removeTemplate(name) {
+        if (!templates.some(t => t.name === name))
+            return false;
+        templates = templates.filter(t => t.name !== name);
+        lastAction = "Plantilla /" + name + " eliminada";
+        changed();
+        acted(lastAction);
+        save();
+        return true;
+    }
+
+    // Tarea nueva desde una plantilla; `title` se agrega al título de la plantilla si no está vacío
+    function applyTemplate(name, title) {
+        if (!templates.some(t => t.name === name))
+            return "";
+        return addFromText("/" + name + (title ? " " + title : ""), {});
     }
 
     // ── Standup ──
@@ -814,6 +851,18 @@ Singleton {
             if (!store.ready)
                 return "error: tasks.json aún no se leyó";
             return store.search(query).map(t => store.lineOf(t)).join("\n");
+        }
+
+        // Guarda una tarea como plantilla y devuelve su nombre
+        function savetemplate(id: string): string {
+            const n = store.saveTemplate(id);
+            return n !== "" ? n : "error: no existe la tarea " + id;
+        }
+
+        // Una tarea nueva desde una plantilla: applytemplate release "v1.4"
+        function applytemplate(name: string, title: string): string {
+            const id = store.applyTemplate(name, title);
+            return id !== "" ? id : "error: no existe la plantilla " + name;
         }
 
         // El Markdown del standup (ayer, hoy y bloqueado)

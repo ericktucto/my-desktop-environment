@@ -47,7 +47,10 @@ Item {
         else
             sync();
     }
-    onTaskIdChanged: sync()
+    onTaskIdChanged: {
+        templateSaved = "";
+        sync();
+    }
     Component.onCompleted: sync()
 
     // Pone en los campos lo guardado, salvo el que se está escribiendo
@@ -160,6 +163,8 @@ Item {
     }
 
     property bool linkError: false
+    // Nombre de la plantilla recién guardada (para el aviso del botón)
+    property string templateSaved: ""
 
     function addLink() {
         const text = linkInput.text.trim();
@@ -790,6 +795,14 @@ Item {
             }
 
             // Pie
+            Row {
+                spacing: 8
+                Pill {
+                    height: 26
+                    label: templateSaved !== "" ? "Plantilla /" + templateSaved + " guardada" : "Guardar como plantilla"
+                    onClicked: root.templateSaved = root.store.saveTemplate(root.taskId)
+                }
+            }
             Text {
                 topPadding: 4
                 width: parent.width

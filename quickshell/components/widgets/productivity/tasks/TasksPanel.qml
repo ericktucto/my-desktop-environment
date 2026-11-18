@@ -846,6 +846,72 @@ Item {
                         }
                     }
                 }
+
+                Text {
+                    visible: root.store.templates.length > 0
+                    leftPadding: 8
+                    topPadding: 8
+                    bottomPadding: 4
+                    text: "DESDE PLANTILLA"
+                    color: App.Theme.grayDark
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.xs
+                    font.weight: Font.DemiBold
+                    font.letterSpacing: 0.6
+                }
+                Repeater {
+                    model: root.store.templates
+                    Rectangle {
+                        id: tpItem
+                        required property var modelData
+                        width: sortColumn.width
+                        height: 30
+                        radius: 8
+                        color: tpMouse.containsMouse ? App.Theme.surfaceActive : "transparent"
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            anchors.right: tpDelete.left
+                            text: "/" + tpItem.modelData.name
+                            elide: Text.ElideRight
+                            color: App.Theme.white
+                            font.family: App.Config.fonts.text
+                            font.pixelSize: App.Config.fontSize.sm
+                        }
+                        MouseArea {
+                            id: tpMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                root.sortMenuOpen = false;
+                                const id = root.store.applyTemplate(tpItem.modelData.name, "");
+                                if (id !== "")
+                                    root.openDetail(id);
+                            }
+                        }
+                        Text {
+                            id: tpDelete
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: tpMouse.containsMouse || tpDeleteMouse.containsMouse
+                            text: String.fromCodePoint(0xf00d)
+                            color: tpDeleteMouse.containsMouse ? App.Theme.red : App.Theme.gray
+                            font.family: App.Config.fonts.icons
+                            font.pixelSize: App.Config.fontSize.xs
+                            MouseArea {
+                                id: tpDeleteMouse
+                                anchors.fill: parent
+                                anchors.margins: -6
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.store.removeTemplate(tpItem.modelData.name)
+                            }
+                        }
+                    }
+                }
             }
         }
 

@@ -118,4 +118,15 @@ eq("skipRepeat", [M.skipRepeat(rt, "2026-12-17", NOW).due, M.skipRepeat(rt, "202
 eq("normRepeat conserva day", M.normTask({ title: "x", repeat: { freq: "monthly", day: 31 } }, NOW).repeat.day, 31);
 eq("normRepeat descarta day inválido", M.normTask({ title: "x", repeat: { freq: "monthly", day: 40 } }, NOW).repeat.day, undefined);
 
+// plantillas
+const tpTask = M.normTask({ id: "t_p", title: "Revisión semanal", project: "p_a", tags: ["rutina"], priority: 2, estimate: 45, notes: "n", subtasks: [{ title: "Correos", done: true }, { title: "Tareas" }] }, NOW);
+const tp = M.makeTemplate(tpTask, []);
+eq("plantilla: nombre", tp.name, "revision-semanal");
+eq("plantilla: campos", [tp.title, tp.project, tp.tags, tp.priority, tp.estimate, tp.notes, tp.subtasks], ["Revisión semanal", "p_a", ["rutina"], 2, 45, "n", ["Correos", "Tareas"]]);
+eq("plantilla: nombre único", M.makeTemplate(tpTask, [tp]).name, "revision-semanal-2");
+eq("plantilla: nombre sin letras", M.templateName("¡¿?!", []), "plantilla");
+const tf = M.templateFields(tp);
+eq("campos de plantilla: subtareas sin marcar", tf.subtasks, [{ title: "Correos", done: false }, { title: "Tareas", done: false }]);
+eq("tarea desde plantilla", M.makeTask(tf, NOW, []).subtasks.map(s => [s.title, s.done]), [["Correos", false], ["Tareas", false]]);
+
 done();
