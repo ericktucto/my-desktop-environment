@@ -58,7 +58,32 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
   | `Alt+j` `Alt+k` | Reordenar (orden manual) |
   | `Esc` | Cierra por partes: menú, campo, detalle y, al final, la isla |
 
-  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `done <id>`, `undo` y `open <vista>`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
+  Por IPC: `qs ipc call stixshell@tasks add "título"` (devuelve el id), `list today|upcoming|inbox|board|done|project:<id>|tag:<nombre>` (una tarea por línea: `id · título · fecha · +proyecto`), `search <filtro>`, `done <id>`, `undo`, `open <vista>` y `quickadd`; `stixshell@productivity tab calendar|tasks` abre el panel en esa pestaña.
+
+  **Captura en lenguaje natural.** Al crear una tarea (la fila **Añadir tarea…**, el quick add, `td:` en el launcher o la terminal) la frase se analiza y debajo salen los chips de lo que entendió, cada uno con su × por si se equivocó. Lo que no entiende se queda en el título.
+
+  | Escribes | Entiende |
+  |---|---|
+  | `mañana`, `hoy`, `pasado mañana`, `el viernes` (hoy si es viernes), `próximo lunes`, `en 3 días`, `en 2 semanas`, `15 dic`, `15/12`, `2026-12-15` | Fecha límite (sin año, la próxima vez que llegue ese día) |
+  | `9am`, `9:30pm`, `14:30`, `a las 9` | Hora (un `9` suelto no es hora) |
+  | `desde el lunes` | Fecha de inicio |
+  | `30m`, `45 min`, `2h`, `1h30` | Estimación |
+  | `p1` … `p4` | Prioridad |
+  | `+trabajo`, `+"Side project"` | Proyecto (sin importar mayúsculas ni acentos; si no existe se crea) |
+  | `#bug` | Etiqueta (`#412` no cuenta: tiene que empezar con letra) |
+  | `cada lunes`, `cada lunes y jueves`, `todos los días`, `cada día laborable`, `cada 2 semanas`, `cada mes`, `mensual` | Repetición |
+  | `https://…` | Link (un `+` o `#` dentro de una URL no cuenta). Si es lo único que escribes, el título sale de la página |
+
+  **Quick add:** `Super+Shift+T` abre una línea en la isla desde cualquier app. Si copiaste un link, debajo sale «Usar el link copiado: *título*» (`Tab` lo agrega). `Enter` guarda, cierra y avisa «Tarea creada en Hoy» con el botón **Deshacer**. **Launcher:** `td: revisar PR mañana 9am p1` crea la tarea con `Enter`. **Terminal:** `scripts/task` (alias sugerido `alias t=/ruta/a/quickshell/scripts/task`):
+
+  ```
+  task "arreglar login mañana p1 +trabajo"   # crea; dentro de un repo agrega el link al repo y a la rama
+  task hoy                                    # las de hoy: id · título · fecha · +proyecto
+  task ls +trabajo p1 vencidas                # busca con los mismos filtros que `/`
+  task done <id>   ·   task undo   ·   task open [vista]
+  ```
+
+  Los links se reconocen por su dirección y salen como chips; `scripts/links.py info <url>` trae el título de la página (y el del PR o issue de GitHub, sin login para repos públicos) en segundo plano.
 - **Luz nocturna** (casilla con `›`, `Super+N`, `qs ipc call stixshell@nightlight toggle|on|off|temperature <K>|mode <sun|custom|always>`): filtro de luz azul con `hyprsunset`, sin pill en la barra. La vista tiene el switch, el horario (**atardecer a amanecer**, con la ubicación de tu zona horaria sin internet; **horas fijas**, 19:00 a 07:00 por defecto, en pasos de 15 min; o **siempre**) y la temperatura (2500 a 5500 K, 4000 K por defecto; de día, al soltar el slider se ve 3 s). El paso entre día y noche es gradual (30 min). Con la casilla, de noche, se pausa hasta el próximo amanecer y vuelve sola; `Super+N` muestra un aviso en la isla. Se guarda en `settings.json` (`nightLight`; `latitude` y `longitude` fijan la ubicación a mano).
 - **OSD:** con las teclas de volumen, brillo y micrófono, la hora de la isla central se reemplaza unos segundos por ícono, barra y porcentaje.
 - **Notificaciones:** pill con campana y contador, popups con acciones, historial guardado en disco (solo se borra tú), modo No molestar y textos largos expandibles.
@@ -84,6 +109,7 @@ La shell es una barra de "pills" (islas) redondeadas sobre un wallpaper con esqu
 | `Super+H` | Historial del portapapeles |
 | Teclas de volumen, mute y brillo (Fn) | Subir, bajar y silenciar el audio, mute del micrófono y brillo; muestran el OSD |
 | `Super+R` | Launcher de apps (abre y cierra) |
+| `Super+Shift+T` | Añadir una tarea (quick add) |
 | `Super+P` | Productividad: la última pestaña usada, Calendario o Tareas (abre y cierra) |
 | Teclas multimedia (reproducir/pausa, siguiente, anterior) | Controlan el reproductor mostrado, también con la pantalla bloqueada |
 | `Super+W` | Selector de wallpapers |

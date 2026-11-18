@@ -14,14 +14,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 ### Productividad: tareas, temporizador y cronómetro
 El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas** (`Ctrl+Tab` alterna).
 - **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
-- **Tareas (fase 1 hecha):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim.
-
-**Tareas, fase 2: captura**
-- [ ] Lenguaje natural en español al crear (`mañana 9am +trabajo #bug p1 30m cada lunes` y URLs), con chips de lo que entendió. Analizador en `services/tasks/Parse.js`, probado con `node`.
-- [ ] Quick add global con `Super+Shift+T` (una línea en la isla) y la sugerencia del link copiado en el portapapeles.
-- [ ] Prefijo `td:` en el launcher.
-- [ ] `scripts/links.py`: título de la página y estado de un PR o issue de GitHub.
-- [ ] `scripts/task` para la terminal (`task "texto"` con el repo y la rama de git como link, `task hoy`, `task ls`).
+- **Tareas (fases 1 y 2 hechas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`).
 
 **Tareas, fase 3: el tiempo**
 - [ ] Recordatorios con notificación (Hecha · Posponer 10 min · Mañana), por defecto uno a la hora si la tarea tiene hora; los que se perdieron al dormir salen al despertar.
