@@ -4,6 +4,8 @@ import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
 import "../../" as App
+import "../tasks/" as TK
+import "../tasks/Dates.js" as TDates
 
 // Calendario del panel Productividad: fechas, vistas, eventos de Google (scripts/gcal.py) y feriados.
 // Las fechas se manejan como Date a medianoche local y, para indexar, como texto "AAAA-MM-DD" (`keyOf`).
@@ -30,11 +32,19 @@ Singleton {
     onSelectedChanged: expandedId = ""
 
     function toggleEvent(ev) {
+        if (ev.task) {
+            TK.TaskStore.openTask(ev.taskId);
+            return;
+        }
         expandedId = expandedId === ev.id ? "" : ev.id;
     }
 
     // Clic en un bloque de la cuadrícula: elige su día y lo despliega en la lista
     function openEvent(ev, key) {
+        if (ev.task) {
+            TK.TaskStore.openTask(ev.taskId);
+            return;
+        }
         select(parseDay(key));
         expandedId = ev.id;
     }
@@ -217,9 +227,9 @@ Singleton {
 
     // ── Eventos por día ──
     // día → [evento] (feriados y celebraciones incluidos). Un evento de varios días aparece en cada uno.
-    readonly property var byDay: buildDays(events, holidayList)
+    readonly property var byDay: buildDays(events, holidayList, TK.TaskStore.tasks, TK.TaskStore.projects)
 
-    function buildDays(evs, hols) {
+    function buildDays(evs, hols, tasks, projects) {
         const map = {};
         const put = (key, e) => {
             (map[key] = map[key] || []).push(e);
@@ -279,6 +289,35 @@ Singleton {
                 }
             }
         }
+        // Las tareas con fecha límite que siguen abiertas: con hora, un bloque de 30 min; sin hora, todo el día
+        for (const t of tasks) {
+            if (t.due === "" || t.status === "done" || t.status === "cancelled")
+                continue;
+            const p = projects.find(x => x.id === t.project);
+            const timed = t.dueTime !== "";
+            const s = timed ? TDates.dueMs(t.due, t.dueTime) : 0;
+            const dayEnd = timed ? TDates.dayEnd(t.due) : 0;
+            put(t.due, {
+                id: "task:" + t.id,
+                task: true,
+                taskId: t.id,
+                taskTitle: t.title,
+                title: "○ " + t.title,
+                allDay: !timed,
+                holiday: false,
+                observance: false,
+                color: p ? p.color : String(App.Theme.gray),
+                calName: "Tareas",
+                start: s,
+                end: s + 1800000,
+                segStart: s,
+                segEnd: timed ? Math.min(s + 1800000, dayEnd) : 0,
+                location: "",
+                description: "",
+                meet: "",
+                link: ""
+            });
+        }
         for (const k in map) {
             map[k].sort((a, b) => {
                 const ra = a.holiday ? 0 : a.observance ? 1 : a.allDay ? 2 : 3;
@@ -305,7 +344,7 @@ Singleton {
     // ── Próximo evento (para el reloj) ──
     readonly property var next: {
         const t = now.getTime();
-        const list = eventsOn(todayKey).concat(eventsOn(keyOf(addDays(now, 1)))).filter(e => !e.allDay && e.segEnd > t && e.segStart < t + cfg.upcoming * 1000);
+        const list = eventsOn(todayKey).concat(eventsOn(keyOf(addDays(now, 1)))).filter(e => !e.task && !e.allDay && e.segEnd > t && e.segStart < t + cfg.upcoming * 1000);
         list.sort((a, b) => ((a.segStart <= t) ? 0 : 1) - ((b.segStart <= t) ? 0 : 1) || a.segStart - b.segStart);
         return list.length > 0 ? list[0] : null;
     }

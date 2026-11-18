@@ -41,6 +41,8 @@ Singleton {
     signal acted(string label)
     // IPC `open`: abre Productividad → Tareas en esa vista
     signal openRequested(string view)
+    // Tarea que el panel debe abrir en el detalle apenas pueda (desde el calendario)
+    property string pendingDetail: ""
     // IPC `quickadd` (Super+Shift+T): abre o cierra el quick add
     signal quickAddRequested
 
@@ -409,6 +411,14 @@ Singleton {
         }
     }
 
+    // Abre una tarea en el detalle de la pestaña Tareas (la isla pasa a esa pestaña)
+    function openTask(id) {
+        if (!get(id))
+            return;
+        pendingDetail = id;
+        openRequested("");
+    }
+
     // Cambia campos de una tarea (título, notas, prioridad, proyecto, fechas, etiquetas…)
     function update(id, changes) {
         return change(id, "Tarea editada", t => Model.applyChanges(t, changes, Date.now()));
@@ -758,6 +768,14 @@ Singleton {
             if (!store.ready)
                 return "error: tasks.json aún no se leyó";
             return store.search(query).map(t => store.lineOf(t)).join("\n");
+        }
+
+        // Abre una tarea en el detalle del panel
+        function detail(id: string): string {
+            if (!store.get(id))
+                return "error: no existe la tarea " + id;
+            store.openTask(id);
+            return "ok";
         }
 
         // Abre o cierra el quick add (Super+Shift+T)

@@ -285,6 +285,23 @@ Item {
         detailId = id;
     }
 
+    // Una tarea pedida desde otro lado (el calendario): se abre en el detalle
+    function consumePending() {
+        const id = store.pendingDetail;
+        if (id === "")
+            return;
+        store.pendingDetail = "";
+        openDetail(id);
+    }
+
+    Component.onCompleted: consumePending()
+    Connections {
+        target: root.store
+        function onPendingDetailChanged() {
+            root.consumePending();
+        }
+    }
+
     function closeDetail() {
         detailId = "";
         focusList();

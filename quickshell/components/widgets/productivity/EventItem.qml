@@ -1,6 +1,7 @@
 import QtQuick
 import "../controlcenter/" as CC
 import "../../../services/calendar/" as CS
+import "../../../services/tasks/" as TK
 import "../../../" as App
 
 // Un evento de la lista: barra de color, hora, título, lugar y cuenta regresiva. Con un clic se despliega
@@ -11,7 +12,8 @@ Rectangle {
     readonly property var store: CS.CalendarStore
     property var ev
     readonly property bool special: !!(ev.holiday || ev.observance)
-    readonly property bool expanded: !special && store.expandedId === ev.id
+    readonly property bool isTask: !!ev.task
+    readonly property bool expanded: !special && !isTask && store.expandedId === ev.id
     readonly property bool past: store.isPast(ev)
     property bool copied: false
 
@@ -47,14 +49,36 @@ Rectangle {
                 height: 20
                 radius: 1.5
                 color: root.ev.color
+                visible: !root.isTask
+            }
+            // Tarea: el círculo la completa ahí mismo
+            Rectangle {
+                id: check
+                visible: root.isTask
+                x: -2
+                anchors.verticalCenter: parent.verticalCenter
+                width: 18
+                height: 18
+                radius: 9
+                color: checkMouse.containsMouse ? Qt.alpha(root.ev.color, 0.35) : "transparent"
+                border.width: 2
+                border.color: root.ev.color
+                MouseArea {
+                    id: checkMouse
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: TK.TaskStore.complete(root.ev.taskId)
+                }
             }
             Text {
                 id: when
                 anchors.left: bar.right
-                anchors.leftMargin: 10
+                anchors.leftMargin: root.isTask ? 26 : 10
                 anchors.verticalCenter: parent.verticalCenter
                 width: 124
-                text: root.ev.holiday ? "Feriado" : root.ev.observance ? "Celebración" : root.store.timeLabel(root.ev)
+                text: root.ev.holiday ? "Feriado" : root.ev.observance ? "Celebración" : root.isTask ? (root.ev.allDay ? "Tarea" : "Tarea · " + root.store.time12(root.ev.segStart)) : root.store.timeLabel(root.ev)
                 elide: Text.ElideRight
                 color: App.Theme.gray
                 font.family: App.Config.fonts.text
@@ -95,7 +119,7 @@ Rectangle {
                     id: titleText
                     anchors.verticalCenter: parent.verticalCenter
                     width: Math.min(implicitWidth, parent.width)
-                    text: root.ev.title
+                    text: root.isTask ? root.ev.taskTitle : root.ev.title
                     elide: Text.ElideRight
                     color: root.ev.holiday ? App.Theme.red : App.Theme.white
                     font.family: App.Config.fonts.text

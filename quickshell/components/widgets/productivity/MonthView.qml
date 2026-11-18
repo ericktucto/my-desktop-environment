@@ -89,7 +89,7 @@ Item {
                                 required property int index
                                 width: 6
                                 height: 6
-                                radius: 3
+                                radius: cell.dots[index].task ? 1 : 3
                                 color: cell.dots[index].color
                             }
                         }
