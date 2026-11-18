@@ -3,9 +3,10 @@ import "../../controls/" as C
 import "../../../services/launcher/" as L
 import "../../../services/launcher/Search.js" as Search
 import "../../../services/session/" as SS
+import "../../../services/tasks/" as TS
 import "../../../" as App
 
-// Launcher (Super+R). Buscar apps; con prefijo: e: emojis, c: calculadora, t: terminal.
+// Launcher (Super+R). Buscar apps; con prefijo: e: emojis, c: calculadora, t: terminal, td: tarea nueva.
 // Las apps tienen estrella (favoritos arriba). Las acciones de sesión y las acciones de las apps
 // aparecen como resultados al buscar.
 Item {
@@ -33,6 +34,14 @@ Item {
             sessionGlyphs: store.sessionGlyphs,
             history: store.history,
             canType: store.canType,
+            // td: lo que entiende el analizador de tareas de un texto
+            taskPreview: function (text) {
+                const r = TS.TaskStore.parseText(text);
+                return {
+                    title: r.title !== "" ? r.title : (r.links.length > 0 ? "link" : ""),
+                    labels: TS.TaskStore.chipsFor(r).map(c => c.label)
+                };
+            },
             maxResults: cfg.maxResults
         })
     readonly property var found: Search.results(searchInput.text, context)
@@ -75,6 +84,14 @@ Item {
             closeRequested();
             store.insertText(row.text);
             break;
+        case "task":
+        {
+            closeRequested();
+            const id = TS.TaskStore.addFromText(row.text, {});
+            if (id !== "")
+                TS.TaskStore.notifyCreated(id);
+            break;
+        }
         case "terminal":
         case "history":
             closeRequested();
@@ -199,7 +216,7 @@ Item {
             height: root.cfg.helpHeight
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: searchInput.text === "" ? "e: emojis · c: calculadora · t: terminal · Ctrl+D favorito" : ""
+            text: searchInput.text === "" ? "e: emojis · c: calculadora · t: terminal · td: tarea · Ctrl+D favorito" : ""
             color: App.Theme.subtext
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.xs

@@ -17,7 +17,7 @@
 // }
 //
 // Fila: { kind, key, title, subtitle, icon | emoji | glyph, favId?, favorite?, ... }
-//   kind: app | action | session | emoji | calc | terminal | history | hint
+//   kind: app | action | session | emoji | calc | terminal | history | task | hint
 
 // Palabras en español (y alternativas) por categoría del .desktop: los datos de muchas apps están solo en inglés
 var CATEGORY_WORDS = {
@@ -280,6 +280,28 @@ function calcRows(rest, ctx) {
     ];
 }
 
+// td: crear una tarea. ctx.taskPreview(texto) → { title, labels } (lo que entendió el analizador)
+function taskRows(rest, ctx) {
+    if (rest.trim() === "")
+        return [hint("Escribe una tarea: mañana 9am +proyecto #etiqueta p1 30m")];
+    var p = ctx.taskPreview(rest);
+    if (p.title === "")
+        return [hint("Falta el título de la tarea")];
+    return [
+        {
+            kind: "task",
+            key: "task",
+            title: "Crear tarea: " + p.title,
+            subtitle: p.labels.length > 0 ? p.labels.join(" · ") : "Enter: crear en la Bandeja",
+            glyph: 0xf067,
+            text: rest.trim(),
+            favorite: false,
+            score: 0,
+            usage: 0
+        }
+    ];
+}
+
 function terminalRow(cmd) {
     return {
         kind: "terminal",
@@ -332,7 +354,7 @@ function historyRows(rest, ctx) {
 
 // Texto del buscador → { mode, rows }
 function results(query, ctx) {
-    var m = /^\s*([ect]):\s?(.*)$/i.exec(query);
+    var m = /^\s*(td|[ect]):\s?(.*)$/i.exec(query);
     if (m) {
         var prefix = m[1].toLowerCase();
         var rest = m[2];
@@ -345,6 +367,11 @@ function results(query, ctx) {
             return {
                 mode: "calc",
                 rows: calcRows(rest, ctx)
+            };
+        if (prefix === "td")
+            return {
+                mode: "task",
+                rows: taskRows(rest, ctx)
             };
         var rows = [];
         if (rest.trim() !== "")
