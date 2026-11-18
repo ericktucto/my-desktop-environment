@@ -6,6 +6,7 @@
 #   task ls [filtro]                            busca: +proyecto #etiqueta p1 vencidas "en curso" palabras…
 #   task done <id>                              completa una tarea
 #   task undo                                   deshace el último cambio
+#   task standup                                imprime el standup en Markdown (task standup | wl-copy)
 #   task open [vista]                           abre el panel de tareas (today, upcoming, inbox, board, done…)
 #
 # Dentro de un repo de git, la tarea nueva lleva el link al repo y a la rama (de `git remote`).
@@ -49,7 +50,7 @@ with_git_links() {
 cmd=${1:-}
 case $cmd in
     "" | -h | --help | help)
-        sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
         ;;
     hoy | today)
         ipc list today
@@ -64,6 +65,9 @@ case $cmd in
         ;;
     undo)
         ipc undo
+        ;;
+    standup)
+        ipc standup
         ;;
     open)
         ipc open "${2:-}"

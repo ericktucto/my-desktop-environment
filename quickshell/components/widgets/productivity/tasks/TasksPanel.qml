@@ -557,6 +557,31 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
 
+                // Standup: copia ayer, hoy y bloqueado en Markdown
+                Rectangle {
+                    visible: root.effectiveView === "today" || root.effectiveView === "done"
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: standupText.implicitWidth + 22
+                    height: 28
+                    radius: 14
+                    color: standupMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surface
+                    Text {
+                        id: standupText
+                        anchors.centerIn: parent
+                        text: "Standup"
+                        color: App.Theme.white
+                        font.family: App.Config.fonts.text
+                        font.pixelSize: App.Config.fontSize.sm
+                        font.weight: Font.DemiBold
+                    }
+                    MouseArea {
+                        id: standupMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.store.copyStandup()
+                    }
+                }
                 TaskIconButton {
                     glyph: root.searching ? 0xf00d : 0xf002
                     active: root.searching

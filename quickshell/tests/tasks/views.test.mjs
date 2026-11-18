@@ -83,4 +83,23 @@ eq("cerradas al final", S("hecha").map(x => x), ["hecha1", "hecha2"]);
 eq("vacío = todo", S("").length, tasks.length);
 eq("parseQuery", V.parseQuery("Revisar +Trabajo #Bug p1 en curso vencidas"), { words: ["revisar"], projects: ["trabajo"], tags: ["bug"], priorities: [1], overdue: true, doing: true });
 
+// ── Standup ──
+// Martes 17: el último día laborable es el lunes 16
+const sd = (list, when = NOW) => V.standup(list, when);
+const lk = [{ url: "https://github.com/acme/api/pull/412", kind: "github-pr", label: "acme/api#412" }, { url: "https://a.com", kind: "url", label: "a.com" }];
+const sTasks = [
+    T({ id: "s1", title: "Hecha el lunes", status: "done", completed: ms(16, 10), links: lk }),
+    T({ id: "s2", title: "Hecha el viernes", status: "done", completed: new Date(2026, 10, 13, 10).getTime() }),
+    T({ id: "s3", title: "Hecha hoy", status: "done", completed: ms(17, 8) }),
+    T({ id: "s4", title: "Para hoy", due: "2026-11-17" }),
+    T({ id: "s5", title: "Vencida", due: "2026-11-15" }),
+    T({ id: "s6", title: "Bloqueada", status: "blocked", blockedReason: "faltan credenciales" }),
+    T({ id: "s7", title: "Para mañana", due: "2026-11-18" }),
+];
+eq("standup completo", sd(sTasks), ["**Ayer**", "- Hecha el lunes (acme/api#412)", "", "**Hoy**", "- Vencida", "- Para hoy", "- Hecha hoy — hecha", "", "**Bloqueado**", "- Bloqueada — faltan credenciales"].join("\n"));
+// Lunes 16: ayer cuenta desde el viernes 13
+eq("el lunes cuenta desde el viernes", sd(sTasks, new Date(2026, 10, 16, 9)).split("\n").slice(0, 3), ["**Ayer**", "- Hecha el viernes", ""]);
+eq("sin novedades", sd([]), "Sin novedades");
+eq("sin secciones vacías", sd([T({ title: "x", due: "2026-11-17" })]), "**Hoy**\n- x");
+
 done();

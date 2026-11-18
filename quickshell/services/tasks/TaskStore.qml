@@ -390,6 +390,18 @@ Singleton {
         }, Date.now()));
     }
 
+    // ── Standup ──
+    // Markdown con lo de ayer, lo de hoy y lo bloqueado (ver Views.standup)
+    function standup() {
+        return Views.standup(tasks, now);
+    }
+
+    // Lo copia al portapapeles y avisa
+    function copyStandup() {
+        Quickshell.execDetached(["sh", "-c", 'printf %s "$1" | wl-copy', "_", standup()]);
+        Quickshell.execDetached(["notify-send", "-a", "Tareas", "-i", "checkbox", "-t", "3000", "Standup copiado", "Pégalo en el daily"]);
+    }
+
     // Dónde cae una tarea nueva, para el aviso: "Hoy", "mañana", un proyecto o la Bandeja
     function whereIs(t) {
         const p = projectName(t.project);
@@ -802,6 +814,11 @@ Singleton {
             if (!store.ready)
                 return "error: tasks.json aún no se leyó";
             return store.search(query).map(t => store.lineOf(t)).join("\n");
+        }
+
+        // El Markdown del standup (ayer, hoy y bloqueado)
+        function standup(): string {
+            return store.standup();
         }
 
         // Abre una tarea en el detalle del panel

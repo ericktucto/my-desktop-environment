@@ -355,3 +355,63 @@ function list(v, view, query, projects, now) {
         return g.tasks.length > 0;
     });
 }
+
+// ── Standup ──
+
+// Un renglón: "- Título (acme/api#412)"; los links de GitHub, GitLab o Jira van entre paréntesis
+function standupLine(t, extra) {
+    var labels = t.links.filter(function (l) {
+        return l.kind !== "url";
+    }).map(function (l) {
+        return l.label;
+    });
+    return "- " + t.title + (labels.length > 0 ? " (" + labels.join(", ") + ")" : "") + (extra ? " — " + extra : "");
+}
+
+// Markdown para el daily: lo de ayer, lo de hoy y lo bloqueado.
+//  · Ayer: lo hecho desde el inicio del último día laborable (el lunes cuenta desde el viernes)
+//    hasta antes de hoy.
+//  · Hoy: lo que se ve en Hoy (vencidas, de hoy y en curso) y lo ya hecho hoy.
+//  · Bloqueado: las bloqueadas, con su motivo.
+function standup(tasks, now) {
+    var d = Dates.toDate(now);
+    var today = Dates.keyOf(d);
+    var from = Dates.dayStart(Dates.prevWorkday(today));
+    var startToday = Dates.dayStart(today);
+    var yesterday = tasks.filter(function (t) {
+        return t.status === "done" && t.completed >= from && t.completed < startToday;
+    }).sort(function (a, b) {
+        return a.completed - b.completed;
+    });
+    var doneToday = tasks.filter(function (t) {
+        return t.status === "done" && t.completed >= startToday;
+    }).sort(function (a, b) {
+        return a.completed - b.completed;
+    });
+    var v = compute(tasks, [], {
+        now: d,
+        sort: "due",
+        upcomingDays: 7
+    });
+    var todayList = v.overdue.concat(v.today);
+    var blocked = tasks.filter(function (t) {
+        return t.status === "blocked";
+    }).sort(byManual);
+    var out = [];
+    if (yesterday.length > 0)
+        out.push("**Ayer**", yesterday.map(function (t) {
+            return standupLine(t);
+        }).join("\n"), "");
+    var hoy = todayList.map(function (t) {
+        return standupLine(t);
+    }).concat(doneToday.map(function (t) {
+        return standupLine(t, "hecha");
+    }));
+    if (hoy.length > 0)
+        out.push("**Hoy**", hoy.join("\n"), "");
+    if (blocked.length > 0)
+        out.push("**Bloqueado**", blocked.map(function (t) {
+            return standupLine(t, t.blockedReason);
+        }).join("\n"), "");
+    return out.length === 0 ? "Sin novedades" : out.join("\n").replace(/\n+$/, "");
+}
