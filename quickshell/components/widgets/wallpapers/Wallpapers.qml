@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell.Io
+import "../../controls/" as C
 import "../../../services/theme/" as T
 import "../../../" as App
 
@@ -195,12 +196,11 @@ Item {
                 border.width: 2
                 border.color: App.Theme.white
 
-                Text {
+                C.IconSvg {
                     anchors.centerIn: parent
-                    text: "✓"
+                    source: Qt.resolvedUrl("../../../assets/svg/check.svg")
+                    size: 12
                     color: App.Theme.white
-                    font.pixelSize: 13
-                    font.weight: Font.Bold
                 }
             }
 
