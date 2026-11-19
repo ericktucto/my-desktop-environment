@@ -679,6 +679,9 @@ Singleton {
             for (const v of list)
                 v.kind = v.type === "wireguard" ? "wireguard" : ((store.vpnKinds[v.uuid] ?? "") || "vpn");
             store.vpns = list;
+            // Con el panel de la pill abierto, los datos de las VPN activas se releen con cada cambio
+            if (store.panelOpen)
+                store.refreshVpnLive();
             // Las "vpn" de NetworkManager son plugins: se pregunta cuál (OpenVPN…) una vez por conexión
             const unknown = list.filter(v => v.type === "vpn" && !(v.uuid in store.vpnKinds)).map(v => v.uuid);
             if (unknown.length > 0)
@@ -917,11 +920,18 @@ Singleton {
     property var live: null
     property int liveSerial: 0
 
+    // Datos de las VPN activas: [{ uuid, kind, device, ip, dns, endpoint, full, nets, mtu, keepalive }]
+    property var vpnLive: []
+    property int vpnLiveSerial: 0
+
     onPanelOpenChanged: {
         if (panelOpen) {
             refreshLive();
+            // Relee la lista de VPN, y con ella sus datos
+            refreshVpns();
         } else {
             live = null;
+            vpnLive = [];
             closeShare();
         }
     }
@@ -929,6 +939,29 @@ Singleton {
         live = null;
         if (panelOpen)
             refreshLive();
+    }
+
+    function refreshVpnLive() {
+        if (!panelOpen)
+            return;
+        const active = vpns.filter(v => v.state === "activated").map(v => v.uuid);
+        const serial = ++vpnLiveSerial;
+        if (active.length === 0) {
+            vpnLive = [];
+            return;
+        }
+        run(["python3", netScript, "vpn-live"].concat(active), function (out) {
+            // Una respuesta vieja (otro evento, o se cerró el panel) se descarta
+            if (serial !== store.vpnLiveSerial || !store.panelOpen)
+                return;
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            store.vpnLive = r && r.ok ? r.vpns : [];
+        });
     }
 
     function refreshLive() {
