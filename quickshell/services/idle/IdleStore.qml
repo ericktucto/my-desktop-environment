@@ -10,6 +10,7 @@ import "../nightlight/" as NL
 import "../recorder/" as R
 import "../session/" as S
 import "../settings/" as ST
+import "../timer/" as TM
 import "../../" as App
 
 // Inactividad: atenúa, bloquea, apaga la pantalla y suspende, con tiempos distintos
@@ -86,8 +87,8 @@ Singleton {
 
     IdleMonitor {
         timeout: store.cfg.suspend
-        // Mientras suena música no se suspende (sí se atenúa, bloquea y apaga la pantalla)
-        enabled: store.cfg.suspend > 0 && !store.paused && !MD.MediaStore.anyPlaying
+        // Mientras suena música o corre un temporizador no se suspende (sí se atenúa, bloquea y apaga la pantalla)
+        enabled: store.cfg.suspend > 0 && !store.paused && !MD.MediaStore.anyPlaying && !TM.TimerStore.keepAwake
         respectInhibitors: true
         onIsIdleChanged: {
             if (isIdle)

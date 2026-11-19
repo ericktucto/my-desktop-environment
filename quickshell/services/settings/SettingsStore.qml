@@ -25,6 +25,7 @@ Singleton {
     readonly property var nightLight: data.nightLight
     readonly property var calendar: data.calendar
     readonly property var tasks: data.tasks
+    readonly property var timer: data.timer
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -96,8 +97,11 @@ Singleton {
         property JsonObject tasks: JsonObject {
             property string view: "today"                   // today | upcoming | inbox | board | done | project:<id> | tag:<nombre>
             property string sort: "manual"                  // manual | due | priority
-            property string lastTab: "calendar"             // calendar | tasks
+            property string lastTab: "calendar"             // calendar | tasks | timer | stopwatch
             property string lastSummary: ""                 // AAAA-MM-DD del último resumen de la mañana
+        }
+        property JsonObject timer: JsonObject {
+            property string sound: "system"                 // system (alarm-clock-elapsed) o la ruta de un archivo de audio
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery

@@ -356,6 +356,27 @@ Singleton {
             })
     }
 
+    // ===== Temporizador y cronómetro (pestañas de Productividad, services/timer/TimerStore.qml) =====
+    readonly property QtObject timer: QtObject {
+        readonly property var presets: [1, 3, 5, 10, 15, 25, 30, 60]   // min: tiempos rápidos
+        readonly property int recents: 3             // últimos tiempos a medida que se recuerdan
+        readonly property int tick: 250              // ms entre actualizaciones con un temporizador en marcha
+        readonly property int stopwatchTick: 50      // ms entre actualizaciones del cronómetro a la vista
+        readonly property int ringEvery: 3000        // ms entre repeticiones del sonido de la alarma
+        readonly property int ringFor: 60            // s que suena como máximo si no la atiendes
+        readonly property int saveDelay: 400         // ms de espera antes de guardar tras un cambio
+        readonly property int maxTimers: 12
+        readonly property string systemSound: "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
+        readonly property string file: Quickshell.env("HOME") + "/.config/stixshell/timers.json"
+        // Pomodoro (min): trabajo, descanso corto y largo, y cada cuántos tramos de trabajo viene el largo
+        readonly property QtObject pomodoro: QtObject {
+            readonly property int work: 25
+            readonly property int short: 5
+            readonly property int long: 15
+            readonly property int every: 4
+        }
+    }
+
     // ===== Inactividad (segundos; 0 = nunca) =====
     readonly property QtObject idle: QtObject {
         readonly property QtObject battery: QtObject {
