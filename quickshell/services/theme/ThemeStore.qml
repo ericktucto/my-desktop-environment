@@ -17,6 +17,8 @@ Singleton {
 
     // matugen instalado
     property bool available: false
+    // Ya se sabe si hay matugen y qué se aplicó la última vez
+    property bool started: false
     property bool busy: false
     // Aviso corto en la fila del selector
     property string message: ""
@@ -24,19 +26,43 @@ Singleton {
     // Wallpaper actual y el color fuente elegido para él (0 = el más dominante)
     readonly property string image: App.Wallpaper.current
     readonly property int index: Math.min(3, cfg.sources[image] ?? 0)
-    readonly property bool dynamic: cfg.dynamic
+    // Modo de color: scheme = toda la shell con la paleta del wallpaper · accent = solo el acento sale del wallpaper ·
+    // custom = solo el acento, el color elegido. Sin modo guardado se deduce de lo de antes (dynamic y tint).
+    readonly property string mode: cfg.mode !== "" ? cfg.mode : (!cfg.dynamic ? "custom" : (cfg.tint === "neutral" ? "accent" : "scheme"))
+    readonly property string color: cfg.color
+    // Con el acento propio no hace falta matugen ni wallpaper
+    readonly property bool dynamic: mode !== "custom"
     readonly property string scheme: cfg.scheme
-    readonly property string tint: cfg.tint
+    readonly property string tint: cfg.tint === "vivid" ? "vivid" : "tinted"
     // Los colores fuente que matugen encuentra en el wallpaper actual (hasta 4, "#rrggbb")
     property var sources: []
 
     // Lo que describe lo ya aplicado y lo que se quiere (cambian a la vez que el wallpaper o los ajustes)
     property string appliedKey: ""
     property bool pending: false
-    readonly property string wantedKey: dynamic && image !== "" ? image + "|" + scheme + "|" + index + "|" + tint : "off"
+    readonly property string wantedKey: keyFor(mode, image, scheme, index, tint, color)
 
+    // Lo que identifica un resultado aplicado (para no regenerar lo que ya está)
+    function keyFor(m, img, sch, idx, tnt, col) {
+        if (m === "custom")
+            return "custom|" + col;
+        if (img === "")
+            return "wait";
+        if (m === "accent")
+            return "accent|" + img + "|" + idx;
+        return "scheme|" + img + "|" + sch + "|" + idx + "|" + tnt;
+    }
+
+    function setMode(m) {
+        if (m === "scheme" || m === "accent" || m === "custom")
+            cfg.mode = m;
+    }
+    function setColor(hex) {
+        if (/^#[0-9a-fA-F]{6}$/.test(hex))
+            cfg.color = hex.toLowerCase();
+    }
     function setDynamic(on) {
-        cfg.dynamic = on;
+        setMode(on ? "scheme" : "custom");
     }
     function setScheme(id) {
         cfg.scheme = id;
@@ -70,8 +96,9 @@ Singleton {
     }
 
     function check() {
-        // El wallpaper se lee del disco un instante después de arrancar: hasta entonces no se decide nada
-        if (!available || (dynamic && image === ""))
+        // Hasta saber si hay matugen y qué se aplicó la última vez no se decide nada; el wallpaper se lee del
+        // disco un instante después de arrancar
+        if (!started || wantedKey === "wait" || (mode !== "custom" && !available))
             return;
         if (wantedKey === appliedKey) {
             if (lastFile && lastFile.image === image)
@@ -95,6 +122,12 @@ Singleton {
     }
     Connections {
         target: store.cfg
+        function onModeChanged() {
+            store.check();
+        }
+        function onColorChanged() {
+            store.check();
+        }
         function onDynamicChanged() {
             store.check();
         }
@@ -121,11 +154,13 @@ Singleton {
             return;
         runningKey = wantedKey;
         busy = true;
-        const cmd = ["python3", script, "apply", "--scheme", scheme, "--tint", tint];
-        if (dynamic && image !== "")
+        const cmd = ["python3", script, "apply", "--mode", mode];
+        if (mode === "custom")
+            cmd.push("--color", color.slice(1));
+        else if (mode === "accent")
             cmd.push("--image", image, "--index", String(index));
         else
-            cmd.push("--color", App.Config.theme.fallback);
+            cmd.push("--image", image, "--scheme", scheme, "--index", String(index), "--tint", tint);
         proc.command = cmd;
         proc.running = true;
     }
@@ -166,9 +201,8 @@ Singleton {
         command: ["sh", "-c", "command -v matugen"]
         onExited: function (code) {
             store.available = code === 0;
-            if (!store.available)
-                return;
             store.readApplied();
+            store.started = true;
             store.check();
         }
     }
@@ -186,7 +220,8 @@ Singleton {
     function readApplied() {
         try {
             lastFile = JSON.parse(applied.text());
-            appliedKey = lastFile.image ? lastFile.image + "|" + lastFile.scheme + "|" + lastFile.index + "|" + (lastFile.tint ?? "neutral") : "off";
+            // Un archivo de antes de los modos (sin `mode`) se vuelve a generar
+            appliedKey = lastFile.mode ? keyFor(lastFile.mode, lastFile.image, lastFile.scheme, lastFile.index, lastFile.tint ?? "tinted", lastFile.color ?? "") : "";
         } catch (err) {
             lastFile = null;
             appliedKey = "";
@@ -194,14 +229,21 @@ Singleton {
     }
 
     // ── IPC ──
-    // qs ipc call stixshell@theme regen|toggle   ·   scheme <id>   ·   tint neutral|tinted|vivid
+    // qs ipc call stixshell@theme regen|toggle   ·   mode scheme|accent|custom   ·   color <rrggbb>   ·   scheme <id>   ·   tint tinted|vivid
     IpcHandler {
         target: "stixshell@theme"
         function regen(): void {
             store.regenerate();
         }
+        // Alterna entre «colores del wallpaper» y «acento propio»
         function toggle(): void {
-            store.setDynamic(!store.dynamic);
+            store.setMode(store.mode === "scheme" ? "custom" : "scheme");
+        }
+        function mode(m: string): void {
+            store.setMode(m);
+        }
+        function color(hex: string): void {
+            store.setColor(hex.startsWith("#") ? hex : "#" + hex);
         }
         function scheme(id: string): void {
             store.setScheme(id);

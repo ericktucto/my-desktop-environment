@@ -75,9 +75,11 @@ Singleton {
             property bool blur: false       // false = pixelar, true = difuminar
         }
         property JsonObject theme: JsonObject {
-            property bool dynamic: true                     // colores según el wallpaper
+            property string mode: ""                        // scheme (colores del wallpaper) | accent (acento del wallpaper) | custom (acento propio); vacío = se deduce de dynamic y tint
+            property string color: "#2979ff"                // el acento propio
+            property bool dynamic: true                     // solo para la migración (antes: colores según el wallpaper)
             property string scheme: "scheme-tonal-spot"
-            property string tint: "tinted"                  // cuánto se colorea la shell: neutral | tinted | vivid
+            property string tint: "tinted"                  // intensidad del modo «colores del wallpaper»: tinted | vivid (neutral se lee como tinted)
             property var sources: ({})                      // ruta del wallpaper → color fuente elegido (0 a 3)
         }
         property JsonObject nightLight: JsonObject {
