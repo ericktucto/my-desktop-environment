@@ -12,19 +12,15 @@ Lo que la shell ya hace está en el [README](../README.md).
 > Tienes `brightnessctl` y `/sys/class/backlight/amdgpu_bl0`.
 
 ### Productividad: tareas, temporizador y cronómetro
-El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas** (`Ctrl+Tab` alterna).
+El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas · Temporizador · Cronómetro** (`Ctrl+Tab` recorre, `Ctrl+1…4` va directo).
 - **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
+- **Temporizador y cronómetro:** varios temporizadores a la vez con alarma (sonido y notificación crítica con +1, +5 y Detener), cronómetro con vueltas, pill en la barra, `tm:` en el launcher e IPC.
 - **Tareas (completas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`), recordatorios con aviso, repetición, Tablero, tareas en el calendario y el reloj, resumen de la mañana, Standup, plantillas, archivo automático y estado de GitHub.
 
 **Tareas: pendientes**
 - [ ] Arrastrar para ordenar la lista con el mouse (hoy se ordena con `Alt+j`/`Alt+k`).
 - [ ] **Google Tasks (sincronizar):** la API guarda solo título, notas, fecha (sin hora), subtareas y hecho; prioridad, etiquetas y repetición se quedarían locales.
-- [ ] **Foco con el temporizador:** tiempo por tarea cuando exista la pestaña Temporizador.
-
-**Temporizador y cronómetro**
-- [ ] Temporizador con tiempos rápidos y uno a medida. Al terminar, notificación y sonido.
-- [ ] Cronómetro con vueltas.
-- [ ] Ambos siguen corriendo con el panel cerrado, y la isla muestra el tiempo.
+- [ ] **Foco con el temporizador:** tiempo por tarea (Pomodoro). El temporizador ya existe; falta enlazarlo con las tareas.
 
 **Google Calendar (escribir) y avisos**
 - [ ] Crear, editar y borrar eventos desde el panel (hoy se crean en el formulario web de Google; pedirá reconectar con permiso de escritura).
