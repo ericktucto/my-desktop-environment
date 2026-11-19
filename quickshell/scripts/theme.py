@@ -2,8 +2,13 @@
 """Colores dinámicos según el wallpaper (services/theme/ThemeStore.qml). matugen genera la paleta Material 3;
 este script calcula con ella los colores de la shell y escribe los de las apps.
 
-  theme.py apply --image <ruta> [--scheme scheme-tonal-spot] [--index 0] [--tint neutral|tinted|vivid]
-  theme.py apply --color 2979ff [--scheme …]          (sin wallpaper: las apps vuelven al azul de siempre)
+  theme.py apply --mode scheme --image <ruta> [--scheme scheme-tonal-spot] [--index 0] [--tint tinted|vivid]
+      Toda la shell y las apps toman la paleta del wallpaper.
+  theme.py apply --mode accent --image <ruta> [--index 0]
+      Solo el acento sale del wallpaper; la shell y las apps quedan con los colores fijos del sistema.
+  theme.py apply --mode custom --color rrggbb
+      Solo el acento, el color elegido (sin matugen).
+  theme.py apply --color 2979ff [--scheme …]          (forma antigua, sin --mode: matugen con ese color)
   theme.py sources <ruta>                             (los colores fuente que matugen encuentra en la imagen)
 
 `apply` guarda ~/.cache/stixshell/theme.json (lo lee Theme.qml) y escribe, si existen sus carpetas:
@@ -88,6 +93,29 @@ def generate(args):
     except ValueError:
         fail(out.stderr.strip().splitlines()[-1] if out.stderr.strip() else "matugen no pudo leer la imagen")
     return data
+
+
+# Los colores fijos del sistema (Theme.qml): en los modos de acento solo cambia el acento
+SYSTEM = {
+    "surface_container_lowest": "#0a0a0f",
+    "surface": "#121218",
+    "surface_container_low": "#101015",
+    "surface_container": "#16161d",
+    "surface_container_high": "#1e1e26",
+    "on_surface": "#cdd6f4",
+    "on_surface_variant": "#b4bcd0",
+    "outline": "#8a93a5",
+    "outline_variant": "#3a3f4a",
+    "error": "#ff5370",
+}
+
+
+def accent_data(accent):
+    """Paleta mínima (mismos nombres que la de matugen): los colores del sistema y el acento elegido."""
+    roles = dict(SYSTEM)
+    roles["primary"] = accent
+    roles["primary_container"] = mix(SYSTEM["surface_container_lowest"], accent, 0.35)
+    return {"colors": {k: {"dark": {"color": v}} for k, v in roles.items()}}
 
 
 def tone(data, palette, n):
@@ -216,11 +244,16 @@ def kitty_file(data, shell):
 
 def gtk_files(data, shell):
     r = lambda n: role(data, n)
+    accent_only = shell.get("_accentOnly", False)
     css = (
         "/* Generado por scripts/theme.py (colores del wallpaper). Pide adw-gtk3: system/adw-gtk3.sh */\n"
         f"@define-color accent_bg_color {mix(r('primary_container'), r('primary'), 0.35)};\n"
         "@define-color accent_fg_color #ffffff;\n"
         f"@define-color accent_color {r('primary')};\n"
+    )
+    # En los modos de acento los fondos son los de adw-gtk3 (el sistema); solo se redefine el acento
+    if not accent_only:
+        css += (
         f"@define-color window_bg_color {r('surface')};\n"
         f"@define-color window_fg_color {r('on_surface')};\n"
         f"@define-color view_bg_color {r('surface_container_lowest')};\n"
@@ -237,7 +270,7 @@ def gtk_files(data, shell):
         f"@define-color dialog_bg_color {r('surface_container')};\n"
         f"@define-color dialog_fg_color {r('on_surface')};\n"
         f"@define-color error_color {r('error')};\n"
-    )
+        )
     # Solo con adw-gtk3 en uso: con otro tema (WhiteSur) estos colores lo desarmarían
     try:
         if "adw-gtk3" not in open(os.path.join(CONFIG, "gtk-3.0", "settings.ini")).read():
@@ -252,17 +285,50 @@ def gtk_files(data, shell):
             write(p, css)
 
 
+def hex6(text):
+    t = str(text).lstrip("#").lower()
+    if len(t) != 6 or any(c not in "0123456789abcdef" for c in t):
+        fail("color no válido (usa rrggbb)")
+    return "#" + t
+
+
 def apply(args):
-    data = generate(args)
-    # Sin wallpaper (colores apagados) la shell usa sus colores fijos; solo las apps se regeneran
-    tint = args.get("tint", "neutral")
-    shell = shell_colors(data, tint) if "image" in args else {}
-    sources = source_colors(args["image"]) if "image" in args else []
+    mode = args.get("mode", "")
+    tint = args.get("tint", "tinted")
+    if tint not in ("tinted", "vivid"):
+        tint = "tinted"
+    color = ""
+    sources = []
+    if mode == "custom":
+        # Sin matugen: el acento es exactamente el color elegido
+        color = hex6(args.get("color", ""))
+        data = accent_data(color)
+        shell = {"primary": color, "_accentOnly": True}
+    elif mode == "accent":
+        if "image" not in args:
+            fail("falta --image")
+        pal = generate(dict(args, scheme="scheme-tonal-spot"))
+        color = tone(pal, "primary", 50)
+        if contrast("#ffffff", color) < 3.0:
+            color = tone(pal, "primary", 40)
+        data = accent_data(color)
+        shell = {"primary": color, "_accentOnly": True}
+        sources = source_colors(args["image"])
+    else:
+        # Forma antigua: sin wallpaper (--color) la shell usa sus colores fijos y solo las apps se regeneran
+        data = generate(args)
+        shell = shell_colors(data, tint) if "image" in args else {}
+        sources = source_colors(args["image"]) if "image" in args else []
+        mode = "scheme" if "image" in args else "legacy"
+    # `_accentOnly` es para las apps; la shell solo lee lo suyo
+    saved = {k: v for k, v in shell.items() if not k.startswith("_")}
     write(
         os.path.join(CACHE, "theme.json"),
         json.dumps(
             {
-                "shell": shell,
+                "shell": saved,
+                "mode": mode,
+                "color": color,
                 "image": args.get("image", ""),
                 "scheme": args.get("scheme", "scheme-tonal-spot"),
                 "index": int(args.get("index", 0)),
@@ -276,7 +342,7 @@ def apply(args):
             fn(data, shell)
         except OSError:
             pass
-    print(json.dumps({"ok": True, "sources": sources}))
+    print(json.dumps({"ok": True, "sources": sources, "color": color}))
 
 
 def main():
@@ -291,6 +357,8 @@ def main():
             i += 2
         if "image" not in args and "color" not in args:
             fail("falta --image o --color")
+        if args.get("mode") == "custom" and "color" not in args:
+            fail("falta --color")
         apply(args)
     else:
         print(__doc__, file=sys.stderr)
