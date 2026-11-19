@@ -4,7 +4,7 @@ import "../../services/timer/" as TM
 import "../../services/timer/Duration.js" as Duration
 import "../../" as App
 
-// Temporizador y cronómetro a la derecha del reloj: "⏳ 4:59 +1 │ ⏱ 12:30".
+// Temporizador y cronómetro a la derecha del reloj: "⏳ 4:59 +1  ⏱ 12:30".
 // Clic en un lado abre su pestaña; clic derecho lo pausa o reanuda. Sonando, late en rojo y el clic detiene la alarma.
 Base.Island {
     id: root
@@ -24,7 +24,8 @@ Base.Island {
         visible: root.next !== null
         implicitWidth: timerRow.implicitWidth
         implicitHeight: timerRow.implicitHeight
-        width: implicitWidth
+        // Aire entre el temporizador y el cronómetro
+        width: implicitWidth + (swSeg.visible ? 12 : 0)
         height: App.Config.pill.height
 
         SequentialAnimation on opacity {
@@ -88,17 +89,6 @@ Base.Island {
                     root.store.openRequested("timer");
             }
         }
-    }
-
-    // ── Divisor ──
-    Rectangle {
-        visible: timerSeg.visible && swSeg.visible
-        anchors.verticalCenter: undefined
-        width: 1
-        height: 14
-        radius: 0.5
-        color: App.Theme.gray
-        opacity: 0.5
     }
 
     // ── Cronómetro ──
