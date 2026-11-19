@@ -18,7 +18,7 @@ Rectangle {
     radius: 20
     color: App.Theme.island
     border.width: 1
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
 
     signal closeRequested
 

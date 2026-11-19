@@ -44,7 +44,7 @@ Rectangle {
 
     color: popup ? App.Theme.island : App.Theme.surface
     border.width: popup || critical ? 1 : 0
-    border.color: critical ? App.Theme.red : App.Theme.islandEdge
+    border.color: critical ? App.Theme.red : App.Theme.border
 
     // Clic en la tarjeta (los botones, declarados después, reciben los suyos)
     MouseArea {

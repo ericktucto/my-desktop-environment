@@ -19,7 +19,7 @@ Rectangle {
     radius: 22
     color: App.Theme.island
     border.width: 1
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
 
     property int tab: 0
     readonly property var rows: tab === 0 ? Search.emojiRows(search.text, {

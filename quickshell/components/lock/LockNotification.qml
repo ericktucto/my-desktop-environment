@@ -21,7 +21,7 @@ Rectangle {
     radius: 18
     color: App.Theme.island
     border.width: 1
-    border.color: group.critical ? App.Theme.red : App.Theme.islandEdge
+    border.color: group.critical ? App.Theme.red : App.Theme.border
 
     Row {
         id: content

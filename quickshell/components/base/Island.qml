@@ -61,6 +61,16 @@ Rectangle {
     color: App.Theme.island
     clip: true
 
+    // El borde fino va por encima de todo (los paneles con fondo propio, como música, lo taparían)
+    Rectangle {
+        anchors.fill: parent
+        radius: p.radius
+        color: "transparent"
+        border.width: 1
+        border.color: App.Theme.border
+        z: 100
+    }
+
     Behavior on width {
         enabled: p.animateWidth
         NumberAnimation {

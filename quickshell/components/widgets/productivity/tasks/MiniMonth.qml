@@ -23,7 +23,7 @@ Rectangle {
     height: column.implicitHeight + 20
     radius: 16
     color: App.Theme.island
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
     border.width: 1
 
     // Al abrirlo muestra el mes de la fecha elegida (o el de hoy)

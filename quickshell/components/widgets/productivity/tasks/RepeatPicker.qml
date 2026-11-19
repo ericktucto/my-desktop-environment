@@ -47,7 +47,7 @@ Rectangle {
     height: column.implicitHeight + 24
     radius: 16
     color: App.Theme.island
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
     border.width: 1
 
     function make(freq) {

@@ -782,7 +782,7 @@ Item {
             height: sortColumn.implicitHeight + 12
             radius: 14
             color: App.Theme.island
-            border.color: App.Theme.islandEdge
+            border.color: App.Theme.border
             border.width: 1
 
             Column {
@@ -935,7 +935,7 @@ Item {
             height: 34
             radius: 17
             color: App.Theme.island
-            border.color: App.Theme.islandEdge
+            border.color: App.Theme.border
             border.width: 1
             opacity: root.toastVisible && root.store.lastAction !== "" ? 1 : 0
             visible: opacity > 0

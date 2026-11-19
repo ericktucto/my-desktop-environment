@@ -350,7 +350,7 @@ Item {
         height: menuColumn.implicitHeight + 12
         radius: 14
         color: App.Theme.island
-        border.color: App.Theme.islandEdge
+        border.color: App.Theme.border
         border.width: 1
 
         Column {

@@ -16,7 +16,7 @@ Rectangle {
     radius: 18
     color: App.Theme.island
     border.width: 1
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
 
     Row {
         id: row

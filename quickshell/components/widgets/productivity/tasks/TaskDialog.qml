@@ -72,7 +72,7 @@ Item {
         height: column.implicitHeight + 32
         radius: 18
         color: App.Theme.island
-        border.color: App.Theme.islandEdge
+        border.color: App.Theme.border
         border.width: 1
 
         // Evita que el clic dentro del cuadro llegue al fondo

@@ -888,7 +888,7 @@ Item {
         height: projectColumn.implicitHeight + 12
         radius: 14
         color: App.Theme.island
-        border.color: App.Theme.islandEdge
+        border.color: App.Theme.border
         border.width: 1
 
         Column {
@@ -980,7 +980,7 @@ Item {
         height: remindColumn.implicitHeight + 12
         radius: 14
         color: App.Theme.island
-        border.color: App.Theme.islandEdge
+        border.color: App.Theme.border
         border.width: 1
 
         Column {
@@ -1038,7 +1038,7 @@ Item {
         height: moreColumn.implicitHeight + 12
         radius: 14
         color: App.Theme.island
-        border.color: App.Theme.islandEdge
+        border.color: App.Theme.border
         border.width: 1
 
         Column {

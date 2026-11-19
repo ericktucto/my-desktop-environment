@@ -37,7 +37,7 @@ Column {
         radius: height / 2
         color: App.Theme.island
         border.width: 2
-        border.color: root.error ? App.Theme.red : (root.caps ? App.Theme.amber : (input.activeFocus ? App.Theme.primary : App.Theme.islandEdge))
+        border.color: root.error ? App.Theme.red : (root.caps ? App.Theme.amber : (input.activeFocus ? App.Theme.primary : App.Theme.border))
 
         Behavior on border.color {
             ColorAnimation {

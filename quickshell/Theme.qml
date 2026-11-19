@@ -45,7 +45,10 @@ Singleton {
 
     // ===== Superficie =====
     property color island:     dyn.island ?? "#0a0a0f"
-    property color islandEdge: dyn.islandEdge ?? Qt.rgba(1, 1, 1, 0.10)
+    // Separadores dentro de los paneles: siempre neutros
+    readonly property color islandEdge: Qt.rgba(1, 1, 1, 0.10)
+    // El borde fino (1 px) de las islas y los paneles flotantes: lleva el color elegido
+    property color border: dyn.border ?? Qt.rgba(1, 1, 1, 0.10)
 
     // ===== Superficies y texto (launcher, inputs) =====
     property color surfaceHigh: dyn.surfaceHigh ?? "#3a3f4a"     // selección y hover del launcher, borde de inputs
@@ -83,7 +86,7 @@ Singleton {
 
     // ===== Fundido al cambiar de wallpaper =====
     Fade on island {}
-    Fade on islandEdge {}
+    Fade on border {}
     Fade on surfaceHigh {}
     Fade on text {}
     Fade on subtext {}

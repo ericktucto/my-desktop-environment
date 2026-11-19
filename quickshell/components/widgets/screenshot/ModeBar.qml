@@ -17,7 +17,7 @@ Rectangle {
     radius: height / 2
     color: App.Theme.island
     border.width: 1
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
 
     function glyph(code) {
         return String.fromCodePoint(code);

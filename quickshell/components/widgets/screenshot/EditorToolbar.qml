@@ -16,7 +16,7 @@ Rectangle {
     radius: height / 2
     color: App.Theme.island
     border.width: 1
-    border.color: App.Theme.islandEdge
+    border.color: App.Theme.border
 
     // Lo que se edita: la anotación seleccionada o, si no hay, la herramienta
     readonly property string ctx: {
