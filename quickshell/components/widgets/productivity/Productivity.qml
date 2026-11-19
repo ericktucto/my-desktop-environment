@@ -6,7 +6,7 @@ import "../controlcenter/" as CC
 import "../../../services/settings/" as ST
 import "../../../" as App
 
-// Modo "productivity" de la isla central: la barra de pestañas (Calendario · Tareas · Temporizador) y la pestaña activa.
+// Modo "productivity" de la isla central: la barra de pestañas (Calendario · Tareas · Temporizador · Cronómetro) y la pestaña activa.
 // La pestaña se recuerda en settings.json (tasks.lastTab), así Super+P abre la última usada.
 // Teclado: Ctrl+Tab alterna las pestañas. El ancho de la isla cambia con la pestaña; el alto es el mismo.
 Item {
@@ -26,6 +26,10 @@ Item {
         {
             id: "timer",
             label: "Temporizador"
+        },
+        {
+            id: "stopwatch",
+            label: "Cronómetro"
         }
     ]
     readonly property var tabIds: tabs.map(t => t.id)
@@ -56,6 +60,8 @@ Item {
             tasksLoader.item?.refreshVisibleLinks();
         } else if (tab === "timer") {
             timerLoader.item?.focusInput();
+        } else if (tab === "stopwatch") {
+            stopwatchLoader.item?.forceActiveFocus();
         } else {
             calendar.forceActiveFocus();
         }
@@ -74,6 +80,7 @@ Item {
         calendar.reset();
         tasksLoader.item?.reset();
         timerLoader.item?.reset();
+        stopwatchLoader.item?.reset();
     }
 
     onVisibleChanged: {
@@ -146,5 +153,19 @@ Item {
         }
         onLoaded: if (root.tab === "timer" && root.visible)
             item.focusInput()
+    }
+
+    Loader {
+        id: stopwatchLoader
+        y: tabBar.height + 12
+        width: parent.width
+        height: calendar.implicitHeight
+        active: root.tab === "stopwatch" || item !== null
+        visible: root.tab === "stopwatch"
+        sourceComponent: TI.StopwatchPanel {
+            onCloseRequested: root.closeRequested()
+        }
+        onLoaded: if (root.tab === "stopwatch" && root.visible)
+            item.forceActiveFocus()
     }
 }
