@@ -4,9 +4,10 @@ import "../../../services/launcher/" as L
 import "../../../services/launcher/Search.js" as Search
 import "../../../services/session/" as SS
 import "../../../services/tasks/" as TS
+import "../../../services/timer/" as TM
 import "../../../" as App
 
-// Launcher (Super+R). Buscar apps; con prefijo: e: emojis, c: calculadora, t: terminal, td: tarea nueva.
+// Launcher (Super+R). Buscar apps; con prefijo: e: emojis, c: calculadora, t: terminal, td: tarea nueva, tm: temporizador.
 // Las apps tienen estrella (favoritos arriba). Las acciones de sesión y las acciones de las apps
 // aparecen como resultados al buscar.
 Item {
@@ -92,6 +93,10 @@ Item {
                 TS.TaskStore.notifyCreated(id);
             break;
         }
+        case "timer":
+            closeRequested();
+            TM.TimerStore.addFromText(row.text);
+            break;
         case "terminal":
         case "history":
             closeRequested();
@@ -216,7 +221,7 @@ Item {
             height: root.cfg.helpHeight
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            text: searchInput.text === "" ? "e: emojis · c: calculadora · t: terminal · td: tarea · Ctrl+D favorito" : ""
+            text: searchInput.text === "" ? "e: emojis · c: calculadora · t: terminal · td: tarea · tm: temporizador · Ctrl+D favorito" : ""
             color: App.Theme.subtext
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.xs

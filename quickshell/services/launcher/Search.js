@@ -1,5 +1,6 @@
 .pragma library
 .import "Calc.js" as Calc
+.import "../timer/Duration.js" as Duration
 
 // Búsqueda del launcher. Funciones puras: reciben todo lo que necesitan en `ctx` y devuelven filas.
 //
@@ -302,6 +303,28 @@ function taskRows(rest, ctx) {
     ];
 }
 
+// tm: crear un temporizador: "10m té", "1h30", "5:00"
+function timerRows(rest) {
+    if (rest.trim() === "")
+        return [hint("Escribe un tiempo: 10m té, 1h30, 5:00, 45s")];
+    var p = Duration.parse(rest);
+    if (!p)
+        return [hint("No entiendo ese tiempo (ejemplos: 10m té, 1h30, 5:00)")];
+    return [
+        {
+            kind: "timer",
+            key: "timer",
+            title: "Temporizador de " + Duration.label(p.ms) + (p.name !== "" ? " · " + p.name : ""),
+            subtitle: "Enter: empezar",
+            glyph: 0xf252,
+            text: rest.trim(),
+            favorite: false,
+            score: 0,
+            usage: 0
+        }
+    ];
+}
+
 function terminalRow(cmd) {
     return {
         kind: "terminal",
@@ -354,7 +377,7 @@ function historyRows(rest, ctx) {
 
 // Texto del buscador → { mode, rows }
 function results(query, ctx) {
-    var m = /^\s*(td|[ect]):\s?(.*)$/i.exec(query);
+    var m = /^\s*(td|tm|[ect]):\s?(.*)$/i.exec(query);
     if (m) {
         var prefix = m[1].toLowerCase();
         var rest = m[2];
@@ -372,6 +395,11 @@ function results(query, ctx) {
             return {
                 mode: "task",
                 rows: taskRows(rest, ctx)
+            };
+        if (prefix === "tm")
+            return {
+                mode: "timer",
+                rows: timerRows(rest)
             };
         var rows = [];
         if (rest.trim() !== "")
