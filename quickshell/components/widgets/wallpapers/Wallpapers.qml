@@ -51,8 +51,8 @@ Item {
         scanner.running = true;
     }
 
-    // Colores dinámicos (matugen): switch, estilo y color fuente
-    ThemeRow {
+    // Colores: los tres modos y las opciones de cada uno
+    ColorOptions {
         id: themeRow
         anchors.top: parent.top
         anchors.left: parent.left

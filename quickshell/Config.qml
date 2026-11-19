@@ -522,11 +522,19 @@ Singleton {
             { id: "scheme-vibrant", label: "Vibrante" },
             { id: "scheme-expressive", label: "Expresivo" }
         ]
+        // Intensidad del modo «colores del wallpaper»
         readonly property var tints: [
-            { id: "neutral", label: "Neutro" },
-            { id: "tinted", label: "Teñido" },
-            { id: "vivid", label: "Intenso" }
+            { id: "tinted", label: "Sutil" },
+            { id: "vivid", label: "Intensa" }
         ]
+        // Los tres modos de color del selector de wallpapers
+        readonly property var modes: [
+            { id: "scheme", label: "Del wallpaper", hint: "Toda la shell toma los colores de la imagen." },
+            { id: "accent", label: "Acento del wallpaper", hint: "Barra del sistema; el acento sale de la imagen." },
+            { id: "custom", label: "Acento propio", hint: "Barra del sistema; tú eliges el acento." }
+        ]
+        // Muestras del acento propio (azul, índigo, violeta, rosa, rojo, naranja, ámbar, verde, turquesa y cian)
+        readonly property var swatches: ["#2979ff", "#3d5afe", "#d500f9", "#ff4081", "#ff1744", "#ff6d00", "#ffb300", "#00e676", "#1de9b6", "#00e5ff"]
     }
 
     // ===== Animaciones (ms) =====
