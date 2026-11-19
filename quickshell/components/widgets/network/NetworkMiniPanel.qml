@@ -253,6 +253,68 @@ Item {
             }
         }
 
+        // Una sección por VPN activa: sus datos salen de NetworkManager, una sola lectura (sin polling)
+        Repeater {
+            model: root.store.vpnLive
+
+            Column {
+                id: vpnBox
+                required property var modelData
+                readonly property var v: modelData
+                readonly property var entry: root.store.vpns.find(x => x.uuid === v.uuid) ?? null
+                width: col.width
+                spacing: 2
+
+                Text {
+                    width: parent.width
+                    bottomPadding: 2
+                    text: "VPN · " + (vpnBox.entry ? vpnBox.entry.name : "") + " · " + (vpnBox.v.kind === "wireguard" ? "WireGuard" : (vpnBox.v.kind === "openvpn" ? "OpenVPN" : "VPN"))
+                    color: App.Theme.gray
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.sm
+                    font.weight: Font.DemiBold
+                    elide: Text.ElideRight
+                }
+                InfoRow {
+                    width: parent.width
+                    visible: vpnBox.v.ip !== ""
+                    label: "IP"
+                    value: vpnBox.v.ip
+                    copyValue: vpnBox.v.ip.split("/")[0]
+                }
+                InfoRow {
+                    width: parent.width
+                    visible: vpnBox.v.dns !== ""
+                    label: "DNS"
+                    value: vpnBox.v.dns
+                }
+                InfoRow {
+                    width: parent.width
+                    visible: vpnBox.v.endpoint !== ""
+                    label: "Servidor"
+                    value: vpnBox.v.endpoint
+                }
+                InfoRow {
+                    width: parent.width
+                    label: "Tráfico"
+                    value: vpnBox.v.full ? "Todo el tráfico" : (vpnBox.v.nets.length > 0 ? "Solo " + vpnBox.v.nets.join(", ") : "")
+                    visible: value !== ""
+                }
+                InfoRow {
+                    width: parent.width
+                    visible: vpnBox.v.mtu !== ""
+                    label: "MTU"
+                    value: vpnBox.v.mtu
+                }
+                InfoRow {
+                    width: parent.width
+                    visible: vpnBox.v.keepalive !== ""
+                    label: "Keepalive"
+                    value: vpnBox.v.keepalive + " s"
+                }
+            }
+        }
+
         // Interruptor de Wi-Fi y los botones
         Flow {
             width: parent.width
