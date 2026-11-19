@@ -57,6 +57,8 @@ Singleton {
 
     // Lo que falta (ms)
     function left(t) {
+        if (!t)
+            return 0;
         if (t.state === "running")
             return Math.max(0, t.endsAt - now);
         if (t.state === "paused")

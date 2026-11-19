@@ -131,6 +131,9 @@ ShellRoot {
                 item: shotMask
             }
             Region {
+                item: timerMask
+            }
+            Region {
                 item: rightPill
             }
         }
@@ -200,6 +203,11 @@ ShellRoot {
                 id: shotPill
                 x: recPill.x + (recPill.visible ? recPill.width + centerPill.gap : 0)
             }
+            // Temporizador y cronómetro, tras lo anterior (si lo hay)
+            I.TimerPill {
+                id: timerPill
+                x: shotPill.x + (shotPill.visible ? shotPill.width + centerPill.gap : 0)
+            }
         }
         // La máscara de la pill de música: sin ancho si no se ve (no captura clics vacíos)
         Item {
@@ -224,6 +232,14 @@ ShellRoot {
             y: shotPill.y
             width: shotPill.visible ? shotPill.width : 0
             height: shotPill.visible ? shotPill.height : 0
+        }
+        // La máscara del temporizador y el cronómetro
+        Item {
+            id: timerMask
+            x: timerPill.x
+            y: timerPill.y
+            width: timerPill.visible ? timerPill.width : 0
+            height: timerPill.visible ? timerPill.height : 0
         }
         Row {
             id: rightPill
