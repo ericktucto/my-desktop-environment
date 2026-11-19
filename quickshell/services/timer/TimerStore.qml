@@ -51,6 +51,36 @@ Singleton {
     readonly property bool swActive: stopwatch.state !== "idle"
 
     signal openRequested(string tab)
+    // Abrir o cerrar el panel de la pill (la pill lo escucha, como MediaStore.togglePanel)
+    signal togglePanel
+
+    // ── Qué se ve en el panel de la pill ──
+    // "" = lo más urgente (el que suena, si no el que termina primero, si no el cronómetro);
+    // "sw" = el cronómetro; si no, el id de un temporizador
+    property string shownKey: ""
+    readonly property string viewKey: {
+        if (shownKey === "sw" && swActive)
+            return "sw";
+        if (shownKey !== "" && shownKey !== "sw" && get(shownKey))
+            return shownKey;
+        if (ringing.length > 0)
+            return ringing[0].id;
+        if (next)
+            return next.id;
+        const paused = timers.find(t => t.state === "paused");
+        if (paused)
+            return paused.id;
+        return swActive ? "sw" : "";
+    }
+    readonly property bool showsStopwatch: viewKey === "sw"
+    // El temporizador que se ve (null si es el cronómetro o no hay nada)
+    readonly property var shown: viewKey !== "" && viewKey !== "sw" ? get(viewKey) : null
+    // Hay algo que mostrar en el panel
+    readonly property bool hasItems: timers.length > 0 || swActive
+
+    function show(key) {
+        shownKey = key;
+    }
 
     function labelFor(t) {
         return t.name !== "" ? t.name : Duration.label(t.total);
@@ -668,7 +698,7 @@ Singleton {
     Component.onDestruction: flush()
 
     // ── IPC ──
-    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch | pomodoro <idTarea|""> | skip | recents clear
+    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch | pomodoro <idTarea|""> | skip | recents clear | expand
     IpcHandler {
         target: "stixshell@timer"
 
@@ -727,6 +757,10 @@ Singleton {
             store.recents = [];
             store.save();
             return "ok";
+        }
+        // Abre o cierra el panel de la pill (el mini reproductor del temporizador)
+        function expand(): void {
+            store.togglePanel();
         }
         function open(tab: string): void {
             store.openRequested(tab === "stopwatch" ? "stopwatch" : "timer");
