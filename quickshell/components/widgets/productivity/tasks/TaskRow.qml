@@ -83,6 +83,13 @@ Rectangle {
                 text: Dates.formatMinutes(t.estimate),
                 color: gray
             });
+        // Tiempo trabajado con el Pomodoro
+        if (t.focus && t.focus.minutes > 0)
+            out.push({
+                glyph: 0xf2f2,
+                text: Dates.formatMinutes(t.focus.minutes),
+                color: gray
+            });
         if (t.links.length > 0)
             out.push({
                 glyph: 0xf0c1,

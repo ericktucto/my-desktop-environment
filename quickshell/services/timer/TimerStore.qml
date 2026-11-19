@@ -668,7 +668,7 @@ Singleton {
     Component.onDestruction: flush()
 
     // ── IPC ──
-    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch | pomodoro <idTarea|""> | skip
+    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch | pomodoro <idTarea|""> | skip | recents clear
     IpcHandler {
         target: "stixshell@timer"
 
@@ -719,6 +719,14 @@ Singleton {
         }
         function skip(): string {
             return store.skipPhase() !== "" ? "ok" : "error: no hay un Pomodoro en curso";
+        }
+        // recents clear: olvida los últimos tiempos a medida
+        function recents(action: string): string {
+            if (action !== "clear")
+                return "error: usa clear";
+            store.recents = [];
+            store.save();
+            return "ok";
         }
         function open(tab: string): void {
             store.openRequested(tab === "stopwatch" ? "stopwatch" : "timer");

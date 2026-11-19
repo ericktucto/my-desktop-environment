@@ -1,5 +1,6 @@
 import QtQuick
 import "../../../../services/tasks/" as TS
+import "../../../../services/timer/" as TM
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../services/tasks/Reminders.js" as Reminders
 import "../../../../services/tasks/Parse.js" as Parse
@@ -14,6 +15,11 @@ Item {
     property string taskId: ""
 
     readonly property var store: TS.TaskStore
+    // Tiempo trabajado con el temporizador
+    readonly property var focusInfo: t.focus ?? ({
+            minutes: 0,
+            pomodoros: 0
+        })
     readonly property var blank: ({
             id: "",
             title: "",
@@ -598,6 +604,36 @@ Item {
                     placeholder: "30m, 2h"
                     onCommitted: root.commitEstimate()
                     onAccepted: root.forceActiveFocus()
+                }
+            }
+
+            // Foco: lo trabajado con el Pomodoro y un atajo para empezar uno con esta tarea
+            Flow {
+                width: parent.width
+                spacing: 6
+
+                Caption {
+                    height: 28
+                    verticalAlignment: Text.AlignVCenter
+                    text: "FOCO"
+                }
+                Text {
+                    height: 28
+                    verticalAlignment: Text.AlignVCenter
+                    visible: root.focusInfo.minutes > 0 || root.focusInfo.pomodoros > 0
+                    text: Dates.formatMinutes(root.focusInfo.minutes) + (root.focusInfo.pomodoros > 0 ? " · " + root.focusInfo.pomodoros + " 🍅" : "")
+                    color: App.Theme.white
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.sm
+                    font.weight: Font.Medium
+                }
+                Pill {
+                    label: "🍅 Pomodoro"
+                    selected: TM.TimerStore.pomodoro !== null && TM.TimerStore.pomodoro.pomo.task === root.taskId
+                    onClicked: {
+                        TM.TimerStore.startPomodoro(root.taskId);
+                        TM.TimerStore.openRequested("timer");
+                    }
                 }
             }
 
