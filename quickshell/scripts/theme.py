@@ -2,7 +2,7 @@
 """Colores dinámicos según el wallpaper (services/theme/ThemeStore.qml). matugen genera la paleta Material 3;
 este script calcula con ella los colores de la shell y escribe los de las apps.
 
-  theme.py apply --image <ruta> [--scheme scheme-tonal-spot] [--index 0]
+  theme.py apply --image <ruta> [--scheme scheme-tonal-spot] [--index 0] [--tint neutral|tinted|vivid]
   theme.py apply --color 2979ff [--scheme …]          (sin wallpaper: las apps vuelven al azul de siempre)
   theme.py sources <ruta>                             (los colores fuente que matugen encuentra en la imagen)
 
@@ -56,8 +56,9 @@ def lum(h):
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
-def contrast_with_white(h):
-    return 1.05 / (lum(h) + 0.05)
+def contrast(a, b):
+    la, lb = sorted((lum(a), lum(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
 
 
 def alpha(h, a):
@@ -97,26 +98,52 @@ def role(data, name):
     return data["colors"][name]["dark"]["color"]
 
 
-def shell_colors(data):
-    text = role(data, "on_surface")
+# Cuánto se colorea la shell. Mezclas con primary_container (PC) y on_primary_container (OPC) del estilo.
+#   island/high: mezcla del fondo hacia PC · edge: borde (alfa del acento; None = del texto)
+#   surf: alfas de surface, surfaceHover, surfaceActive y track · text/white/gray/sub: mezcla hacia OPC o el acento
+TINTS = {
+    "neutral": dict(island=0, high=0, edge=0.10, surf=(0.06, 0.08, 0.16, 0.14), text=0, white=None, gray=0, sub=0, accent_surf=False),
+    "tinted": dict(island=0.30, high=0.35, edge=0.16, surf=(0.06, 0.08, 0.16, 0.14), text=0.5, white=0.4, gray=0.3, sub=0.2, accent_surf=False),
+    "vivid": dict(island=0.60, high=0.70, edge=0.35, surf=(0.10, 0.14, 0.24, 0.20), text=1, white=0.7, gray=0.6, sub=0.4, accent_surf=True),
+}
+
+
+def shell_colors(data, tint="neutral"):
+    t = TINTS.get(tint, TINTS["neutral"])
+    pc, opc, prim = role(data, "primary_container"), role(data, "on_primary_container"), role(data, "primary")
+    low, high = role(data, "surface_container_lowest"), role(data, "surface_container_highest")
+    white = mix("#ffffff", opc, t["white"]) if t["white"] else None
     accent = tone(data, "primary", 50)
-    if contrast_with_white(accent) < 3.0:
+    if contrast(white or "#ffffff", accent) < 3.0:
         accent = tone(data, "primary", 40)
-    return {
+    # El fondo de la pill no puede comerse al acento: se baja la mezcla hasta 3:1
+    k = 1.0
+    while k > 0 and contrast(accent, mix(low, pc, t["island"] * k)) < 3.0:
+        k -= 0.05 / max(t["island"], 0.05)
+    k = max(k, 0)
+    island = mix(low, pc, t["island"] * k)
+    text = mix(role(data, "on_surface"), opc, t["text"])
+    # Neutro: translúcidos del texto; Teñido: de OPC; Intenso: del acento de la paleta
+    base = prim if t["accent_surf"] else (text if tint == "neutral" else opc)
+    a = t["surf"]
+    out = {
         "primary": accent,
-        "island": role(data, "surface_container_lowest"),
-        "surfaceHigh": role(data, "surface_container_highest"),
+        "island": island,
+        "surfaceHigh": mix(high, pc, t["high"] * k),
         "text": text,
-        "gray": role(data, "on_surface_variant"),
-        "subtext": role(data, "outline"),
-        "placeholder": role(data, "outline"),
+        "gray": mix(role(data, "on_surface_variant"), opc, t["gray"]),
+        "subtext": mix(role(data, "outline"), prim, t["sub"]),
+        "placeholder": mix(role(data, "outline"), prim, t["sub"]),
         "grayDark": tone(data, "neutral_variant", 50),
-        "islandEdge": alpha(text, 0.10),
-        "surface": alpha(text, 0.06),
-        "surfaceHover": alpha(text, 0.08),
-        "surfaceActive": alpha(text, 0.16),
-        "track": alpha(text, 0.14),
+        "islandEdge": alpha(text if tint == "neutral" else prim, t["edge"]),
+        "surface": alpha(base, a[0]),
+        "surfaceHover": alpha(base, a[1]),
+        "surfaceActive": alpha(base, a[2]),
+        "track": alpha(base, a[3]),
     }
+    if white:
+        out["white"] = white
+    return out
 
 
 # ── Apps ──
@@ -128,7 +155,7 @@ def write(path, text):
     os.replace(tmp, path)
 
 
-def hypr_files(data):
+def hypr_files(data, shell):
     d = os.path.join(CONFIG, "hypr")
     if not os.path.isdir(d):
         return
@@ -146,19 +173,19 @@ def hypr_files(data):
     write(
         os.path.join(d, "hyprlock-colors.conf"),
         "# Generado por scripts/theme.py (colores del wallpaper). No se commitea.\n"
-        f"$surface = {rgba(role(data, 'surface_container_lowest'))}\n"
+        f"$surface = {rgba(shell.get('island') or role(data, 'surface_container_lowest'))}\n"
         f"$accent = {rgba(role(data, 'primary'))}\n"
         f"$text = {rgba(role(data, 'on_surface'))}\n"
         f"$error = {rgba(role(data, 'error'))}\n",
     )
 
 
-def kitty_file(data):
+def kitty_file(data, shell):
     d = os.path.join(CONFIG, "kitty")
     if not os.path.isdir(d):
         return
-    bg = role(data, "surface_container_lowest")
-    fg = role(data, "on_surface")
+    bg = shell.get("island") or role(data, "surface_container_lowest")
+    fg = shell.get("text") or role(data, "on_surface")
     prim = role(data, "primary")
     # Los 16 colores: los de siempre (rojo, verde, amarillo, azul…) mezclados un poco con el acento del wallpaper
     fixed = ["#ff5370", "#00e676", "#ffb300", "#5c9cff", "#d580ff", "#1de9b6"]
@@ -175,7 +202,7 @@ def kitty_file(data):
         f"url_color {prim}",
         f"active_border_color {prim}",
         f"inactive_border_color {role(data, 'outline_variant')}",
-        f"color0 {role(data, 'surface_container_high')}",
+        f"color0 {mix(bg, role(data, 'surface_container_high'), 0.5)}",
         f"color8 {role(data, 'outline')}",
         f"color7 {role(data, 'on_surface_variant')}",
         f"color15 {fg}",
@@ -187,7 +214,7 @@ def kitty_file(data):
     subprocess.run(["pkill", "-USR1", "-x", "kitty"], capture_output=True)
 
 
-def gtk_files(data):
+def gtk_files(data, shell):
     r = lambda n: role(data, n)
     css = (
         "/* Generado por scripts/theme.py (colores del wallpaper). Pide adw-gtk3: system/adw-gtk3.sh */\n"
@@ -228,7 +255,8 @@ def gtk_files(data):
 def apply(args):
     data = generate(args)
     # Sin wallpaper (colores apagados) la shell usa sus colores fijos; solo las apps se regeneran
-    shell = shell_colors(data) if "image" in args else {}
+    tint = args.get("tint", "neutral")
+    shell = shell_colors(data, tint) if "image" in args else {}
     sources = source_colors(args["image"]) if "image" in args else []
     write(
         os.path.join(CACHE, "theme.json"),
@@ -238,13 +266,14 @@ def apply(args):
                 "image": args.get("image", ""),
                 "scheme": args.get("scheme", "scheme-tonal-spot"),
                 "index": int(args.get("index", 0)),
+                "tint": tint,
                 "sources": sources,
             }
         ),
     )
     for fn in (hypr_files, kitty_file, gtk_files):
         try:
-            fn(data)
+            fn(data, shell)
         except OSError:
             pass
     print(json.dumps({"ok": True, "sources": sources}))

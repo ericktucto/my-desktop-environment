@@ -60,7 +60,7 @@ Singleton {
     property color track:         dyn.track ?? Qt.rgba(1, 1, 1, 0.14)   // parte inactiva del Slider
 
     // ===== Neutros =====
-    readonly property color white:  "#ffffff"
+    property color white:  dyn.white ?? "#ffffff"      // con colores Teñido o Intenso lleva un toque del tono
     property color gray:   dyn.gray ?? "#b4bcd0"
     property color grayDark: dyn.grayDark ?? "#6b7394"
     readonly property color black:  "#0a0a0f"
@@ -94,5 +94,6 @@ Singleton {
     Fade on track {}
     Fade on gray {}
     Fade on grayDark {}
+    Fade on white {}
     Fade on primary {}
 }

@@ -10,11 +10,50 @@ Item {
     readonly property var store: T.ThemeStore
     readonly property bool usable: store.available && store.dynamic
 
-    implicitHeight: App.Config.wallpaperPicker.themeRow
+    implicitHeight: App.Config.wallpaperPicker.themeRow + App.Config.wallpaperPicker.tintRow
+
+    // Pill de una opción (estilo o nivel de color)
+    component ChoicePill: Rectangle {
+        id: pill
+        property string label
+        property bool active: false
+        signal picked
+
+        height: 28
+        width: txt.implicitWidth + 24
+        radius: 14
+        color: active ? App.Theme.primary : (pm.containsMouse && root.store.dynamic ? App.Theme.surfaceActive : App.Theme.surface)
+
+        Text {
+            id: txt
+            anchors.centerIn: parent
+            text: pill.label
+            color: App.Theme.white
+            font.family: App.Config.fonts.text
+            font.pixelSize: App.Config.fontSize.sm
+            font.weight: pill.active ? Font.DemiBold : Font.Medium
+        }
+        MouseArea {
+            id: pm
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: root.store.dynamic
+            cursorShape: Qt.PointingHandCursor
+            onClicked: pill.picked()
+        }
+    }
+
+    // Alto de la primera fila (switch, estilos y colores fuente)
+    Item {
+        id: topRow
+        anchors.top: parent.top
+        width: 1
+        height: App.Config.wallpaperPicker.themeRow
+    }
 
     Row {
         id: left
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenter: topRow.verticalCenter
         spacing: 10
 
         Text {
@@ -41,46 +80,25 @@ Item {
         id: schemes
         anchors.left: left.right
         anchors.leftMargin: 20
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenter: topRow.verticalCenter
         spacing: 6
         visible: root.store.available && root.store.message === ""
         opacity: root.store.dynamic ? 1 : 0.35
 
         Repeater {
             model: App.Config.theme.schemes
-            delegate: Rectangle {
-                id: pill
+            delegate: ChoicePill {
                 required property var modelData
-                readonly property bool active: root.store.scheme === modelData.id
-                height: 28
-                width: label.implicitWidth + 24
-                radius: 14
-                color: active ? App.Theme.primary : (pm.containsMouse && root.store.dynamic ? App.Theme.surfaceActive : App.Theme.surface)
-
-                Text {
-                    id: label
-                    anchors.centerIn: parent
-                    text: pill.modelData.label
-                    color: App.Theme.white
-                    font.family: App.Config.fonts.text
-                    font.pixelSize: App.Config.fontSize.sm
-                    font.weight: pill.active ? Font.DemiBold : Font.Medium
-                }
-                MouseArea {
-                    id: pm
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: root.store.dynamic
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.store.setScheme(pill.modelData.id)
-                }
+                label: modelData.label
+                active: root.store.scheme === modelData.id
+                onPicked: root.store.setScheme(modelData.id)
             }
         }
     }
     Text {
         anchors.left: left.right
         anchors.leftMargin: 20
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenter: topRow.verticalCenter
         visible: !schemes.visible
         text: root.store.message !== "" ? root.store.message : "Instala matugen para usar los colores del wallpaper"
         color: App.Theme.amber
@@ -91,7 +109,7 @@ Item {
     // Colores que matugen encuentra en el wallpaper: el elegido manda
     Row {
         anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenter: topRow.verticalCenter
         spacing: 8
         opacity: root.usable ? (root.store.busy ? 0.5 : 1) : 0.35
 
@@ -114,6 +132,34 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.store.setSource(chip.index)
                 }
+            }
+        }
+    }
+
+    // Cuánto se colorea la shell con la paleta del wallpaper
+    Row {
+        anchors.top: topRow.bottom
+        anchors.left: parent.left
+        height: App.Config.wallpaperPicker.tintRow
+        spacing: 10
+        opacity: root.store.dynamic ? 1 : 0.35
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Colorear"
+            color: App.Theme.white
+            font.family: App.Config.fonts.text
+            font.pixelSize: App.Config.fontSize.md
+            font.weight: Font.DemiBold
+        }
+        Repeater {
+            model: App.Config.theme.tints
+            delegate: ChoicePill {
+                required property var modelData
+                anchors.verticalCenter: parent.verticalCenter
+                label: modelData.label
+                active: root.store.tint === modelData.id
+                onPicked: root.store.setTint(modelData.id)
             }
         }
     }

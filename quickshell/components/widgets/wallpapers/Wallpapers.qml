@@ -57,7 +57,7 @@ Item {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        height: App.Config.wallpaperPicker.themeRow
+        height: App.Config.wallpaperPicker.themeRow + App.Config.wallpaperPicker.tintRow
     }
 
     // Grid de wallpapers

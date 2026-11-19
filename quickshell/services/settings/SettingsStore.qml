@@ -76,6 +76,7 @@ Singleton {
         property JsonObject theme: JsonObject {
             property bool dynamic: true                     // colores según el wallpaper
             property string scheme: "scheme-tonal-spot"
+            property string tint: "tinted"                  // cuánto se colorea la shell: neutral | tinted | vivid
             property var sources: ({})                      // ruta del wallpaper → color fuente elegido (0 a 3)
         }
         property JsonObject nightLight: JsonObject {

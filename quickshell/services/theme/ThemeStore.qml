@@ -26,19 +26,23 @@ Singleton {
     readonly property int index: Math.min(3, cfg.sources[image] ?? 0)
     readonly property bool dynamic: cfg.dynamic
     readonly property string scheme: cfg.scheme
+    readonly property string tint: cfg.tint
     // Los colores fuente que matugen encuentra en el wallpaper actual (hasta 4, "#rrggbb")
     property var sources: []
 
     // Lo que describe lo ya aplicado y lo que se quiere (cambian a la vez que el wallpaper o los ajustes)
     property string appliedKey: ""
     property bool pending: false
-    readonly property string wantedKey: dynamic && image !== "" ? image + "|" + scheme + "|" + index : "off"
+    readonly property string wantedKey: dynamic && image !== "" ? image + "|" + scheme + "|" + index + "|" + tint : "off"
 
     function setDynamic(on) {
         cfg.dynamic = on;
     }
     function setScheme(id) {
         cfg.scheme = id;
+    }
+    function setTint(id) {
+        cfg.tint = id;
     }
     // El color fuente se recuerda por wallpaper (se reasigna el objeto entero para que se guarde)
     function setSource(i) {
@@ -100,6 +104,9 @@ Singleton {
         function onSourcesChanged() {
             store.check();
         }
+        function onTintChanged() {
+            store.check();
+        }
     }
 
     // ── Generar ──
@@ -114,7 +121,7 @@ Singleton {
             return;
         runningKey = wantedKey;
         busy = true;
-        const cmd = ["python3", script, "apply", "--scheme", scheme];
+        const cmd = ["python3", script, "apply", "--scheme", scheme, "--tint", tint];
         if (dynamic && image !== "")
             cmd.push("--image", image, "--index", String(index));
         else
@@ -179,7 +186,7 @@ Singleton {
     function readApplied() {
         try {
             lastFile = JSON.parse(applied.text());
-            appliedKey = lastFile.image ? lastFile.image + "|" + lastFile.scheme + "|" + lastFile.index : "off";
+            appliedKey = lastFile.image ? lastFile.image + "|" + lastFile.scheme + "|" + lastFile.index + "|" + (lastFile.tint ?? "neutral") : "off";
         } catch (err) {
             lastFile = null;
             appliedKey = "";
@@ -187,7 +194,7 @@ Singleton {
     }
 
     // ── IPC ──
-    // qs ipc call stixshell@theme regen|toggle   ·   scheme <id>
+    // qs ipc call stixshell@theme regen|toggle   ·   scheme <id>   ·   tint neutral|tinted|vivid
     IpcHandler {
         target: "stixshell@theme"
         function regen(): void {
@@ -198,6 +205,9 @@ Singleton {
         }
         function scheme(id: string): void {
             store.setScheme(id);
+        }
+        function tint(id: string): void {
+            store.setTint(id);
         }
     }
 }

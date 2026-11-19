@@ -24,6 +24,7 @@ Singleton {
         readonly property int radius: 8
         readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers"   // carpeta de wallpapers
         readonly property int themeRow: 44                // fila de colores del wallpaper (arriba del grid)
+        readonly property int tintRow: 36                 // fila «Colorear» (Neutro, Teñido, Intenso)
     }
 
     // ===== Barra =====
@@ -492,12 +493,16 @@ Singleton {
         readonly property int fade: 600                // ms del fundido de colores (igual que anim.wallpaper)
         readonly property int debounce: 150            // ms tras cambiar de wallpaper antes de regenerar
         readonly property string fallback: "2979ff"    // color fuente al apagar (el azul de siempre)
-        readonly property int row: 44                  // alto de la fila del selector de wallpapers
         readonly property var schemes: [
             { id: "scheme-tonal-spot", label: "Suave" },
             { id: "scheme-fidelity", label: "Fiel" },
             { id: "scheme-vibrant", label: "Vibrante" },
             { id: "scheme-expressive", label: "Expresivo" }
+        ]
+        readonly property var tints: [
+            { id: "neutral", label: "Neutro" },
+            { id: "tinted", label: "Teñido" },
+            { id: "vivid", label: "Intenso" }
         ]
     }
 
