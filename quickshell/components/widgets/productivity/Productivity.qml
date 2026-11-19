@@ -1,10 +1,12 @@
 import QtQuick
 import "tasks" as TK
+import "timer" as TI
+import "../../../services/timer/" as TM
 import "../controlcenter/" as CC
 import "../../../services/settings/" as ST
 import "../../../" as App
 
-// Modo "productivity" de la isla central: la barra de pestañas (Calendario · Tareas) y la pestaña activa.
+// Modo "productivity" de la isla central: la barra de pestañas (Calendario · Tareas · Temporizador) y la pestaña activa.
 // La pestaña se recuerda en settings.json (tasks.lastTab), así Super+P abre la última usada.
 // Teclado: Ctrl+Tab alterna las pestañas. El ancho de la isla cambia con la pestaña; el alto es el mismo.
 Item {
@@ -20,16 +22,21 @@ Item {
         {
             id: "tasks",
             label: "Tareas"
+        },
+        {
+            id: "timer",
+            label: "Temporizador"
         }
     ]
-    readonly property string tab: ST.SettingsStore.tasks.lastTab === "tasks" ? "tasks" : "calendar"
+    readonly property var tabIds: tabs.map(t => t.id)
+    readonly property string tab: tabIds.indexOf(ST.SettingsStore.tasks.lastTab) >= 0 ? ST.SettingsStore.tasks.lastTab : "calendar"
     // Ancho que pide la pestaña activa (lo usa la isla)
     readonly property real panelWidth: tab === "tasks" ? App.Config.tasks.panelWidth : App.Config.panel.productivityWidth
 
     implicitHeight: tabBar.height + 12 + calendar.implicitHeight
 
     function setTab(name) {
-        if (name !== "calendar" && name !== "tasks")
+        if (tabIds.indexOf(name) < 0)
             return false;
         if (name === tab)
             return true;
@@ -40,13 +47,15 @@ Item {
     }
 
     function nextTab() {
-        setTab(tab === "calendar" ? "tasks" : "calendar");
+        setTab(tabIds[(tabIds.indexOf(tab) + 1) % tabIds.length]);
     }
 
     function focusTab() {
         if (tab === "tasks") {
             tasksLoader.item?.forceActiveFocus();
             tasksLoader.item?.refreshVisibleLinks();
+        } else if (tab === "timer") {
+            timerLoader.item?.focusInput();
         } else {
             calendar.forceActiveFocus();
         }
@@ -56,12 +65,15 @@ Item {
     function back() {
         if (tab === "tasks")
             return tasksLoader.item?.back() ?? false;
+        if (tab === "timer")
+            return timerLoader.item?.back() ?? false;
         return calendar.back();
     }
 
     function reset() {
         calendar.reset();
         tasksLoader.item?.reset();
+        timerLoader.item?.reset();
     }
 
     onVisibleChanged: {
@@ -74,6 +86,9 @@ Item {
     Keys.onPressed: event => {
         if ((event.modifiers & Qt.ControlModifier) && (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)) {
             nextTab();
+            event.accepted = true;
+        } else if ((event.modifiers & Qt.ControlModifier) && event.key >= Qt.Key_1 && event.key < Qt.Key_1 + tabIds.length) {
+            setTab(tabIds[event.key - Qt.Key_1]);
             event.accepted = true;
         }
     }
@@ -88,7 +103,7 @@ Item {
                 required property var modelData
                 height: 28
                 radius: 14
-                label: modelData.label
+                label: modelData.id === "timer" && TM.TimerStore.running > 0 ? modelData.label + " · " + TM.TimerStore.running : modelData.label
                 selected: root.tab === modelData.id
                 onClicked: root.setTab(modelData.id)
             }
@@ -116,5 +131,20 @@ Item {
         }
         onLoaded: if (root.tab === "tasks" && root.visible)
             item.forceActiveFocus()
+    }
+
+    // La pestaña Temporizador también se crea la primera vez que se abre
+    Loader {
+        id: timerLoader
+        y: tabBar.height + 12
+        width: parent.width
+        height: calendar.implicitHeight
+        active: root.tab === "timer" || item !== null
+        visible: root.tab === "timer"
+        sourceComponent: TI.TimerPanel {
+            onCloseRequested: root.closeRequested()
+        }
+        onLoaded: if (root.tab === "timer" && root.visible)
+            item.focusInput()
     }
 }

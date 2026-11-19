@@ -5,6 +5,8 @@ Rectangle {
     id: root
     property string placeholder: ""
     property alias text: input.text
+    // Mientras se escribe en el campo
+    readonly property bool typing: input.activeFocus
 
     signal pressedKey(var key)
     // Ctrl+letra, Re Pág y Av Pág (key, modifiers); pressedKey sigue siendo solo Enter y flechas

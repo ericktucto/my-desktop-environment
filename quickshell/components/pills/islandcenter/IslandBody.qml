@@ -16,6 +16,7 @@ import "../../../services/network" as NTS
 import "../../../services/session" as SS
 import "../../../services/settings" as SET
 import "../../../services/tasks" as TS
+import "../../../services/timer" as TMS
 
 Rectangle {
     anchors.fill: parent
@@ -210,6 +211,16 @@ Rectangle {
                 root.current = 'productivity';
                 if (name === "calendar")
                     CAL.CalendarStore.opened();
+                root.open();
+            }
+        }
+        // IPC stixshell@timer open: la pestaña Temporizador (o Cronómetro)
+        Connections {
+            target: TMS.TimerStore
+            function onOpenRequested(tab) {
+                if (!productivity.setTab(tab))
+                    return;
+                root.current = 'productivity';
                 root.open();
             }
         }
