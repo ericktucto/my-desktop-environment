@@ -60,6 +60,7 @@ Singleton {
     // ===== Red: Wi-Fi y VPN (vista del centro de control, services/network) =====
     readonly property QtObject network: QtObject {
         readonly property int rowHeight: 52
+        readonly property int ring: 110              // anillo de señal del panel de la pill
         readonly property int messageTime: 3000      // "Contraseña incorrecta", "No se pudo conectar la VPN"
         readonly property int refreshDebounce: 400   // ms tras un evento de nmcli monitor antes de releer las VPN
         // Interfaces virtuales (Docker y similares): no se muestran
@@ -152,6 +153,7 @@ Singleton {
         readonly property int clipboardHeight: 520
         readonly property int recorderWidth: 460
         readonly property int productivityWidth: 680
+        readonly property int networkWidth: 440
     }
 
     // ===== Fuentes =====
