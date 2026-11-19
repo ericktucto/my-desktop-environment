@@ -14,7 +14,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 ### Productividad: tareas, temporizador y cronómetro
 El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la barra de pestañas **Calendario · Tareas · Temporizador · Cronómetro** (`Ctrl+Tab` recorre, `Ctrl+1…4` va directo).
 - **Calendario:** vistas Mes, Semana, 3 días y Día, eventos de Google en solo lectura, feriados de Perú, crear evento con el formulario de Google y el próximo evento en el reloj.
-- **Temporizador y cronómetro:** varios temporizadores a la vez con alarma (sonido y notificación crítica con +1, +5 y Detener), cronómetro con vueltas, pill en la barra, `tm:` en el launcher, Pomodoro (ciclos y avisos) y el foco por tarea (detalle, fila y Standup).
+- **Temporizador y cronómetro:** varios temporizadores a la vez con alarma (sonido y notificación crítica con +1, +5 y Detener), cronómetro con vueltas, pill en la barra que se expande como la de música, `tm:` en el launcher, Pomodoro (ciclos y avisos) y el foco por tarea (detalle, fila y Standup).
 - **Tareas (completas):** vistas Hoy, Próximos, Bandeja, Tablero (por estado) y Hechas, proyectos y etiquetas, prioridades, estados, fechas, subtareas, notas en Markdown, links, deshacer, búsqueda y teclas estilo vim; captura en lenguaje natural (fila Añadir tarea, quick add `Super+Shift+T`, `td:` en el launcher y `scripts/task`), recordatorios con aviso, repetición, Tablero, tareas en el calendario y el reloj, resumen de la mañana, Standup, plantillas, archivo automático y estado de GitHub.
 
 **Tareas: pendientes**
