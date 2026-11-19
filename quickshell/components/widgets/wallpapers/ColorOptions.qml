@@ -4,9 +4,10 @@ import "../../../services/theme/" as T
 import "../../../" as App
 
 // Encabezado del selector de wallpapers: cómo se colorea la shell. Tres modos:
-//   Del wallpaper:        toda la shell toma la paleta de la imagen (intensidad, estilo y color base).
-//   Acento del wallpaper: la barra queda como el sistema; solo el acento sale de la imagen (color base).
-//   Acento propio:        la barra queda como el sistema; el acento lo eliges tú (muestras).
+//   Del wallpaper:        el acento y el borde fino salen de la paleta de la imagen (borde, estilo y color base).
+//   Acento del wallpaper: solo el acento sale de la imagen (color base).
+//   Acento propio:        el acento lo eliges tú (muestras).
+// Los fondos son siempre los del sistema.
 // Dos filas de alto fijo (los modos y sus opciones), así la isla no cambia de alto al cambiar de modo.
 Item {
     id: root
@@ -127,7 +128,7 @@ Item {
             enabled: root.usable
 
             Label {
-                text: "Intensidad"
+                text: "Borde"
             }
             Repeater {
                 model: root.cfg.tints

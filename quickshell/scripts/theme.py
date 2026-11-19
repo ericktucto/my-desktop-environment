@@ -3,9 +3,10 @@
 este script calcula con ella los colores de la shell y escribe los de las apps.
 
   theme.py apply --mode scheme --image <ruta> [--scheme scheme-tonal-spot] [--index 0] [--tint tinted|vivid]
-      Toda la shell y las apps toman la paleta del wallpaper.
+      El acento y el borde fino salen de la paleta del wallpaper; los fondos quedan con los colores fijos del sistema.
+      `--tint tinted|vivid` es qué tan marcado es el borde (Sutil o Intensa).
   theme.py apply --mode accent --image <ruta> [--index 0]
-      Solo el acento sale del wallpaper; la shell y las apps quedan con los colores fijos del sistema.
+      Solo el acento (y su borde) sale del wallpaper, sin elegir estilo.
   theme.py apply --mode custom --color rrggbb
       Solo el acento, el color elegido (sin matugen).
   theme.py apply --color 2979ff [--scheme …]          (forma antigua, sin --mode: matugen con ese color)
@@ -126,52 +127,17 @@ def role(data, name):
     return data["colors"][name]["dark"]["color"]
 
 
-# Cuánto se colorea la shell. Mezclas con primary_container (PC) y on_primary_container (OPC) del estilo.
-#   island/high: mezcla del fondo hacia PC · edge: borde (alfa del acento; None = del texto)
-#   surf: alfas de surface, surfaceHover, surfaceActive y track · text/white/gray/sub: mezcla hacia OPC o el acento
-TINTS = {
-    "neutral": dict(island=0, high=0, edge=0.10, surf=(0.06, 0.08, 0.16, 0.14), text=0, white=None, gray=0, sub=0, accent_surf=False),
-    "tinted": dict(island=0.30, high=0.35, edge=0.16, surf=(0.06, 0.08, 0.16, 0.14), text=0.5, white=0.4, gray=0.3, sub=0.2, accent_surf=False),
-    "vivid": dict(island=0.60, high=0.70, edge=0.35, surf=(0.10, 0.14, 0.24, 0.20), text=1, white=0.7, gray=0.6, sub=0.4, accent_surf=True),
-}
+def scheme_accent(pal):
+    """El acento de una paleta de matugen: el tono 50 (el 40 si el blanco no contrasta 3:1)."""
+    accent = tone(pal, "primary", 50)
+    if contrast("#ffffff", accent) < 3.0:
+        accent = tone(pal, "primary", 40)
+    return accent
 
 
-def shell_colors(data, tint="neutral"):
-    t = TINTS.get(tint, TINTS["neutral"])
-    pc, opc, prim = role(data, "primary_container"), role(data, "on_primary_container"), role(data, "primary")
-    low, high = role(data, "surface_container_lowest"), role(data, "surface_container_highest")
-    white = mix("#ffffff", opc, t["white"]) if t["white"] else None
-    accent = tone(data, "primary", 50)
-    if contrast(white or "#ffffff", accent) < 3.0:
-        accent = tone(data, "primary", 40)
-    # El fondo de la pill no puede comerse al acento: se baja la mezcla hasta 3:1
-    k = 1.0
-    while k > 0 and contrast(accent, mix(low, pc, t["island"] * k)) < 3.0:
-        k -= 0.05 / max(t["island"], 0.05)
-    k = max(k, 0)
-    island = mix(low, pc, t["island"] * k)
-    text = mix(role(data, "on_surface"), opc, t["text"])
-    # Neutro: translúcidos del texto; Teñido: de OPC; Intenso: del acento de la paleta
-    base = prim if t["accent_surf"] else (text if tint == "neutral" else opc)
-    a = t["surf"]
-    out = {
-        "primary": accent,
-        "island": island,
-        "surfaceHigh": mix(high, pc, t["high"] * k),
-        "text": text,
-        "gray": mix(role(data, "on_surface_variant"), opc, t["gray"]),
-        "subtext": mix(role(data, "outline"), prim, t["sub"]),
-        "placeholder": mix(role(data, "outline"), prim, t["sub"]),
-        "grayDark": tone(data, "neutral_variant", 50),
-        "islandEdge": alpha(text if tint == "neutral" else prim, t["edge"]),
-        "surface": alpha(base, a[0]),
-        "surfaceHover": alpha(base, a[1]),
-        "surfaceActive": alpha(base, a[2]),
-        "track": alpha(base, a[3]),
-    }
-    if white:
-        out["white"] = white
-    return out
+# Qué tan marcado es el borde fino de las islas (la opacidad del color elegido)
+BORDER_ALPHA = {"tinted": 0.35, "vivid": 0.80}
+ACCENT_BORDER_ALPHA = 0.40
 
 
 # ── Apps ──
@@ -293,40 +259,40 @@ def hex6(text):
 
 
 def apply(args):
-    mode = args.get("mode", "")
+    mode = args.get("mode") or ("scheme" if "image" in args else "custom")
     tint = args.get("tint", "tinted")
-    if tint not in ("tinted", "vivid"):
+    if tint not in BORDER_ALPHA:
         tint = "tinted"
     color = ""
     sources = []
     if mode == "custom":
         # Sin matugen: el acento es exactamente el color elegido
         color = hex6(args.get("color", ""))
-        data = accent_data(color)
-        shell = {"primary": color, "_accentOnly": True}
+        accent, border = color, alpha(color, ACCENT_BORDER_ALPHA)
     elif mode == "accent":
         if "image" not in args:
             fail("falta --image")
         pal = generate(dict(args, scheme="scheme-tonal-spot"))
-        color = tone(pal, "primary", 50)
-        if contrast("#ffffff", color) < 3.0:
-            color = tone(pal, "primary", 40)
-        data = accent_data(color)
-        shell = {"primary": color, "_accentOnly": True}
+        color = accent = scheme_accent(pal)
+        border = alpha(accent, ACCENT_BORDER_ALPHA)
         sources = source_colors(args["image"])
     else:
-        # Forma antigua: sin wallpaper (--color) la shell usa sus colores fijos y solo las apps se regeneran
-        data = generate(args)
-        shell = shell_colors(data, tint) if "image" in args else {}
-        sources = source_colors(args["image"]) if "image" in args else []
-        mode = "scheme" if "image" in args else "legacy"
-    # `_accentOnly` es para las apps; la shell solo lee lo suyo
-    saved = {k: v for k, v in shell.items() if not k.startswith("_")}
+        # Del wallpaper: el acento y el borde salen de la paleta; los fondos son los del sistema
+        if "image" not in args:
+            fail("falta --image")
+        pal = generate(args)
+        accent = scheme_accent(pal)
+        border = alpha(role(pal, "primary"), BORDER_ALPHA[tint])
+        sources = source_colors(args["image"])
+        mode = "scheme"
+    # Las apps usan siempre los colores del sistema con el acento (la shell solo lee `primary` y `border`)
+    data = accent_data(accent)
+    shell = {"primary": accent, "border": border}
     write(
         os.path.join(CACHE, "theme.json"),
         json.dumps(
             {
-                "shell": saved,
+                "shell": shell,
                 "mode": mode,
                 "color": color,
                 "image": args.get("image", ""),
@@ -337,9 +303,10 @@ def apply(args):
             }
         ),
     )
+    app_shell = dict(shell, _accentOnly=True)
     for fn in (hypr_files, kitty_file, gtk_files):
         try:
-            fn(data, shell)
+            fn(data, app_shell)
         except OSError:
             pass
     print(json.dumps({"ok": True, "sources": sources, "color": color}))

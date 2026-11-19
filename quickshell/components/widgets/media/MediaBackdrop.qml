@@ -13,6 +13,8 @@ Item {
     property real blur: App.Config.media.blur
     property int blurMax: App.Config.media.blurMax
     property real dim: App.Config.media.dim
+    // Cuánto del color llega al degradado (1 = todo; el reproductor lo usa entero, los demás paneles apenas)
+    property real tint: 1.0
 
     Item {
         id: bgMask
@@ -42,7 +44,7 @@ Item {
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: Qt.darker(root.accent, 3)
+                    color: Qt.tint(App.Theme.island, Qt.alpha(Qt.darker(root.accent, 3), root.tint))
                 }
                 GradientStop {
                     position: 1

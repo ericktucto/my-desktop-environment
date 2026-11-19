@@ -114,6 +114,7 @@ Item {
         anchors.fill: parent
         anchors.margins: -root.cfg.padding
         accent: root.accent
+        tint: 0.18
         islandRadius: root.islandRadius
     }
 
