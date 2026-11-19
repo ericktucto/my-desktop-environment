@@ -112,7 +112,11 @@ Singleton {
     }
 
     onByNameChanged: syncOrder(false)
-    onCurrentNameChanged: syncOrder(true)
+    onCurrentNameChanged: {
+        syncOrder(true);
+        if (panelOpen)
+            refreshLive();
+    }
 
     readonly property bool online: current !== null || wiredConnected
 
@@ -524,7 +528,11 @@ Singleton {
     function startShare() {
         if (!details || details.kind !== "wifi")
             return;
-        run(["python3", netScript, "share", details.uuid], function (out) {
+        shareFor(details.uuid);
+    }
+
+    function shareFor(uuid) {
+        run(["python3", netScript, "share", uuid], function (out) {
             let r = null;
             try {
                 r = JSON.parse(out);
@@ -695,7 +703,12 @@ Singleton {
     Timer {
         id: monitorTimer
         interval: store.cfg.refreshDebounce
-        onTriggered: store.refreshVpns()
+        onTriggered: {
+            store.refreshVpns();
+            // Los datos en vivo solo se releen con el panel de la pill abierto (sin polling)
+            if (store.panelOpen)
+                store.refreshLive();
+        }
     }
     Timer {
         id: monitorRestart
@@ -877,6 +890,108 @@ Singleton {
             if (owner === "vpn")
                 store.endReading("");
         }
+    }
+
+    // ── Panel de la pill (se expande bajo el ícono) ──
+    // Con `panelOpen` en false no se lee nada: la señal, el estado y la VPN ya son reactivos, y la IP y demás
+    // se piden una vez al abrir y con cada evento de `nmcli monitor`. Nada se consulta cada tanto.
+    property bool panelOpen: false
+    // La ficha elegida ("wifi" o "wired"); vacío = la principal (el cable, si está conectado)
+    property string viewKind: ""
+    readonly property string shownKind: {
+        if (viewKind === "wired" && wired.length > 0)
+            return "wired";
+        if (viewKind === "wifi" && wifiAvailable)
+            return "wifi";
+        return wiredConnected || !wifiAvailable ? "wired" : "wifi";
+    }
+    // La conexión cableada que se ve (la conectada, o la primera con enlace)
+    readonly property var shownWired: wired.find(d => d.connected) ?? wired[0] ?? null
+    // { kind: "wifi"|"wired", device, ip, gateway, dns, mac } de lo que se ve, o null
+    property var live: null
+    property int liveSerial: 0
+
+    onPanelOpenChanged: {
+        if (panelOpen) {
+            refreshLive();
+        } else {
+            live = null;
+            closeShare();
+        }
+    }
+    onShownKindChanged: {
+        live = null;
+        if (panelOpen)
+            refreshLive();
+    }
+
+    function refreshLive() {
+        if (!panelOpen)
+            return;
+        const kind = shownKind;
+        const args = kind === "wifi" ? (current ? ["--ssid", current.name] : null) : (shownWired ? ["--dev", shownWired.name] : null);
+        if (!args) {
+            live = null;
+            return;
+        }
+        const serial = ++liveSerial;
+        run(["python3", netScript, "profile"].concat(args), function (out) {
+            // Una respuesta vieja (cambió la ficha o se cerró el panel) se descarta
+            if (serial !== store.liveSerial || !store.panelOpen)
+                return;
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            store.live = r && r.ok && r.found && r.live ? {
+                kind: kind,
+                device: r.live.device,
+                ip: r.live.ip,
+                gateway: r.live.gateway,
+                dns: r.live.dns,
+                mac: r.live.mac
+            } : null;
+        });
+    }
+
+    // Apaga y vuelve a conectar el dispositivo que se ve (NetworkManager vuelve a la red guardada)
+    function reconnect() {
+        const dev = shownKind === "wifi" ? wifi : shownWired;
+        if (!dev)
+            return;
+        say("Reconectando…");
+        run(["sh", "-c", 'nmcli device disconnect "$1"; sleep 1; nmcli device connect "$1"', "_", dev.name], function (out, code) {
+            store.say(code === 0 ? "Reconectado" : "No se pudo reconectar");
+            store.refreshLive();
+        });
+    }
+
+    // El QR de la red Wi-Fi actual (el resultado queda en `share`, como en la vista de red)
+    function shareCurrent() {
+        if (!current)
+            return;
+        run(["python3", netScript, "profile", "--ssid", current.name], function (out) {
+            let r = null;
+            try {
+                r = JSON.parse(out);
+            } catch (err) {
+                // sin respuesta
+            }
+            if (r && r.ok && r.found)
+                store.shareFor(r.uuid);
+            else
+                store.say("Esta red no tiene un perfil guardado");
+        });
+    }
+
+    function copy(text) {
+        if (text === "")
+            return;
+        run(["wl-copy"], function () {
+            store.say("Copiado");
+        }, text);
     }
 
     // ── Ejecutar un comando (con texto por stdin, si hace falta) → done(salida, código, errores) ──
