@@ -8,8 +8,8 @@ local autostart = require("autostart")
 -- Variables
 local mainMod = "SUPER"
 
-local CURSOR_THEME="Future-cursors"
-local CURSOR_SIZE="24"
+local CURSOR_THEME = "Future-cursors"
+local CURSOR_SIZE = "24"
 hl.env("XCURSOR_THEME", CURSOR_THEME)
 hl.env("XCURSOR_SIZE", CURSOR_SIZE)
 hl.env("HYPRCURSOR_THEME", CURSOR_THEME)
@@ -23,6 +23,16 @@ hl.monitor({
     position = "0x0",
     scale = 1,
 })
+
+-- Monitor espejado
+hl.monitor({
+    output = "HDMI-A-1",
+    mode = "preferred",
+    position = "auto",
+    scale = 1,
+    mirror = "eDP-1",
+})
+
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
@@ -71,6 +81,13 @@ hl.config({
     },
 })
 
+-- Colores del wallpaper: scripts/theme.py (de la shell) escribe colors.lua (fuera de git) y los aplica en caliente.
+-- Sin ese archivo quedan los bordes por defecto de Hyprland.
+local ok, colors = pcall(require, "colors")
+if ok and type(colors) == "table" then
+    hl.config({ general = { col = { active_border = colors.active, inactive_border = colors.inactive } } })
+end
+
 -- ============================================
 -- KEYBINDS
 -- ============================================
@@ -81,13 +98,6 @@ hl.window_rule({ "maximize", "class:.*" })
 -- ============================================
 -- MODO TABLET: ocultar/mostrar apps
 -- ============================================
-
--- Colores del wallpaper: scripts/theme.py (de la shell) escribe colors.lua (fuera de git) y los aplica en caliente.
--- Sin ese archivo quedan los bordes por defecto de Hyprland.
-local ok, colors = pcall(require, "colors")
-if ok and type(colors) == "table" then
-    hl.config({ general = { col = { active_border = colors.active, inactive_border = colors.inactive } } })
-end
 
 -- ============================================
 -- CAMBIAR ENTRE VENTANAS
