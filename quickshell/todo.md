@@ -56,6 +56,7 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 - [ ] **Colores del wallpaper, lo que quedó fuera:** modo claro de la shell, Firefox (pywalfox), Neovim y apps Qt (`qt6ct`); y probar hyprlock con los colores nuevos.
 - [ ] **Widgets de escritorio:** reloj grande sobre el wallpaper.
 - [ ] **Huella digital en la pantalla de bloqueo:** solo si llegas a tener lector (esta laptop no lo tiene); sería con `Quickshell.Services.Pam`.
+- [ ] **Panel de Wi-Fi, lo que quedó fuera:** velocidad ↓ ↑ (`/proc/net/dev`), latencia, canal, dBm y velocidad del enlace (`iw`). Necesitan polling: solo con el panel abierto. El último handshake y los bytes de la VPN piden `wg show` (root).
 - [ ] **Visualizador de audio** (cava) en la isla o en el fondo.
 - [ ] **Calendario, ideas que quedaron fuera:** vista Agenda (próximos 14 días), números de semana, horario laboral sombreado, gesto horizontal del touchpad para cambiar de período, cumpleaños de contactos con 🎂, "abrir Google en este día" y elegir los calendarios dentro del panel.
 
