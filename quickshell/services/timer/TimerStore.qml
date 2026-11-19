@@ -352,6 +352,8 @@ Singleton {
         });
         ringSince = Date.now();
         quiet = false;
+        // Lo que suena es lo más urgente: el panel de la pill lo muestra
+        shownKey = "";
         ids.forEach(id => notify(get(id)));
         save();
     }

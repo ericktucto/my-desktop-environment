@@ -1,22 +1,59 @@
 import QtQuick
 import "../base" as Base
+import "../widgets/timer/" as TW
 import "../../services/timer/" as TM
 import "../../services/timer/Duration.js" as Duration
 import "../../" as App
 
-// Temporizador y cronómetro a la derecha del reloj: "⏳ 4:59 +1  ⏱ 12:30".
-// Clic en un lado abre su pestaña; clic derecho lo pausa o reanuda. Sonando, late en rojo y el clic detiene la alarma.
+// Temporizador y cronómetro a la derecha del reloj: "⏳ 4:59 +1  ⏱ 12:30". Un clic en un lado lo expande
+// (pasa al centro, como la música) con el panel de ese lado; clic derecho pausa o reanuda. Sonando, late en
+// rojo y el clic detiene la alarma.
 Base.Island {
     id: root
 
+    readonly property var cfg: App.Config.media
     readonly property var store: TM.TimerStore
     readonly property var next: store.next
     readonly property bool ringing: next !== null && next.state === "ringing"
     // Cuántos más hay además del que se ve
     readonly property int more: Math.max(0, store.timers.filter(t => t.state === "running" || t.state === "ringing").length - 1)
 
-    visible: next !== null || store.swActive
+    // Mismo tamaño que el reproductor (con las fichas, si hay más de uno)
+    expandedWidth: cfg.panelWidth
+    expandedHeight: cfg.panelHeight + (store.timers.length + (store.swActive ? 1 : 0) > 1 ? cfg.chipsHeight : 0)
+    paddingContainer: cfg.padding
+    // El panel toma el foco por su cuenta (teclado)
+    preventFocus: true
     openOnClick: false
+
+    visible: next !== null || store.swActive || expanded
+
+    // Sin nada que mostrar, el panel se cierra solo
+    Connections {
+        target: root.store
+        function onHasItemsChanged() {
+            if (!root.store.hasItems)
+                root.close();
+        }
+        function onTogglePanel() {
+            if (root.expanded) {
+                root.close();
+            } else if (root.store.hasItems) {
+                root.store.show("");
+                root.open();
+            }
+        }
+    }
+
+    // Expandir con la ficha de ese lado
+    function openFor(kind) {
+        if (expanded) {
+            close();
+            return;
+        }
+        store.show(kind === "stopwatch" ? "sw" : (next ? next.id : ""));
+        open();
+    }
 
     // ── Temporizador ──
     Item {
@@ -86,7 +123,7 @@ Base.Island {
                 else if (mouse.button === Qt.RightButton)
                     root.store.pause(root.next.id);
                 else
-                    root.store.openRequested("timer");
+                    root.openFor("timer");
             }
         }
     }
@@ -132,8 +169,14 @@ Base.Island {
                 if (mouse.button === Qt.RightButton)
                     root.store.swToggle();
                 else
-                    root.store.openRequested("stopwatch");
+                    root.openFor("stopwatch");
             }
         }
+    }
+
+    body: TW.TimerMiniPanel {
+        anchors.fill: parent
+        islandRadius: root.radiusExpanded
+        onCloseRequested: root.close()
     }
 }
