@@ -79,6 +79,32 @@ Singleton {
         cfg.sources = s;
     }
 
+    // Gotero: toma un color de la pantalla (hyprpicker) y lo pone de acento propio
+    property bool eyedropping: false
+    function pickColor() {
+        if (eyedropping)
+            return;
+        eyedropping = true;
+        run_dropper.running = true;
+    }
+    Process {
+        id: run_dropper
+        command: ["hyprpicker", "-f", "hex", "-l", "-b", "-q"]
+        stdout: StdioCollector {
+            id: dropOut
+        }
+        onExited: function (code) {
+            store.eyedropping = false;
+            const hex = dropOut.text.trim();
+            if (code === 0 && /^#[0-9a-fA-F]{6}$/.test(hex)) {
+                store.setColor(hex);
+                store.setMode("custom");
+            } else if (code === 127) {
+                store.say("No se pudo usar el gotero (hyprpicker)");
+            }
+        }
+    }
+
     function say(text) {
         message = text;
         messageTimer.restart();
@@ -241,6 +267,10 @@ Singleton {
         }
         function mode(m: string): void {
             store.setMode(m);
+        }
+        // Gotero: toma un color de la pantalla
+        function pick(): void {
+            store.pickColor();
         }
         function color(hex: string): void {
             store.setColor(hex.startsWith("#") ? hex : "#" + hex);

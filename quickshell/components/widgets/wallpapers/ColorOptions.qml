@@ -17,6 +17,9 @@ Item {
     // Los dos primeros modos necesitan matugen
     readonly property bool wallpaperMode: mode !== "custom"
     readonly property bool usable: store.available || !wallpaperMode
+    // El selector completo está abierto (lo muestra Wallpapers en lugar de la cuadrícula)
+    property bool picking: false
+    signal togglePicker
 
     implicitHeight: App.Config.wallpaperPicker.themeRow + App.Config.wallpaperPicker.tintRow
 
@@ -214,8 +217,21 @@ Item {
                     onClicked: root.store.setColor(modelData)
                 }
             }
+            CC.Chip {
+                height: 28
+                radius: 14
+                label: "+"
+                selected: root.picking
+                onClicked: root.togglePicker()
+            }
+            CC.Chip {
+                height: 28
+                radius: 14
+                label: root.store.eyedropping ? "Elige en la pantalla…" : "Gotero"
+                onClicked: root.store.pickColor()
+            }
             Label {
-                leftPadding: 8
+                leftPadding: 4
                 text: root.store.color
                 font.family: App.Config.fonts.mono
                 color: App.Theme.subtext

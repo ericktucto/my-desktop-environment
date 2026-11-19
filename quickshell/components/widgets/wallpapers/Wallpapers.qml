@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell.Io
+import "../../../services/theme/" as T
 import "../../../" as App
 
 Item {
@@ -12,6 +13,17 @@ Item {
 
     // Directorio de wallpapers
     readonly property string wallpapersDir: App.Config.wallpaperPicker.dir
+
+    // El selector completo de color (acento propio) en lugar de la cuadrícula
+    property bool picking: false
+    // Solo tiene sentido con el acento propio
+    Connections {
+        target: T.ThemeStore
+        function onModeChanged() {
+            if (T.ThemeStore.mode !== "custom")
+                root.picking = false;
+        }
+    }
 
     // Lista de archivos de imagen (rutas absolutas)
     property var imageFiles: []
@@ -47,6 +59,7 @@ Item {
 
     // Permite re-escanear manualmente (p. ej. al abrir el selector)
     function scanWallpapers() {
+        picking = false;
         scanner.running = false;
         scanner.running = true;
     }
@@ -54,10 +67,25 @@ Item {
     // Colores: los tres modos y las opciones de cada uno
     ColorOptions {
         id: themeRow
+        picking: root.picking
+        onTogglePicker: root.picking = !root.picking
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         height: App.Config.wallpaperPicker.themeRow + App.Config.wallpaperPicker.tintRow
+    }
+
+    // Selector completo del acento propio (en lugar de la cuadrícula)
+    ColorPicker {
+        visible: root.picking
+        anchors.top: themeRow.bottom
+        anchors.topMargin: 8
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        value: T.ThemeStore.color
+        onPicked: hex => T.ThemeStore.setColor(hex)
+        onDone: root.picking = false
     }
 
     // Grid de wallpapers
@@ -68,6 +96,7 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         flow: GridView.FlowTopToBottom
+        visible: !root.picking
 
         readonly property int spacing: App.Config.wallpaperPicker.spacingCell
         readonly property int imgWidth: App.Config.wallpaperPicker.imgWidth
@@ -85,6 +114,21 @@ Item {
         keyNavigationWraps: false
         highlightFollowsCurrentItem: true
 
+        // 1, 2 y 3 cambian el modo de color; p abre el selector completo (acento propio)
+        Keys.onPressed: event => {
+            if (event.modifiers !== Qt.NoModifier)
+                return;
+            const modes = ["scheme", "accent", "custom"];
+            if (event.key >= Qt.Key_1 && event.key <= Qt.Key_3) {
+                if (event.key === Qt.Key_1 + 2 || T.ThemeStore.available)
+                    T.ThemeStore.setMode(modes[event.key - Qt.Key_1]);
+            } else if (event.key === Qt.Key_P && T.ThemeStore.mode === "custom") {
+                root.picking = !root.picking;
+            } else {
+                return;
+            }
+            event.accepted = true;
+        }
         Keys.onReturnPressed: root.applyWallpaper(root.imageFiles[currentIndex])
         Keys.onEnterPressed: root.applyWallpaper(root.imageFiles[currentIndex])
 
