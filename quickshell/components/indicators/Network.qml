@@ -1,17 +1,50 @@
 import QtQuick
 import "../base" as Base
+import "../widgets/network/" as NW
 import "../../services/network/" as NS
 import "../../" as App
 
 // Red en la barra: intensidad de la señal (o cable) y un candado con la VPN activa. Se oculta con el Wi-Fi
-// apagado y sin cable. Un clic abre la vista de red del centro de control.
+// apagado y sin cable. Un clic la expande, bajo el ícono, con el panel de red (como los satélites): señal, IP,
+// puerta de enlace, DNS y MAC, y los botones. La vista de administración de redes sigue en el centro de control
+// (botón «Abrir redes»). Con la pill plegada no se lee ni se consulta nada.
 Base.Island {
     id: root
 
     readonly property var store: NS.NetworkStore
 
-    visible: store.online || store.enabled
-    openOnClick: false
+    expandedWidth: App.Config.panel.networkWidth
+    expandedHeight: panel.implicitHeight + 2 * paddingContainer
+    paddingContainer: App.Config.media.padding
+    // El panel toma el foco por su cuenta (teclado)
+    preventFocus: true
+    // Esc: cierra primero el QR
+    escapeBack: function () {
+        if (!root.store.share)
+            return false;
+        root.store.closeShare();
+        return true;
+    }
+
+    visible: store.online || store.enabled || expanded
+
+    // Los datos en vivo solo se leen con el panel abierto
+    onOpened: store.panelOpen = true
+    onClosed: {
+        store.panelOpen = false;
+        store.viewKind = "";
+    }
+
+    // Abrir o cerrar el panel desde el IPC
+    Connections {
+        target: root.store
+        function onTogglePanel() {
+            if (root.expanded)
+                root.close();
+            else
+                root.open();
+        }
+    }
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
@@ -29,11 +62,10 @@ Base.Island {
         font.pixelSize: App.Config.fontSize.icon
     }
 
-    // parent: root porque los hijos de Island van a un Row (anchors.fill lo rompe)
-    MouseArea {
-        parent: root
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.store.openPanel()
+    body: NW.NetworkMiniPanel {
+        id: panel
+        width: parent ? parent.width : 0
+        islandRadius: root.radiusExpanded
+        onCloseRequested: root.close()
     }
 }

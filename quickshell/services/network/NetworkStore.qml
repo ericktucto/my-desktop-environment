@@ -22,8 +22,10 @@ Singleton {
     // La vista se abre o se cierra (el diálogo de archivos y el selector de región necesitan la pantalla libre)
     signal openPanel
     signal closePanel
+    // Abrir o cerrar el panel de la pill de Wi-Fi (la pill lo escucha)
+    signal togglePanel
 
-    // qs ipc call stixshell@network open|toggle
+    // qs ipc call stixshell@network open|toggle|expand
     IpcHandler {
         target: "stixshell@network"
         function open(): void {
@@ -31,6 +33,10 @@ Singleton {
         }
         function toggle(): void {
             store.toggle();
+        }
+        // Abre o cierra el panel de la pill de Wi-Fi (`open` abre la vista de red del centro de control)
+        function expand(): void {
+            store.togglePanel();
         }
     }
 
