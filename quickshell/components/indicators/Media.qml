@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Shapes
 import "../base" as Base
 import "../widgets/media/" as MW
 import "../../services/media/" as M
@@ -54,42 +53,11 @@ Base.Island {
         }
 
         // El anillo muestra el progreso; con la rueda, el volumen un momento
-        Shape {
-            id: ring
+        MW.ProgressRing {
             anchors.fill: parent
-            layer.enabled: true
-            layer.samples: 4
-
-            readonly property real value: root.store.showVolume ? root.store.volume : (root.store.isLive ? 1 : root.store.progress)
-            readonly property real r: (width - root.cfg.ringWidth) / 2
-
-            ShapePath {
-                strokeWidth: root.cfg.ringWidth
-                strokeColor: App.Theme.track
-                fillColor: "transparent"
-                PathAngleArc {
-                    centerX: pill.width / 2
-                    centerY: pill.height / 2
-                    radiusX: ring.r
-                    radiusY: ring.r
-                    startAngle: 0
-                    sweepAngle: 360
-                }
-            }
-            ShapePath {
-                strokeWidth: root.cfg.ringWidth
-                strokeColor: root.store.showVolume ? App.Theme.white : (root.store.playing ? App.Theme.primary : App.Theme.grayDark)
-                fillColor: "transparent"
-                capStyle: ShapePath.RoundCap
-                PathAngleArc {
-                    centerX: pill.width / 2
-                    centerY: pill.height / 2
-                    radiusX: ring.r
-                    radiusY: ring.r
-                    startAngle: -90
-                    sweepAngle: 360 * Math.max(0.001, ring.value)
-                }
-            }
+            ringWidth: root.cfg.ringWidth
+            value: root.store.showVolume ? root.store.volume : (root.store.isLive ? 1 : root.store.progress)
+            color: root.store.showVolume ? App.Theme.white : (root.store.playing ? App.Theme.primary : App.Theme.grayDark)
         }
 
         // Rueda sobre la carátula: volumen del reproductor (los clics pasan a la isla)

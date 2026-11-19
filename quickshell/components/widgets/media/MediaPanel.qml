@@ -71,64 +71,12 @@ Item {
     }
 
     // ── Fondo: la carátula difuminada y oscurecida, a todo el ancho de la isla ──
-    Item {
-        id: bg
+    MediaBackdrop {
         anchors.fill: parent
         anchors.margins: -root.cfg.padding
-
-        Item {
-            id: bgMask
-            anchors.fill: parent
-            visible: false
-            layer.enabled: true
-            Rectangle {
-                anchors.fill: parent
-                radius: root.islandRadius
-                color: "black"
-            }
-        }
-
-        Item {
-            id: bgContent
-            anchors.fill: parent
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                maskEnabled: true
-                maskSource: bgMask
-                maskThresholdMin: 0.5
-                maskSpreadAtMin: 1.0
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                gradient: Gradient {
-                    GradientStop {
-                        position: 0
-                        color: Qt.darker(root.accent, 3)
-                    }
-                    GradientStop {
-                        position: 1
-                        color: App.Theme.island
-                    }
-                }
-            }
-            Image {
-                id: bgImage
-                anchors.fill: parent
-                source: root.store.shownArt
-                fillMode: Image.PreserveAspectCrop
-                sourceSize: Qt.size(256, 256)
-                visible: status === Image.Ready
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    blurEnabled: true
-                    blur: root.cfg.blur
-                    blurMax: root.cfg.blurMax
-                    brightness: -root.cfg.dim
-                    saturation: 0.2
-                }
-            }
-        }
+        accent: root.accent
+        islandRadius: root.islandRadius
+        source: root.store.shownArt
     }
 
     // ── Carátula (a la derecha). Clic: trae la ventana del reproductor ──
