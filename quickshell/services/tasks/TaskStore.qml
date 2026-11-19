@@ -262,6 +262,11 @@ Singleton {
         save();
     }
 
+    // Suma tiempo trabajado con el temporizador (Pomodoro). Sin deshacer: no es una edición del usuario.
+    function addFocus(id, minutes, pomodoros) {
+        quietChange(id, t => Model.addFocus(t, minutes, pomodoros, Date.now()));
+    }
+
     // Trae el título de los links que aún no lo tienen (`force`: de todos). `retitle`: si el título de la
     // tarea sigue siendo ese texto (era solo el link), se cambia por el título de la página.
     function refreshLinks(id, force, retitle) {

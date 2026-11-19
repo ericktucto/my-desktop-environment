@@ -365,7 +365,8 @@ function standupLine(t, extra) {
     }).map(function (l) {
         return l.label;
     });
-    return "- " + t.title + (labels.length > 0 ? " (" + labels.join(", ") + ")" : "") + (extra ? " — " + extra : "");
+    var focus = t.focus && t.focus.minutes > 0 ? " · " + Dates.formatMinutes(t.focus.minutes) : "";
+    return "- " + t.title + (labels.length > 0 ? " (" + labels.join(", ") + ")" : "") + focus + (extra ? " — " + extra : "");
 }
 
 // Markdown para el daily: lo de ayer, lo de hoy y lo bloqueado.

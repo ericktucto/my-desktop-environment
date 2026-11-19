@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
+import "../tasks/" as TS
 import "../../" as App
 import "../tasks/Dates.js" as Dates
 import "Duration.js" as Duration
@@ -88,9 +89,9 @@ Singleton {
         return "t" + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
     }
 
-    function add(ms, name) {
+    function create(ms, name, pomo) {
         if (!(ms > 0) || timers.length >= cfg.maxTimers)
-            return "";
+            return null;
         const t = {
             id: makeId(),
             name: (name || "").trim(),
@@ -99,12 +100,19 @@ Singleton {
             endsAt: Date.now() + Math.round(ms),
             left: 0,
             created: Date.now(),
-            pomo: null
+            pomo: pomo ?? null
         };
         now = Date.now();
         timers = timers.concat([t]);
-        pushRecent(t.total, t.name);
         save();
+        return t;
+    }
+
+    function add(ms, name) {
+        const t = create(ms, name, null);
+        if (!t)
+            return "";
+        pushRecent(t.total, t.name);
         return t.id;
     }
 
@@ -177,12 +185,19 @@ Singleton {
             }));
     }
 
-    function remove(id) {
-        if (!get(id))
-            return false;
+    function dropTimer(id) {
         closeNote(id);
         timers = timers.filter(t => t.id !== id);
         save();
+    }
+
+    // Quitar un temporizador; un tramo de trabajo cortado antes de tiempo suma los minutos ya trabajados
+    function remove(id) {
+        const t = get(id);
+        if (!t)
+            return false;
+        creditPartial(t);
+        dropTimer(id);
         return true;
     }
 
@@ -197,6 +212,73 @@ Singleton {
 
     function pauseAll() {
         timers.forEach(t => pause(t.id));
+    }
+
+    // ── Pomodoro ──
+    // Un temporizador con `pomo` = { phase: work|short|long, cycle: 1..every, task, credited }. Hay uno a la vez.
+    readonly property var pomoCfg: cfg.pomodoro
+    readonly property var pomodoro: timers.find(t => t.pomo) ?? null
+
+    function phaseMs(phase) {
+        return (phase === "work" ? pomoCfg.work : (phase === "long" ? pomoCfg.long : pomoCfg.short)) * 60000;
+    }
+
+    function phaseLabel(p) {
+        return p.phase === "work" ? "Trabajo " + p.cycle + "/" + pomoCfg.every : (p.phase === "long" ? "Descanso largo" : "Descanso");
+    }
+
+    // Empieza un tramo de trabajo (con una tarea o sin ella). Devuelve el id, o "" si no se pudo.
+    function startPomodoro(taskId) {
+        if (pomodoro)
+            return "";
+        const task = taskId ? TS.TaskStore.get(taskId) : null;
+        if (taskId && !task)
+            return "";
+        const t = create(phaseMs("work"), task ? task.title : "", {
+            phase: "work",
+            cycle: 1,
+            task: task ? task.id : "",
+            credited: false
+        });
+        return t ? t.id : "";
+    }
+
+    // Suma los minutos enteros ya trabajados de un tramo cortado antes de tiempo (sin contar el pomodoro)
+    function creditPartial(t) {
+        const p = t.pomo;
+        if (!p || p.phase !== "work" || p.credited || p.task === "" || t.state === "ringing")
+            return;
+        const minutes = Math.floor((t.total - left(t)) / 60000);
+        if (minutes >= 1)
+            TS.TaskStore.addFocus(p.task, minutes, 0);
+    }
+
+    // Pasa al tramo siguiente. De un trabajo va al descanso (largo cada `every`); `skipBreak` salta el descanso.
+    function nextPhase(id, skipBreak) {
+        const t = get(id);
+        if (!t || !t.pomo)
+            return "";
+        const p = t.pomo;
+        creditPartial(t);
+        dropTimer(id);
+        const goBreak = p.phase === "work" && !skipBreak;
+        const phase = goBreak ? (p.cycle % pomoCfg.every === 0 ? "long" : "short") : "work";
+        const cycle = goBreak ? p.cycle : (p.cycle % pomoCfg.every) + 1;
+        const n = create(phaseMs(phase), t.name, {
+            phase: phase,
+            cycle: cycle,
+            task: p.task,
+            credited: false
+        });
+        return n ? n.id : "";
+    }
+
+    // Termina el tramo ya (IPC skip): un trabajo corriendo pasa al descanso; sonando, salta el descanso
+    function skipPhase() {
+        const t = pomodoro;
+        if (!t)
+            return "";
+        return nextPhase(t.id, t.pomo.phase === "work" && t.state === "ringing");
     }
 
     // ── Reloj ──
@@ -221,9 +303,23 @@ Singleton {
     property bool quiet: false
 
     function ring(ids) {
-        timers = timers.map(t => ids.indexOf(t.id) >= 0 ? Object.assign({}, t, {
-                state: "ringing"
-            }) : t);
+        timers = timers.map(t => {
+            if (ids.indexOf(t.id) < 0)
+                return t;
+            // Un tramo de trabajo terminado suma su tiempo (y un pomodoro, una sola vez) a la tarea
+            let pomo = t.pomo;
+            if (pomo && pomo.phase === "work") {
+                if (pomo.task !== "")
+                    TS.TaskStore.addFocus(pomo.task, Math.round(t.total / 60000), pomo.credited ? 0 : 1);
+                pomo = Object.assign({}, pomo, {
+                    credited: true
+                });
+            }
+            return Object.assign({}, t, {
+                state: "ringing",
+                pomo: pomo
+            });
+        });
         ringSince = Date.now();
         quiet = false;
         ids.forEach(id => notify(get(id)));
@@ -253,12 +349,29 @@ Singleton {
             return;
         const late = Date.now() - t.endsAt;
         const what = "Temporizador de " + Duration.label(t.total);
-        const body = late > 5000 ? "Terminó " + Dates.ago(t.endsAt, Date.now()) + " · " + what : what;
-        const p = notice.createObject(store, {
+        const when = late > 5000 ? "Terminó " + Dates.ago(t.endsAt, Date.now()) + " · " : "";
+        let title = "¡Listo! " + labelFor(t);
+        let body = when + what;
+        let actions = ["add1=+1 min", "add5=+5 min", "stop=Detener"];
+        const p = t.pomo;
+        if (p && p.phase === "work") {
+            const long = p.cycle % pomoCfg.every === 0;
+            title = "🍅 ¡Tramo de trabajo terminado!";
+            body = when + (t.name !== "" ? t.name + " · " : "") + "Trabajo " + p.cycle + "/" + pomoCfg.every + " · descanso de " + (long ? pomoCfg.long : pomoCfg.short) + " min";
+            actions = ["brk=Empezar descanso", "skipbrk=Saltar descanso", "add5=+5 min"];
+        } else if (p) {
+            title = "☕ ¡Descanso terminado!";
+            body = when + "Sigue el trabajo " + ((p.cycle % pomoCfg.every) + 1) + "/" + pomoCfg.every + (t.name !== "" ? " · " + t.name : "");
+            actions = ["work=Seguir trabajando", "stop=Terminar"];
+        }
+        const cmd = ["notify-send", "-a", "Temporizador", "-i", "alarm-symbolic", "-u", "critical", "-p", "-t", "0"];
+        actions.forEach(a => cmd.push("-A", a));
+        cmd.push(title, body);
+        const proc = notice.createObject(store, {
             timerId: t.id,
-            command: ["notify-send", "-a", "Temporizador", "-i", "alarm-symbolic", "-u", "critical", "-p", "-t", "0", "-A", "add1=+1 min", "-A", "add5=+5 min", "-A", "stop=Detener", "¡Listo! " + labelFor(t), body]
+            command: cmd
         });
-        p.running = true;
+        proc.running = true;
     }
 
     function onAction(id, action) {
@@ -268,6 +381,10 @@ Singleton {
             extend(id, 300000);
         else if (action === "stop")
             stopAlarm(id);
+        else if (action === "brk" || action === "work")
+            nextPhase(id, false);
+        else if (action === "skipbrk")
+            nextPhase(id, true);
     }
 
     function closeNote(id) {
@@ -478,7 +595,18 @@ Singleton {
             endsAt: Number(t.endsAt) || 0,
             left: Math.max(0, Number(t.left) || 0),
             created: Number(t.created) || Date.now(),
-            pomo: t.pomo ?? null
+            pomo: normPomo(t.pomo)
+        };
+    }
+
+    function normPomo(p) {
+        if (!p || typeof p !== "object" || ["work", "short", "long"].indexOf(p.phase) < 0)
+            return null;
+        return {
+            phase: p.phase,
+            cycle: Math.max(1, Math.round(Number(p.cycle) || 1)),
+            task: typeof p.task === "string" ? p.task : "",
+            credited: p.credited === true
         };
     }
 
@@ -540,7 +668,7 @@ Singleton {
     Component.onDestruction: flush()
 
     // ── IPC ──
-    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch
+    // qs ipc call stixshell@timer start "10m té" | pause <id|all> | stop <id|all> | list | stopwatch toggle|lap|reset | open timer|stopwatch | pomodoro <idTarea|""> | skip
     IpcHandler {
         target: "stixshell@timer"
 
@@ -580,6 +708,17 @@ Singleton {
             else
                 return "error: usa toggle, lap o reset";
             return Duration.format(store.swElapsed(), true);
+        }
+        function pomodoro(taskId: string): string {
+            if (!store.ready)
+                return "error: timers.json aún no se leyó";
+            if (store.pomodoro)
+                return "error: ya hay un Pomodoro en curso";
+            const id = store.startPomodoro(taskId);
+            return id !== "" ? id : "error: no existe la tarea " + taskId;
+        }
+        function skip(): string {
+            return store.skipPhase() !== "" ? "ok" : "error: no hay un Pomodoro en curso";
         }
         function open(tab: string): void {
             store.openRequested(tab === "stopwatch" ? "stopwatch" : "timer");

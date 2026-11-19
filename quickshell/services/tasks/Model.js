@@ -126,6 +126,27 @@ function normLinks(list) {
     return out;
 }
 
+// Foco: el tiempo trabajado en la tarea con el temporizador { minutes, pomodoros }
+function normFocus(f) {
+    f = f && typeof f === "object" ? f : {};
+    return {
+        minutes: Math.max(0, Math.round(num(f.minutes, 0))),
+        pomodoros: Math.max(0, Math.round(num(f.pomodoros, 0)))
+    };
+}
+
+// Suma minutos (y pomodoros) de foco a una tarea
+function addFocus(task, minutes, pomodoros, now) {
+    var f = normFocus(task.focus);
+    return Object.assign({}, task, {
+        focus: {
+            minutes: f.minutes + Math.max(0, Math.round(num(minutes, 0))),
+            pomodoros: f.pomodoros + Math.max(0, Math.round(num(pomodoros, 0)))
+        },
+        updated: now
+    });
+}
+
 // Completa y limpia una tarea; conserva los campos que no conoce.
 function normTask(t, now) {
     now = now || Date.now();
@@ -145,6 +166,7 @@ function normTask(t, now) {
     o.reminders = normReminders(t.reminders);
     o.repeat = normRepeat(t.repeat);
     o.estimate = Math.max(0, Math.round(num(t.estimate, 0)));
+    o.focus = normFocus(t.focus);
     o.subtasks = normSubtasks(t.subtasks);
     o.links = normLinks(t.links);
     o.order = num(t.order, 0);
@@ -316,9 +338,12 @@ function completeRepeating(task, nextDue, now, copyId) {
         repeatOf: task.id,
         reminders: []
     });
+    // La copia hecha se queda con el foco; la próxima ocurrencia empieza en 0
     return {
         copy: copy,
-        next: skipRepeat(task, nextDue, now)
+        next: Object.assign(skipRepeat(task, nextDue, now), {
+            focus: normFocus(null)
+        })
     };
 }
 

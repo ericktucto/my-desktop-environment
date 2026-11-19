@@ -97,6 +97,7 @@ const sTasks = [
     T({ id: "s7", title: "Para mañana", due: "2026-11-18" }),
 ];
 eq("standup completo", sd(sTasks), ["**Ayer**", "- Hecha el lunes (acme/api#412)", "", "**Hoy**", "- Vencida", "- Para hoy", "- Hecha hoy — hecha", "", "**Bloqueado**", "- Bloqueada — faltan credenciales"].join("\n"));
+eq("standup con foco", sd([T({ id: "f1", title: "Con foco", status: "done", completed: ms(16, 10), focus: { minutes: 75, pomodoros: 3 } }), T({ id: "f2", title: "Sin foco", status: "done", completed: ms(16, 11) })]), ["**Ayer**", "- Con foco · 1 h 15 m", "- Sin foco"].join("\n"));
 // Lunes 16: ayer cuenta desde el viernes 13
 eq("el lunes cuenta desde el viernes", sd(sTasks, new Date(2026, 10, 16, 9)).split("\n").slice(0, 3), ["**Ayer**", "- Hecha el viernes", ""]);
 eq("sin novedades", sd([]), "Sin novedades");

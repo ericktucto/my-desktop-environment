@@ -13,6 +13,7 @@ Rectangle {
     property bool selected: false
 
     readonly property var store: TM.TimerStore
+    readonly property var pomo: timer.pomo
     readonly property bool ringing: timer.state === "ringing"
     readonly property bool paused: timer.state === "paused"
     readonly property real leftMs: store.left(timer)
@@ -49,7 +50,7 @@ Rectangle {
 
         Text {
             width: parent.width
-            text: root.timer.name !== "" ? root.timer.name : "Temporizador"
+            text: root.pomo ? "🍅 " + root.store.phaseLabel(root.pomo) : (root.timer.name !== "" ? root.timer.name : "Temporizador")
             color: App.Theme.white
             elide: Text.ElideRight
             font.family: App.Config.fonts.text
@@ -57,7 +58,7 @@ Rectangle {
             font.weight: Font.DemiBold
         }
         Text {
-            text: Duration.label(root.timer.total) + (root.paused ? " · en pausa" : "")
+            text: (root.pomo && root.timer.name !== "" ? root.timer.name + " · " : "") + Duration.label(root.timer.total) + (root.paused ? " · en pausa" : "")
             color: App.Theme.gray
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.xs

@@ -2,6 +2,7 @@ import QtQuick
 import "../../../controls/" as C
 import "../../controlcenter/" as CC
 import "../tasks/" as TK
+import "../../../../services/tasks/" as TS
 import "../../../../services/timer/" as TM
 import "../../../../services/timer/Duration.js" as Duration
 import "../../../../services/settings/" as ST
@@ -9,7 +10,7 @@ import "../../../../" as App
 
 // Pestaña Temporizador: un campo para escribir el tiempo ("10m té", "1h30", "5:00"), los tiempos rápidos y
 // recientes, la lista de temporizadores y el sonido de la alarma.
-// Teclado: Enter crea · Abajo o Tab pasa a la lista (j/k elegir, Espacio pausar, x borrar, / vuelve al campo).
+// Teclado: Ctrl+P empieza un Pomodoro · Enter crea · Abajo pasa a la lista (j/k elegir, Espacio pausar, x borrar, / vuelve al campo).
 FocusScope {
     id: root
 
@@ -18,6 +19,9 @@ FocusScope {
     readonly property var store: TM.TimerStore
     readonly property var cfg: App.Config.timer
     property int sel: -1
+    // Elegir la tarea de un Pomodoro
+    property bool picking: false
+    property int pickSel: 0
 
     // Lo que dice el campo, ya entendido (o null)
     readonly property var parsed: Duration.parse(field.text)
@@ -28,6 +32,10 @@ FocusScope {
 
     // Esc: borra lo escrito; si no hay nada, deja que se cierre la isla
     function back() {
+        if (picking) {
+            closePicker();
+            return true;
+        }
         if (field.text !== "") {
             field.text = "";
             return true;
@@ -43,6 +51,55 @@ FocusScope {
     function reset() {
         field.text = "";
         sel = -1;
+        closePicker();
+    }
+
+    // ── Pomodoro: elegir la tarea ──
+    function openPicker() {
+        if (store.pomodoro)
+            return;
+        pickField.text = "";
+        pickSel = 0;
+        picking = true;
+        pickField.giveFocus();
+    }
+
+    function closePicker() {
+        if (!picking)
+            return;
+        picking = false;
+        field.giveFocus();
+    }
+
+    // Sin tarea y luego Hoy y en curso (o lo que se busque), sin lo ya cerrado
+    readonly property var picks: {
+        if (!picking)
+            return [];
+        const q = pickField.text.trim();
+        let found = [];
+        if (q === "")
+            TS.TaskStore.list("today", "").forEach(g => found = found.concat(g.tasks));
+        else
+            found = TS.TaskStore.search(q);
+        return [
+            {
+                id: "",
+                title: "Sin tarea",
+                where: ""
+            }
+        ].concat(found.filter(t => t.status !== "done" && t.status !== "cancelled").slice(0, 30).map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    where: TS.TaskStore.whereIs(t)
+                })));
+    }
+
+    function pick(i) {
+        const p = picks[i];
+        if (!p)
+            return;
+        store.startPomodoro(p.id);
+        closePicker();
     }
 
     function create() {
@@ -66,6 +123,15 @@ FocusScope {
     }
 
     Keys.onPressed: event => {
+        // Ctrl+P: empezar un Pomodoro (elegir la tarea)
+        if (event.key === Qt.Key_P && (event.modifiers & Qt.ControlModifier)) {
+            if (picking)
+                closePicker();
+            else
+                openPicker();
+            event.accepted = true;
+            return;
+        }
         if (field.typing || event.modifiers & (Qt.ControlModifier | Qt.AltModifier))
             return;
         const t = store.timers[root.sel];
@@ -184,10 +250,38 @@ FocusScope {
         }
     }
 
+    // ── Pomodoro ──
+    Row {
+        id: pomoRow
+        anchors.top: recents.visible ? recents.bottom : quick.bottom
+        anchors.topMargin: 8
+        anchors.left: parent.left
+        spacing: 6
+
+        CC.Chip {
+            label: root.store.pomodoro ? "🍅 " + root.store.phaseLabel(root.store.pomodoro.pomo) : "🍅 Pomodoro"
+            selected: root.store.pomodoro !== null || root.picking
+            onClicked: root.picking ? root.closePicker() : root.openPicker()
+        }
+        CC.Chip {
+            visible: root.store.pomodoro !== null
+            label: "Saltar tramo"
+            onClicked: root.store.skipPhase()
+        }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.store.pomodoro === null && !root.picking
+            text: App.Config.timer.pomodoro.work + " min de trabajo · " + App.Config.timer.pomodoro.short + " de descanso"
+            color: App.Theme.gray
+            font.family: App.Config.fonts.text
+            font.pixelSize: App.Config.fontSize.xs
+        }
+    }
+
     // ── Lista ──
     ListView {
         id: list
-        anchors.top: recents.visible ? recents.bottom : quick.bottom
+        anchors.top: pomoRow.bottom
         anchors.topMargin: 12
         anchors.bottom: sound.top
         anchors.bottomMargin: 10
@@ -214,6 +308,95 @@ FocusScope {
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.md
             lineHeight: 1.3
+        }
+    }
+
+    // ── Elegir la tarea del Pomodoro ──
+    Rectangle {
+        id: picker
+        anchors.top: pomoRow.bottom
+        anchors.topMargin: 8
+        anchors.bottom: sound.top
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: root.picking
+        radius: App.Config.radius.sm
+        color: App.Theme.island
+        border.width: 1
+        border.color: App.Theme.surfaceHigh
+
+        C.TextField {
+            id: pickField
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 8
+            width: undefined
+            height: 36
+            placeholder: "Buscar una tarea para el Pomodoro…"
+            onTextChanged: root.pickSel = 0
+            onPressedKey: key => {
+                if (key === Qt.Key_Enter)
+                    root.pick(root.pickSel);
+                else if (key === Qt.Key_Down)
+                    root.pickSel = Math.min(root.picks.length - 1, root.pickSel + 1);
+                else if (key === Qt.Key_Up)
+                    root.pickSel = Math.max(0, root.pickSel - 1);
+            }
+        }
+
+        ListView {
+            anchors.top: pickField.bottom
+            anchors.topMargin: 6
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 8
+            clip: true
+            spacing: 2
+            model: root.picks
+            currentIndex: root.pickSel
+            onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+
+            delegate: Rectangle {
+                required property int index
+                required property var modelData
+                width: ListView.view.width
+                height: 34
+                radius: 6
+                color: root.pickSel === index || pm.containsMouse ? App.Theme.surfaceActive : "transparent"
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
+                    anchors.right: whereText.left
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData.title
+                    elide: Text.ElideRight
+                    color: modelData.id === "" ? App.Theme.gray : App.Theme.white
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.md
+                }
+                Text {
+                    id: whereText
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData.where
+                    color: App.Theme.gray
+                    font.family: App.Config.fonts.text
+                    font.pixelSize: App.Config.fontSize.xs
+                }
+                MouseArea {
+                    id: pm
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.pick(index)
+                }
+            }
         }
     }
 

@@ -129,4 +129,19 @@ const tf = M.templateFields(tp);
 eq("campos de plantilla: subtareas sin marcar", tf.subtasks, [{ title: "Correos", done: false }, { title: "Tareas", done: false }]);
 eq("tarea desde plantilla", M.makeTask(tf, NOW, []).subtasks.map(s => [s.title, s.done]), [["Correos", false], ["Tareas", false]]);
 
+// Foco (tiempo trabajado con el temporizador)
+eq("foco por defecto", M.normTask({ title: "x" }, NOW).focus, { minutes: 0, pomodoros: 0 });
+eq("foco se conserva", M.normTask({ title: "x", focus: { minutes: 45, pomodoros: 2 } }, NOW).focus, { minutes: 45, pomodoros: 2 });
+eq("foco basura", M.normTask({ title: "x", focus: { minutes: -5, pomodoros: "a" } }, NOW).focus, { minutes: 0, pomodoros: 0 });
+eq("makeTask deja el foco en 0", M.makeTask({ title: "x" }, NOW, []).focus, { minutes: 0, pomodoros: 0 });
+const ft = M.addFocus(M.normTask({ title: "x", focus: { minutes: 25, pomodoros: 1 } }, NOW), 25, 1, NOW + 5);
+eq("addFocus suma", [ft.focus, ft.updated], [{ minutes: 50, pomodoros: 2 }, NOW + 5]);
+eq("addFocus solo minutos", M.addFocus(ft, 12, 0, NOW).focus, { minutes: 62, pomodoros: 2 });
+eq("addFocus no resta", M.addFocus(ft, -9, 0, NOW).focus, { minutes: 50, pomodoros: 2 });
+const rf = M.normTask({ id: "t_f", title: "Rep", due: "2026-11-17", repeat: { freq: "daily" }, focus: { minutes: 40, pomodoros: 2 } }, NOW);
+const crf = M.completeRepeating(rf, "2026-11-18", NOW, "t_fc");
+eq("repetición: la copia conserva el foco", crf.copy.focus, { minutes: 40, pomodoros: 2 });
+eq("repetición: la próxima empieza en 0", crf.next.focus, { minutes: 0, pomodoros: 0 });
+eq("plantilla sin foco", M.templateFields(M.makeTemplate(rf, [])).focus, undefined);
+
 done();
