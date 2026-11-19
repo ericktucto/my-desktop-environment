@@ -157,10 +157,12 @@ ShellRoot {
             }
             I.Zoom {}
         }
-        // ══ CENTRO: el reloj y, a su izquierda, la pill de música ══
-        // Solo uno tiene el foco: con la música expandida, pasa al centro y el reloj (ya círculo) a su derecha.
-        // `blend` (0 = reloj al centro, 1 = música al centro) se anima, y las posiciones se mezclan entre
-        // las dos disposiciones, así el movimiento es continuo aunque los anchos también estén cambiando.
+        // ══ CENTRO: el reloj, a su izquierda la pill de música y a su derecha el temporizador ══
+        // Solo uno tiene el foco: con la música expandida, pasa al centro y el reloj (ya círculo) a su derecha;
+        // con el temporizador expandido, pasa al centro y el reloj (círculo) a su izquierda, y la música más allá.
+        // `blend` (0 = reloj al centro, 1 = música al centro) y `blendT` (1 = temporizador al centro) se animan,
+        // y las posiciones se mezclan entre las disposiciones, así el movimiento es continuo aunque los anchos
+        // también estén cambiando. Nunca valen 1 a la vez: solo hay un panel abierto.
         Item {
             id: centerPill
             anchors.left: parent.left
@@ -177,36 +179,51 @@ ShellRoot {
                 }
             }
 
+            property real blendT: timerPill.expanded ? 1 : 0
+            Behavior on blendT {
+                NumberAnimation {
+                    duration: App.Config.anim.pill
+                    easing.type: Easing.OutCubic
+                }
+            }
+
             // Reloj al centro / música a su izquierda
             readonly property real clockA: (width - clockPill.width) / 2
             readonly property real mediaA: clockA - gap - mediaPill.width
             // Música al centro / reloj a su derecha
             readonly property real mediaB: (width - mediaPill.width) / 2
             readonly property real clockB: mediaB + mediaPill.width + gap
+            // Temporizador al centro / reloj a su izquierda / música a la izquierda del reloj
+            readonly property real timerC: (width - timerPill.width) / 2
+            readonly property real clockC: timerC - gap - clockPill.width
+            readonly property real mediaC: clockC - gap - mediaPill.width
 
             I.Media {
                 id: mediaPill
-                x: centerPill.mediaA + (centerPill.mediaB - centerPill.mediaA) * centerPill.blend
+                x: centerPill.mediaA + (centerPill.mediaB - centerPill.mediaA) * centerPill.blend + (centerPill.mediaC - centerPill.mediaA) * centerPill.blendT
             }
             IC.IslandCenter {
                 id: clockPill
-                compact: mediaPill.expanded
-                x: centerPill.clockA + (centerPill.clockB - centerPill.clockA) * centerPill.blend
+                compact: mediaPill.expanded || timerPill.expanded
+                x: centerPill.clockA + (centerPill.clockB - centerPill.clockA) * centerPill.blend + (centerPill.clockC - centerPill.clockA) * centerPill.blendT
             }
-            // El contador de la grabación, siempre pegado a la derecha del reloj
+            // El contador de la grabación, pegado a la derecha del reloj (del temporizador, si está expandido)
             I.Recorder {
                 id: recPill
-                x: clockPill.x + clockPill.width + centerPill.gap
+                readonly property real afterClock: clockPill.x + clockPill.width + centerPill.gap
+                readonly property real afterTimer: centerPill.timerC + timerPill.width + centerPill.gap
+                x: afterClock + (afterTimer - afterClock) * centerPill.blendT
             }
             // La cuenta regresiva del capturador, tras el contador de la grabación (si lo hay)
             I.Screenshot {
                 id: shotPill
                 x: recPill.x + (recPill.visible ? recPill.width + centerPill.gap : 0)
             }
-            // Temporizador y cronómetro, tras lo anterior (si lo hay)
+            // Temporizador y cronómetro, tras lo anterior (si lo hay); expandido, al centro
             I.TimerPill {
                 id: timerPill
-                x: shotPill.x + (shotPill.visible ? shotPill.width + centerPill.gap : 0)
+                readonly property real normalX: shotPill.x + (shotPill.visible ? shotPill.width + centerPill.gap : 0)
+                x: normalX + (centerPill.timerC - normalX) * centerPill.blendT
             }
         }
         // La máscara de la pill de música: sin ancho si no se ve (no captura clics vacíos)
