@@ -53,6 +53,8 @@ Item {
             onStreamFinished: {
                 const lines = text.trim().split("\n").filter(l => l.length > 0);
                 root.imageFiles = lines;
+                // La selección del teclado empieza en el wallpaper que está puesto
+                gridView.currentIndex = Math.max(0, lines.indexOf(App.Wallpaper.current));
             }
         }
     }
@@ -177,6 +179,28 @@ Item {
                             duration: App.Config.anim.fadeIn
                         }
                     }
+                }
+            }
+
+            // El wallpaper que está puesto
+            Rectangle {
+                visible: modelData === App.Wallpaper.current
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: App.Config.wallpaperPicker.borderImg + 6
+                width: 22
+                height: 22
+                radius: 11
+                color: App.Theme.primary
+                border.width: 2
+                border.color: App.Theme.white
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "✓"
+                    color: App.Theme.white
+                    font.pixelSize: 13
+                    font.weight: Font.Bold
                 }
             }
 
