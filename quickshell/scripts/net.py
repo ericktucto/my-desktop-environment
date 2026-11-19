@@ -13,6 +13,10 @@
   net.py enterprise <ssid> --eap peap|ttls --phase2 mschapv2|pap --identity U [--anonymous A]
                            [--ca system|none|<archivo>] [--domain D] [--save-only]   (la contraseña por stdin)
       Crea el perfil 802.1X y conecta. { ok, uuid, error }.
+  net.py vpn-live <uuid> [<uuid>…]
+      Datos en vivo de las VPN que están activas (las demás se omiten), en una sola llamada:
+      { ok, vpns: [{ uuid, kind: wireguard|openvpn|vpn, device, ip, dns, endpoint, full, nets, mtu, keepalive }] }
+      `full`: enruta todo el tráfico; `nets`: las redes que van por la VPN (sin la ruta por defecto ni su propia IP).
   net.py portal-url <dirección de verificación>
       Página de inicio de sesión de un portal cautivo: { ok, url }. Pide la dirección de verificación sin seguir
       redirecciones y devuelve a dónde la manda el router (o la de un meta refresh); si responde otra cosa,
@@ -99,6 +103,49 @@ def cmd_profile(a):
         "dns": dns.replace("|", ", "), "ignoreAutoDns": ignore == "yes", "autoconnect": auto == "yes",
         "security": key, "live": live,
     })
+
+
+def one(uuid, field):
+    """Un campo suelto (nmcli devuelve varios en su orden, no en el pedido)."""
+    return nmcli("-g", field, "connection", "show", "uuid", uuid).stdout.strip("\n")
+
+
+def cmd_vpn_live(uuids):
+    everything = ("0.0.0.0/0", "0.0.0.0/1", "128.0.0.0/1")
+    vpns = []
+    for uuid in uuids:
+        if one(uuid, "GENERAL.STATE") != "activated":
+            continue
+        ctype = one(uuid, "connection.type")
+        dev = one(uuid, "GENERAL.DEVICES")
+        ip = one(uuid, "IP4.ADDRESS").replace("|", ", ")
+        dns = one(uuid, "IP4.DNS").replace("|", ", ")
+        routes = one(uuid, "IP4.ROUTE")
+        kind, endpoint, keepalive = ctype, "", ""
+        if ctype == "wireguard":
+            peers = one(uuid, "wireguard.peers").replace("\\:", ":")
+            m = re.search(r"endpoint=(\S+)", peers)
+            endpoint = m.group(1) if m else ""
+            m = re.search(r"persistent-keepalive=(\d+)", peers)
+            keepalive = m.group(1) if m and m.group(1) != "0" else ""
+        elif ctype == "vpn":
+            kind = "openvpn" if one(uuid, "vpn.service-type").endswith("openvpn") else "vpn"
+            m = re.search(r"remote = ([^,]+)", one(uuid, "vpn.data").replace("\\:", ":"))
+            endpoint = m.group(1).strip() if m else ""
+        dsts = []
+        for d in re.findall(r"dst = ([^,|]+)", routes):
+            d = d.strip()
+            if d not in dsts:
+                dsts.append(d)
+        own = {x.strip() for x in ip.split(",")}
+        mtu = nmcli("-g", "GENERAL.MTU", "device", "show", dev).stdout.strip() if dev else ""
+        vpns.append({
+            "uuid": uuid, "kind": kind, "device": dev, "ip": ip, "dns": dns, "endpoint": endpoint,
+            "full": any(d in everything for d in dsts),
+            "nets": [d for d in dsts if d not in everything and d not in own],
+            "mtu": mtu, "keepalive": keepalive,
+        })
+    out({"ok": True, "vpns": vpns})
 
 
 def cmd_set_ip(uuid, a):
@@ -248,6 +295,8 @@ def main():
         return cmd_portal_url(a[1])
     if a and a[0] == "profile":
         return cmd_profile(a[1:])
+    if len(a) >= 2 and a[0] == "vpn-live":
+        return cmd_vpn_live(a[1:])
     if len(a) >= 2 and a[0] == "set-ip":
         return cmd_set_ip(a[1], a[2:])
     if len(a) >= 2 and a[0] == "share":
