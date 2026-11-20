@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Services.UPower
 import "../session/" as S
 import "../settings/" as ST
+import "../sound/" as SND
 import "../../" as App
 
 // Estado de la batería (texto para el panel) y avisos de batería baja.
@@ -110,6 +111,7 @@ Singleton {
         })
 
     function notify(urgency, title, body) {
+        SND.SoundStore.play(urgency === "critical" ? "batteryCritical" : "batteryLow");
         Quickshell.execDetached(["notify-send", "-u", urgency, "-a", "Batería", "-i", urgency === "critical" ? "battery-caution" : "battery-low", title, body]);
     }
 

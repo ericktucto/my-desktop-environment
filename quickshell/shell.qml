@@ -15,6 +15,7 @@ import "./services/idle/" as ID
 import "./services/power/" as PW
 import "./services/settings/" as SE
 import "./services/display/" as DP
+import "./services/sound/" as SND
 import "./components/settings/" as PR
 import "./services/media/" as MD
 import "./components/lock/" as LC
@@ -50,6 +51,8 @@ ShellRoot {
     // Instancia las tareas (lee tasks.json; IPC stixshell@tasks)
     readonly property var tasksReady: TK.TaskStore.ready
     // Instancia las pantallas (IPC stixshell@display y perfiles al conectar un monitor)
+    // Instancia los sonidos del sistema (escucha los eventos y su IPC stixshell@sound)
+    readonly property var soundsOn: SND.SoundStore.ready
     readonly property var displayCount: DP.DisplayStore.monitors.length
 
     // Preferencias del sistema (ventana propia; Super+, o stixshell@settings)

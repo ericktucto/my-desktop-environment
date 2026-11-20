@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import "../sound/" as SND
 import "../../" as App
 
 // Historial de notificaciones.
@@ -256,6 +257,8 @@ Singleton {
             return;
         if (dnd && e.urgency !== NotificationUrgency.Critical)
             return;
+        // El sonido de «notificación nueva» (Preferencias → Sonidos)
+        SND.SoundStore.playNotification(e.urgency === NotificationUrgency.Critical, e.appName ?? "");
         const list = popups.filter(k => k !== key);
         list.unshift(key);
         popups = list.slice(0, App.Config.notifications.maxPopups);

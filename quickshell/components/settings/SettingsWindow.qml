@@ -42,6 +42,12 @@ FloatingWindow {
             source: "pages/ShortcutsPage.qml"
         },
         {
+            id: "sounds",
+            name: "Sonidos",
+            glyph: 0xf028,
+            source: "pages/SoundsPage.qml"
+        },
+        {
             id: "nightlight",
             name: "Luz nocturna",
             glyph: 0xf186,

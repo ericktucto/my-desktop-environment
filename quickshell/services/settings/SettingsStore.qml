@@ -29,6 +29,7 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var sounds: data.sounds
     readonly property var keybinds: data.keybinds
     readonly property var displays: data.displays
     readonly property var bar: data.bar
@@ -168,6 +169,12 @@ Singleton {
         property JsonObject keybinds: JsonObject {
             property var overrides: ({})
         }
+        // Sonidos del sistema (services/sound): interruptor general, volumen y, por evento, { on, sound }
+        property JsonObject sounds: JsonObject {
+            property bool enabled: true
+            property real volume: 0.8
+            property var events: ({})
+        }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h
             property bool seconds: false
@@ -266,6 +273,10 @@ Singleton {
         } else if (name === "barOrder") {
             data.bar.left = barDefaults.left.slice();
             data.bar.right = barDefaults.right.slice();
+        } else if (name === "sounds") {
+            data.sounds.enabled = true;
+            data.sounds.volume = 0.8;
+            data.sounds.events = ({});
         } else if (name === "pills") {
             for (const k of ["activeWindow", "zoom", "tray", "network", "bluetooth", "battery", "notifications"])
                 data.pills[k] = true;
