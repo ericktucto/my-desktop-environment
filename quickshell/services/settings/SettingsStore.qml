@@ -29,6 +29,9 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var wsPill: data.wsPill
+    readonly property var windowPill: data.windowPill
+    readonly property var notifPill: data.notifPill
     readonly property var clock: data.clock
 
     // ── Valores del archivo (con los de Config como inicio) ──
@@ -131,6 +134,22 @@ Singleton {
             property bool battery: true
             property bool notifications: true
         }
+        // Clics y rueda de otras pills (ids de ActionRunner). El clic izquierdo de Workspaces va al punto y el de
+        // Notificaciones abre el historial: no cambian.
+        property JsonObject wsPill: JsonObject {
+            property string right: "workspaces"
+            property string middle: "none"
+            property string wheel: "workspace"
+        }
+        property JsonObject windowPill: JsonObject {
+            property string left: "windowApp"
+            property string right: "windowMenu"
+            property string middle: "closeWindow"
+        }
+        property JsonObject notifPill: JsonObject {
+            property string right: "dnd"
+            property string middle: "none"
+        }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h
             property bool seconds: false
@@ -194,6 +213,15 @@ Singleton {
             data.island.middle = "none";
             data.island.wheel = "volume";
             data.island.shiftWheel = "brightness";
+        } else if (name === "pillClicks") {
+            data.wsPill.right = "workspaces";
+            data.wsPill.middle = "none";
+            data.wsPill.wheel = "workspace";
+            data.windowPill.left = "windowApp";
+            data.windowPill.right = "windowMenu";
+            data.windowPill.middle = "closeWindow";
+            data.notifPill.right = "dnd";
+            data.notifPill.middle = "none";
         } else if (name === "pills") {
             for (const k of ["activeWindow", "zoom", "tray", "network", "bluetooth", "battery", "notifications"])
                 data.pills[k] = true;

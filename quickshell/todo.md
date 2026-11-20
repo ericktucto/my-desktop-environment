@@ -8,7 +8,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 ### Preferencias del sistema (en curso, por fases; detalle en `plan.md`)
 Hecha la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de).
-- [ ] **Fase 2. Barra e isla** (hecho: clics y rueda de la isla central, reloj y pills visibles). Falta: clics de las demás pills (workspaces, ventana activa, notificaciones, temporizador), workspaces (cantidad, puntos o números) y el orden de las pills.
+- [ ] **Fase 2. Barra e isla** (hecho: clics y rueda de la isla central, reloj y pills visibles). hecho también el clic de Workspaces, Ventana activa y Notificaciones. Falta: workspaces (cantidad, puntos o números) y el orden de las pills.
 - [ ] **Fase 3. Pantallas:** disposición, resolución, escala, rotación, espejo, perfiles automáticos y `Super+Shift+P`.
 - [ ] **Fase 4. Atajos de teclado:** lista, editar grabando la combinación, conflictos y ayuda (`Super+/`).
 - [ ] **Fase 5. Sonidos del sistema:** notificaciones, dispositivos, energía y acciones de la shell.

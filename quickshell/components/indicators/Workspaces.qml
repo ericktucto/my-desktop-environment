@@ -4,6 +4,8 @@ import Quickshell.Io
 import "../base" as Base
 import "../widgets/workspaces/" as W
 import "../../services/workspaces/" as S
+import "../../services/actions/" as AC
+import "../../services/settings/" as ST
 import "../../" as App
 
 Base.Island {
@@ -57,7 +59,7 @@ Base.Island {
         enabled: !root.expanded
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
         property real wheelAcc: 0
         readonly property int hoverIndex: containsMouse ? nearest(mouseX) : -1
@@ -80,10 +82,14 @@ Base.Island {
         }
 
         onClicked: mouse => {
-            if (mouse.button === Qt.RightButton)
+            // Derecho y central según Preferencias → Barra e isla (por defecto: la vista general y nada)
+            const id = mouse.button === Qt.RightButton ? ST.SettingsStore.wsPill.right : (mouse.button === Qt.MiddleButton ? ST.SettingsStore.wsPill.middle : "");
+            if (mouse.button === Qt.LeftButton)
+                S.WorkspaceStore.focus(nearest(mouse.x) + 1);
+            else if (id === "workspaces")
                 root.open();
             else
-                S.WorkspaceStore.focus(nearest(mouse.x) + 1);
+                AC.ActionRunner.run(id);
         }
         onWheel: wheel => {
             const dy = wheel.angleDelta.y;
@@ -93,8 +99,7 @@ Base.Island {
                 wheelAcc = 0;
             wheelAcc += dy;
             while (Math.abs(wheelAcc) >= App.Config.workspaces.wheelStep) {
-                const dir = wheelAcc > 0 ? -1 : 1;   // abajo = siguiente
-                S.WorkspaceStore.step(dir);
+                AC.ActionRunner.wheel(ST.SettingsStore.wsPill.wheel, wheelAcc > 0 ? 1 : -1);
                 wheelAcc -= (wheelAcc > 0 ? 1 : -1) * App.Config.workspaces.wheelStep;
             }
             wheel.accepted = true;

@@ -4,6 +4,7 @@ import "../controls/" as C
 import "../widgets/notifylist/" as N
 import "../../services/notify/" as S
 import "../../services/settings/" as ST
+import "../../services/actions/" as AC
 import "../../" as App
 
 // Pill de notificaciones: campana + no leídas. Al abrirla muestra el historial.
@@ -48,8 +49,9 @@ Base.Island {
         parent: root
         anchors.fill: parent
         enabled: !root.expanded
-        acceptedButtons: Qt.RightButton
-        onClicked: S.NotificationStore.setDnd(!S.NotificationStore.dnd)
+        acceptedButtons: Qt.RightButton | Qt.MiddleButton
+        // Derecho (por defecto No molestar) y central, según Preferencias → Barra e isla
+        onClicked: mouse => AC.ActionRunner.run(mouse.button === Qt.RightButton ? ST.SettingsStore.notifPill.right : ST.SettingsStore.notifPill.middle)
     }
 
     body: N.NotifyPanel {

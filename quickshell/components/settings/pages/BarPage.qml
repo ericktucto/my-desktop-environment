@@ -66,6 +66,92 @@ Page {
         onPicked: id => page.isl.shiftWheel = id
     }
     R.Section {
+        text: "Workspaces (los puntos)"
+    }
+    R.CycleRow {
+        searchId: "wsRight"
+        label: "Clic derecho"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.wsPill.right
+        defaultValue: "workspaces"
+        onPicked: id => ST.SettingsStore.wsPill.right = id
+    }
+    R.CycleRow {
+        searchId: "wsMiddle"
+        label: "Clic central"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.wsPill.middle
+        defaultValue: "none"
+        onPicked: id => ST.SettingsStore.wsPill.middle = id
+    }
+    R.CycleRow {
+        searchId: "wsWheel"
+        label: "Rueda"
+        hint: "El clic izquierdo va al workspace del punto."
+        keywords: "barra pill click boton rueda"
+        options: page.wheels
+        value: ST.SettingsStore.wsPill.wheel
+        defaultValue: "workspace"
+        onPicked: id => ST.SettingsStore.wsPill.wheel = id
+    }
+
+    R.Section {
+        text: "Ventana activa"
+    }
+    R.CycleRow {
+        searchId: "winLeft"
+        label: "Clic izquierdo"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.windowPill.left
+        defaultValue: "windowApp"
+        onPicked: id => ST.SettingsStore.windowPill.left = id
+    }
+    R.CycleRow {
+        searchId: "winRight"
+        label: "Clic derecho"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.windowPill.right
+        defaultValue: "windowMenu"
+        onPicked: id => ST.SettingsStore.windowPill.right = id
+    }
+    R.CycleRow {
+        searchId: "winMiddle"
+        label: "Clic central"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.windowPill.middle
+        defaultValue: "closeWindow"
+        onPicked: id => ST.SettingsStore.windowPill.middle = id
+    }
+
+    R.Section {
+        text: "Notificaciones"
+    }
+    R.CycleRow {
+        searchId: "notifRight"
+        label: "Clic derecho"
+        hint: "El clic izquierdo abre el historial."
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.notifPill.right
+        defaultValue: "dnd"
+        onPicked: id => ST.SettingsStore.notifPill.right = id
+    }
+    R.CycleRow {
+        searchId: "notifMiddle"
+        label: "Clic central"
+        keywords: "barra pill click boton rueda"
+        options: page.clicks
+        value: ST.SettingsStore.notifPill.middle
+        defaultValue: "none"
+        onPicked: id => ST.SettingsStore.notifPill.middle = id
+    }
+
+    R.Section {
         text: "Reloj"
     }
     R.SwitchRow {
@@ -147,6 +233,7 @@ Page {
         actionLabel: "Restablecer"
         onTriggered: {
             ST.SettingsStore.resetSection("island");
+            ST.SettingsStore.resetSection("pillClicks");
             ST.SettingsStore.resetSection("clock");
             ST.SettingsStore.resetSection("pills");
         }

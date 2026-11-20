@@ -3,6 +3,7 @@ import QtQuick.Controls
 import "../base" as Base
 import "../widgets/window/" as WW
 import "../../services/windows/" as WS
+import "../../services/actions/" as AC
 import "../../services/settings/" as ST
 import "../../" as App
 
@@ -110,10 +111,16 @@ Base.Island {
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         onClicked: mouse => {
-            if (mouse.button === Qt.MiddleButton)
-                root.store.closeActive();
+            // Según Preferencias → Barra e isla (por defecto: izquierdo menú de la app, derecho el de la ventana y
+            // central cierra la ventana)
+            const c = ST.SettingsStore.windowPill;
+            const id = mouse.button === Qt.MiddleButton ? c.middle : (mouse.button === Qt.RightButton ? c.right : c.left);
+            if (id === "windowApp")
+                root.openTab("app");
+            else if (id === "windowMenu")
+                root.openTab("window");
             else
-                root.openTab(mouse.button === Qt.RightButton ? "window" : "app");
+                AC.ActionRunner.run(id);
         }
 
         ToolTip.visible: containsMouse

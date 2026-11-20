@@ -3,6 +3,8 @@ import QtQuick
 import Quickshell
 import "../audio/" as A
 import "../brightness/" as B
+import "../notify/" as N
+import "../windows/" as WS
 import "../osd/" as O
 import "../workspaces/" as W
 import "../../" as App
@@ -21,6 +23,9 @@ Singleton {
         { id: "clipboard", label: "Portapapeles" },
         { id: "workspaces", label: "Vista de workspaces" },
         { id: "windowMenu", label: "Menú de la ventana" },
+        { id: "windowApp", label: "Menú de la app (de la ventana)" },
+        { id: "closeWindow", label: "Cerrar la ventana activa" },
+        { id: "dnd", label: "No molestar (alternar)" },
         { id: "screenshot", label: "Capturar la pantalla" },
         { id: "recorder", label: "Grabar la pantalla" },
         { id: "wallpaper", label: "Selector de wallpapers" },
@@ -68,6 +73,15 @@ Singleton {
             break;
         case "windowMenu":
             ipc("window", "toggle", ["window"]);
+            break;
+        case "windowApp":
+            ipc("window", "toggle", ["app"]);
+            break;
+        case "closeWindow":
+            WS.ActiveWindowStore.closeActive();
+            break;
+        case "dnd":
+            N.NotificationStore.setDnd(!N.NotificationStore.dnd);
             break;
         case "screenshot":
             ipc("screenshot", "open");
