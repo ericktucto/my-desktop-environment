@@ -17,6 +17,8 @@ Column {
     readonly property bool inStash: (info.workspace?.name ?? "") === "special:stash"
     // «Forzar cierre» espera un segundo clic
     property bool killArmed: false
+    // Fila elegida con el teclado (la fija el panel)
+    property int cursor: -1
 
     // Acciones de la lista, en el orden en que se ven (el teclado recorre las mismas)
     readonly property var entries: {
@@ -126,6 +128,24 @@ Column {
         act(e.run);
     }
 
+    // Una tecla del teclado: 1–4 mueve a ese workspace, «s» al stash y la letra subrayada de cada fila la ejecuta
+    function handleKey(text) {
+        const n = parseInt(text);
+        if (n >= 1 && n <= App.Config.workspaces.count) {
+            act(() => store.moveTo(n));
+            return true;
+        }
+        if (text === "s") {
+            act(() => store.toggleStash());
+            return true;
+        }
+        const e = entries.find(x => x.enabled !== false && cfg.windowMnemonics[x.id] === text);
+        if (!e)
+            return false;
+        activate(e);
+        return true;
+    }
+
     component Section: Text {
         color: App.Theme.grayDark
         font.family: App.Config.fonts.text
@@ -197,6 +217,7 @@ Column {
         Column {
             id: item
             required property var modelData
+            required property int index
             width: root.width
             spacing: 6
 
@@ -214,6 +235,7 @@ Column {
                 danger: item.modelData.danger === true
                 armed: item.modelData.armed === true
                 enabled: item.modelData.enabled !== false
+                selected: root.cursor === item.index
                 onClicked: root.activate(item.modelData)
             }
         }

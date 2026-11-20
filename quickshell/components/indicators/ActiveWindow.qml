@@ -55,6 +55,8 @@ Base.Island {
                 panel.tab = tab;
         }
     }
+    // El teclado va al panel (letras subrayadas, ↑↓, Enter y Tab)
+    onOpened: Qt.callLater(() => panel.forceActiveFocus())
     onClosed: store.unlock()
 
     // Lo que cabe para el texto: el máximo menos el ícono, el relleno y los espacios

@@ -15,6 +15,49 @@ Item {
 
     implicitHeight: col.implicitHeight
 
+    // Teclado: ↑↓ eligen una fila (-1 = ninguna), Enter la ejecuta, Tab cambia de pestaña y las letras
+    // subrayadas (o 1–9) ejecutan la fila
+    property int cursor: -1
+    focus: true
+    onTabChanged: cursor = -1
+
+    function move(step) {
+        const es = page.item?.entries ?? [];
+        if (es.length === 0)
+            return;
+        let i = cursor;
+        for (let n = 0; n < es.length; n++) {
+            i = i < 0 ? (step > 0 ? 0 : es.length - 1) : (i + step + es.length) % es.length;
+            if (es[i].enabled !== false) {
+                cursor = i;
+                return;
+            }
+        }
+    }
+
+    Keys.onPressed: event => {
+        if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
+            return;
+        const k = event.key;
+        if (k === Qt.Key_Tab || k === Qt.Key_Backtab) {
+            tab = tab === "app" ? "window" : "app";
+        } else if (k === Qt.Key_Down) {
+            move(1);
+        } else if (k === Qt.Key_Up) {
+            move(-1);
+        } else if (k === Qt.Key_Return || k === Qt.Key_Enter) {
+            const e = (page.item?.entries ?? [])[cursor];
+            if (!e)
+                return;
+            page.item.activate(e);
+        } else if (event.text !== "" && page.item?.handleKey(event.text.toLowerCase())) {
+            // la tecla ya hizo su acción
+        } else {
+            return;
+        }
+        event.accepted = true;
+    }
+
     signal closeRequested
 
     // Esc: true si había algo que cancelar antes de cerrar la isla
@@ -104,6 +147,7 @@ Item {
             id: page
             width: parent.width
             sourceComponent: root.tab === "window" ? windowPage : appPage
+            onLoaded: item.cursor = Qt.binding(() => root.cursor)
         }
     }
 

@@ -19,6 +19,8 @@ Column {
     // «Editar ›» desplegado
     property bool editOpen: false
     property bool copied: false
+    // Fila elegida con el teclado (la fija el panel)
+    property int cursor: -1
 
     // Las filas en el orden en que se ven (el teclado recorre las mismas). `header` marca el inicio de una sección.
     readonly property var entries: {
@@ -107,6 +109,15 @@ Column {
         closeRequested();
     }
 
+    // Una tecla del teclado: 1–9 salta a esa ventana y la letra subrayada de cada fila la ejecuta
+    function handleKey(text) {
+        const e = entries.find(x => x.digit !== undefined ? String(x.digit) === text : (x.mnemonic >= 0 && WM.norm(x.label.charAt(x.mnemonic)) === text));
+        if (!e)
+            return false;
+        activate(e);
+        return true;
+    }
+
     component Section: Text {
         topPadding: 4
         color: App.Theme.grayDark
@@ -121,6 +132,7 @@ Column {
         Column {
             id: item
             required property var modelData
+            required property int index
             width: root.width
             spacing: 4
 
@@ -137,6 +149,7 @@ Column {
                 submenu: item.modelData.submenu ?? ""
                 // Las ventanas y los atajos de Editar dejan el hueco del ✓; las acciones se alinean al borde
                 showCheck: item.modelData.indent === true || item.modelData.digit !== undefined
+                selected: root.cursor === item.index
                 onClicked: root.activate(item.modelData)
             }
         }
