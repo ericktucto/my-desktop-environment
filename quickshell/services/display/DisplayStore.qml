@@ -75,6 +75,19 @@ Singleton {
         }
     }
 
+    // ── Perfiles: al cambiar el conjunto de monitores se aplica el que se guardó para ese conjunto ──
+    property bool ready: false
+    onSetKeyChanged: {
+        if (!ready) {
+            if (monitors.length > 0)
+                ready = true;
+            return;
+        }
+        const prof = data.profiles[setKey];
+        if (data.auto && prof && !pending && monitors.length > 0)
+            applyLive(prof);
+    }
+
     // Conectar o quitar un monitor
     Connections {
         target: Hyprland
@@ -238,6 +251,25 @@ Singleton {
         return out;
     }
 
+    // Aplica un modo rápido de una vez, sin confirmar, y lo guarda (el atajo Super+Shift+P)
+    function applyMode(mode) {
+        const c = modeConfig(mode);
+        if (!c)
+            return false;
+        applyLive(c);
+        save(c);
+        Quickshell.execDetached(["notify-send", "-a", "Pantallas", "-i", "video-display", "-t", "2500", "Pantallas", modeLabels[mode] ?? mode]);
+        return true;
+    }
+
+    readonly property var modeOrder: ["mirror", "extend", "external", "laptop"]
+    readonly property var modeLabels: ({
+            mirror: "Espejo",
+            extend: "Extender",
+            external: "Solo el monitor externo",
+            laptop: "Solo el portátil"
+        })
+
     // Modo que se ve ahora
     readonly property string currentMode: {
         const l = laptop;
@@ -268,6 +300,11 @@ Singleton {
         function lua(): string {
             const c = store.currentConfig();
             return Object.keys(c).map(n => store.luaFor(n, c[n])).join("\n");
+        }
+        // El siguiente modo (espejo → extender → solo externo → solo portátil), como Win+P
+        function cycle(): string {
+            const i = store.modeOrder.indexOf(store.currentMode);
+            return store.applyMode(store.modeOrder[(i + 1) % store.modeOrder.length]) ? "ok" : "error: sin monitor externo";
         }
         function keep(): void {
             store.keep();

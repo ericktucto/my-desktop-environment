@@ -27,6 +27,12 @@ FloatingWindow {
             source: "pages/BarPage.qml"
         },
         {
+            id: "displays",
+            name: "Pantallas",
+            glyph: 0xf108,
+            source: "pages/DisplaysPage.qml"
+        },
+        {
             id: "nightlight",
             name: "Luz nocturna",
             glyph: 0xf186,
