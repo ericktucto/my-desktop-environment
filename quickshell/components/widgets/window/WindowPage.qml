@@ -1,21 +1,102 @@
 import QtQuick
 import "../controlcenter/" as CC
 import "../../../services/windows/" as WS
+import "../../../services/windows/WindowMenu.js" as WM
 import "../../../" as App
 
-// Pestaña «Ventana»: mover a un workspace o al stash, estado (flotante, fijada, maximizada…), capturar,
-// mover al otro monitor, cerrar y forzar el cierre. Cada acción cierra la isla.
+// Pestaña «Ventana»: mover a un workspace o al stash (chips, con su atajo debajo) y una lista tipo menú con
+// el estado (flotante, fijada, maximizada…), capturar, mover al otro monitor, cerrar y forzar el cierre.
+// Cada fila lleva su atajo de Hyprland (Config.activeWindow.hyprKeys). Cada acción cierra la isla.
 Column {
     id: root
 
     readonly property var store: WS.ActiveWindowStore
     readonly property var info: store.info
+    readonly property var cfg: App.Config.activeWindow
     readonly property bool floating: info.floating === true
     readonly property bool inStash: (info.workspace?.name ?? "") === "special:stash"
     // «Forzar cierre» espera un segundo clic
     property bool killArmed: false
 
-    spacing: 8
+    // Acciones de la lista, en el orden en que se ven (el teclado recorre las mismas)
+    readonly property var entries: {
+        const k = cfg.hyprKeys;
+        const list = [
+            {
+                id: "float",
+                label: "Flotante",
+                keys: k.float,
+                checked: floating,
+                run: () => store.toggleFloat()
+            },
+            {
+                id: "pin",
+                label: "Fijar",
+                keys: k.pin,
+                checked: info.pinned === true,
+                enabled: floating,
+                run: () => store.togglePin()
+            },
+            {
+                id: "center",
+                label: "Centrar",
+                keys: k.center,
+                enabled: floating,
+                run: () => store.center()
+            },
+            {
+                id: "maximize",
+                label: "Maximizar",
+                keys: k.maximize,
+                checked: info.fullscreen === 1,
+                run: () => store.toggleMaximize()
+            },
+            {
+                id: "fullscreen",
+                label: "Pantalla completa",
+                keys: k.fullscreen,
+                checked: info.fullscreen === 2,
+                run: () => store.toggleFullscreen()
+            },
+            {
+                id: "group",
+                label: "Agrupar",
+                keys: k.group,
+                checked: (info.grouped?.length ?? 0) > 0,
+                run: () => store.toggleGroup()
+            },
+            {
+                id: "capture",
+                label: "Capturar",
+                keys: k.capture,
+                run: () => store.capture()
+            }
+        ];
+        if (store.otherMonitor)
+            list.push({
+                id: "monitor",
+                label: "Mover a " + store.otherMonitor.name,
+                run: () => store.moveToMonitor()
+            });
+        list.push({
+            id: "close",
+            label: "Cerrar",
+            keys: k.close,
+            separator: true,
+            run: () => store.close()
+        });
+        list.push({
+            id: "kill",
+            label: killArmed ? "¿Forzar? Clic otra vez" : "Forzar cierre",
+            danger: true,
+            armed: killArmed,
+            confirm: true,
+            run: () => store.kill()
+        });
+        return list;
+    }
+
+    spacing: 6
 
     signal closeRequested
 
@@ -31,6 +112,18 @@ Column {
     function act(fn) {
         fn();
         closeRequested();
+    }
+
+    // Ejecuta una fila; «Forzar cierre» pide primero un segundo clic
+    function activate(e) {
+        if (e.enabled === false)
+            return;
+        if (e.confirm && !killArmed) {
+            killArmed = true;
+            killTimer.restart();
+            return;
+        }
+        act(e.run);
     }
 
     component Section: Text {
@@ -61,54 +154,35 @@ Column {
             onClicked: root.act(() => root.store.toggleStash())
         }
     }
-
-    Section {
-        text: "VENTANA"
-    }
-    Flow {
-        width: parent.width
-        spacing: 6
-        CC.Chip {
-            label: "Flotante"
-            selected: root.floating
-            onClicked: root.act(() => root.store.toggleFloat())
+    Row {
+        spacing: 12
+        Row {
+            spacing: 6
+            KeyCaps {
+                anchors.verticalCenter: parent.verticalCenter
+                keys: root.cfg.hyprKeys.moveTo
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "mover"
+                color: App.Theme.gray
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.xs
+            }
         }
-        CC.Chip {
-            label: "Fijar"
-            selected: root.info.pinned === true
-            enabled: root.floating
-            opacity: enabled ? 1 : 0.4
-            onClicked: root.act(() => root.store.togglePin())
-        }
-        CC.Chip {
-            label: "Centrar"
-            enabled: root.floating
-            opacity: enabled ? 1 : 0.4
-            onClicked: root.act(() => root.store.center())
-        }
-        CC.Chip {
-            label: "Maximizar"
-            selected: root.info.fullscreen === 1
-            onClicked: root.act(() => root.store.toggleMaximize())
-        }
-        CC.Chip {
-            label: "Pantalla completa"
-            selected: root.info.fullscreen === 2
-            onClicked: root.act(() => root.store.toggleFullscreen())
-        }
-        CC.Chip {
-            label: "Agrupar"
-            selected: (root.info.grouped?.length ?? 0) > 0
-            onClicked: root.act(() => root.store.toggleGroup())
-        }
-        CC.Chip {
-            label: "Capturar"
-            onClicked: root.act(() => root.store.capture())
-        }
-        CC.Chip {
-            visible: root.store.otherMonitor !== null
-            label: "Mover a " + (root.store.otherMonitor?.name ?? "")
-            onClicked: root.act(() => root.store.moveToMonitor())
+        Row {
+            spacing: 6
+            KeyCaps {
+                anchors.verticalCenter: parent.verticalCenter
+                keys: root.cfg.hyprKeys.stash
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "stash"
+                color: App.Theme.gray
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.xs
+            }
         }
     }
 
@@ -118,44 +192,29 @@ Column {
         color: App.Theme.islandEdge
     }
 
-    Item {
-        width: parent.width
-        height: 32
+    Repeater {
+        model: root.entries
+        Column {
+            id: item
+            required property var modelData
+            width: root.width
+            spacing: 6
 
-        CC.SmallButton {
-            label: "Cerrar"
-            onClicked: root.act(() => root.store.close())
-        }
-
-        // Mata el proceso: pide un segundo clic
-        Rectangle {
-            anchors.right: parent.right
-            width: killText.implicitWidth + 32
-            height: 32
-            radius: 16
-            color: root.killArmed ? App.Theme.red : (killMouse.containsMouse ? App.Theme.surfaceActive : App.Theme.surface)
-            Text {
-                id: killText
-                anchors.centerIn: parent
-                text: root.killArmed ? "¿Forzar? Clic otra vez" : "Forzar cierre"
-                color: root.killArmed ? App.Theme.white : App.Theme.red
-                font.family: App.Config.fonts.text
-                font.pixelSize: App.Config.fontSize.sm
-                font.weight: Font.DemiBold
+            Rectangle {
+                visible: item.modelData.separator === true
+                width: parent.width
+                height: 1
+                color: App.Theme.islandEdge
             }
-            MouseArea {
-                id: killMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if (root.killArmed) {
-                        root.act(() => root.store.kill());
-                    } else {
-                        root.killArmed = true;
-                        killTimer.restart();
-                    }
-                }
+            MenuRow {
+                label: item.modelData.label
+                mnemonic: item.modelData.enabled === false ? -1 : WM.indexOfLetter(item.modelData.label, root.cfg.windowMnemonics[item.modelData.id])
+                keys: item.modelData.keys ?? ""
+                checked: item.modelData.checked === true
+                danger: item.modelData.danger === true
+                armed: item.modelData.armed === true
+                enabled: item.modelData.enabled !== false
+                onClicked: root.activate(item.modelData)
             }
         }
     }

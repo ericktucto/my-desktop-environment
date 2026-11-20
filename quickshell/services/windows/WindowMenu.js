@@ -96,3 +96,88 @@ function stashTarget(info, currentId) {
     var name = info && info.workspace ? info.workspace.name : "";
     return name === "special:stash" ? currentId : "special:stash";
 }
+
+// ── Atajos a la vista ──
+var KEY_NAMES = {
+    SUPER: "Super",
+    CTRL: "Ctrl",
+    CONTROL: "Ctrl",
+    ALT: "Alt",
+    SHIFT: "⇧",
+    PRINT: "Impr",
+    PERIOD: ".",
+    RETURN: "Enter",
+    ENTER: "Enter",
+    TAB: "Tab",
+    ESCAPE: "Esc",
+    SPACE: "Espacio"
+};
+
+// "SUPER+SHIFT+F" → ["Super", "⇧", "F"] (para dibujar cada tecla en su cajita)
+function keyLabels(text) {
+    return String(text || "").split("+").map(function (s) {
+        return s.trim();
+    }).filter(function (s) {
+        return s !== "";
+    }).map(function (k) {
+        var up = k.toUpperCase();
+        if (KEY_NAMES[up])
+            return KEY_NAMES[up];
+        return k.length === 1 ? up : k;
+    });
+}
+
+// Letra sin acento y en minúscula (para comparar mnemónicos)
+function norm(ch) {
+    return ch.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function isLetterOrDigit(ch) {
+    return /^[a-z0-9]$/.test(norm(ch));
+}
+
+// Índice de la primera aparición de `letter` en `label` (sin distinguir acentos ni mayúsculas); -1 si no está
+function indexOfLetter(label, letter) {
+    var l = norm(String(letter || ""));
+    if (l === "")
+        return -1;
+    var s = String(label);
+    for (var i = 0; i < s.length; i++)
+        if (norm(s.charAt(i)) === l)
+            return i;
+    return -1;
+}
+
+// Para cada nombre, el índice de su letra subrayada: la primera libre (que no esté en `used` ni la haya
+// tomado otro nombre). -1 si no queda ninguna.
+function assignMnemonics(labels, used) {
+    var taken = {};
+    (used || []).forEach(function (u) {
+        taken[norm(String(u))] = true;
+    });
+    return labels.map(function (label) {
+        var s = String(label);
+        for (var i = 0; i < s.length; i++) {
+            if (!isLetterOrDigit(s.charAt(i)))
+                continue;
+            var n = norm(s.charAt(i));
+            if (!taken[n]) {
+                taken[n] = true;
+                return i;
+            }
+        }
+        return -1;
+    });
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Texto con la letra `index` subrayada, para Text.StyledText
+function underline(label, index) {
+    var s = String(label);
+    if (index < 0 || index >= s.length)
+        return escapeHtml(s);
+    return escapeHtml(s.slice(0, index)) + "<u>" + escapeHtml(s.charAt(index)) + "</u>" + escapeHtml(s.slice(index + 1));
+}

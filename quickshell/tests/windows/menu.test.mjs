@@ -32,4 +32,24 @@ eq("stash: va al stash", M.stashTarget({ workspace: { name: "2" } }, 2), "specia
 eq("stash: vuelve", M.stashTarget({ workspace: { name: "special:stash" } }, 3), 3);
 eq("stash: sin info", M.stashTarget(null, 1), "special:stash");
 
+// keyLabels
+eq("keyLabels Super+Shift+F", M.keyLabels("SUPER+SHIFT+F"), ["Super", "⇧", "F"]);
+eq("keyLabels con rango", M.keyLabels("SUPER+SHIFT+1…4"), ["Super", "⇧", "1…4"]);
+eq("keyLabels Print", M.keyLabels("Print"), ["Impr"]);
+eq("keyLabels period", M.keyLabels("SUPER+period"), ["Super", "."]);
+eq("keyLabels minúscula", M.keyLabels("ctrl+t"), ["Ctrl", "T"]);
+eq("keyLabels F5", M.keyLabels("F5"), ["F5"]);
+eq("keyLabels vacío", M.keyLabels(""), []);
+
+// indexOfLetter / assignMnemonics / underline
+eq("indexOfLetter", M.indexOfLetter("Fijar", "j"), 2);
+eq("indexOfLetter con acento", M.indexOfLetter("Atajos Pestaña", "n"), 12);
+eq("indexOfLetter ausente", M.indexOfLetter("Fijar", "z"), -1);
+eq("mnemónicos: primera libre", M.assignMnemonics(["Deshacer", "Copiar", "Cortar", "Pegar"], []), [0, 0, 1, 0]);
+eq("mnemónicos: respeta usadas", M.assignMnemonics(["Editar", "Abrir"], ["e"]), [1, 0]);
+eq("mnemónicos: salta signos y se agota", M.assignMnemonics(["--", "aa", "a"], []), [-1, 0, -1]);
+eq("underline", M.underline("Fijar", 2), "Fi<u>j</u>ar");
+eq("underline escapa", M.underline("A&B <x>", 0), "<u>A</u>&amp;B &lt;x&gt;");
+eq("underline sin índice", M.underline("Fijar", -1), "Fijar");
+
 done();

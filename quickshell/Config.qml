@@ -130,6 +130,33 @@ Singleton {
         readonly property int tooltipDelay: 600
         readonly property int panelWidth: 380        // ancho de la isla de menús (clic izquierdo o derecho)
         readonly property int killConfirmMs: 3000    // «Forzar cierre» espera este tiempo el segundo clic
+        // Atajos de Hyprland que se muestran junto a cada acción de la pestaña «Ventana» (a mano: si se cambia
+        // uno en hypr/keybinds hay que cambiarlo también aquí)
+        readonly property var hyprKeys: ({
+                float: "SUPER+V",
+                pin: "SUPER+SHIFT+V",
+                center: "SUPER+CTRL+V",
+                maximize: "SUPER+F",
+                fullscreen: "SUPER+SHIFT+F",
+                group: "SUPER+SHIFT+G",
+                capture: "Print",
+                close: "SUPER+Q",
+                moveTo: "SUPER+SHIFT+1…4",
+                stash: "SUPER+A"
+            })
+        // Letra subrayada (la que ejecuta la fila con el teclado) de cada acción de la pestaña «Ventana»
+        readonly property var windowMnemonics: ({
+                float: "f",
+                pin: "j",
+                center: "c",
+                maximize: "m",
+                fullscreen: "p",
+                group: "g",
+                capture: "t",
+                monitor: "o",
+                close: "e",
+                kill: "z"
+            })
         // Atajos que el menú «App» manda a la ventana (formato "CTRL+SHIFT+C")
         readonly property var shortcuts: [
             { label: "Deshacer", keys: "CTRL+Z" },
@@ -155,6 +182,8 @@ Singleton {
                 },
                 "firefox": {
                     replace: false,
+                    // Atajo de cada acción del .desktop (solo para mostrarlo)
+                    actionKeys: { "new-window": "CTRL+N", "new-private-window": "CTRL+SHIFT+P" },
                     items: [
                         { label: "Nueva pestaña", keys: "CTRL+T" },
                         { label: "Cerrar pestaña", keys: "CTRL+W" },
