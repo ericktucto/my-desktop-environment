@@ -79,6 +79,27 @@ eq("hueco: justo después", [0, 1, 2].map(i => D.gapShift(i, 1, 2, 50)), [0, 0, 
 eq("hueco: otra sección", [0, 1, 2, 3, 4].map(i => D.gapShift(i, 0, 4, 50)), [0, -50, -50, -50, 0]);
 eq("hueco: sin arrastre", D.gapShift(1, -1, -1, 50), 0);
 
+// boardDrop
+const b1 = T("b1"), b2 = T("b2"), b3 = T("b3"), d1 = T("d1", { status: "doing" });
+const cols = [{ key: "todo", tasks: [b1, b2, b3] }, { key: "doing", tasks: [d1] }];
+r = D.boardDrop(cols, "b1", "doing", 0, man);
+eq("tablero: a otra columna, antes de d1", [r.status, r.beforeId, r.afterId, r.label, r.noop], ["doing", "d1", "", "Tarea en curso", false]);
+r = D.boardDrop(cols, "b1", "doing", 1, man);
+eq("tablero: al final de otra columna", [r.status, r.beforeId, r.afterId], ["doing", "", "d1"]);
+r = D.boardDrop(cols, "b1", "blocked", 0, man);
+eq("tablero: a una columna que falta", [r.status, r.beforeId, r.afterId, r.label], ["blocked", "", "", "Tarea bloqueada"]);
+r = D.boardDrop(cols, "b1", "done", 0, man);
+eq("tablero: a Hecha hoy sin orden", [r.status, r.beforeId, r.afterId], ["done", "", ""]);
+r = D.boardDrop(cols, "b1", "todo", 2, man);
+eq("tablero: misma columna, otro lugar", [r.noop, r.status, r.beforeId, r.afterId], [false, "", "", "b3"]);
+eq("tablero: misma columna, mismo lugar", D.boardDrop(cols, "b2", "todo", 1, man).noop, true);
+r = D.boardDrop(cols, "b1", "todo", 2, { sort: "due" });
+eq("tablero: sin orden manual, misma columna", [r.noop, r.hint], [true, "Cambia a Orden manual para ordenar"]);
+r = D.boardDrop(cols, "b1", "doing", 0, { sort: "due" });
+eq("tablero: sin orden manual, otra columna cambia el estado", [r.noop, r.status, r.beforeId, r.afterId], [false, "doing", "", ""]);
+eq("tablero: columna inválida", D.boardDrop(cols, "b1", "cancelled", 0, man), null);
+eq("tablero: tarea inexistente", D.boardDrop(cols, "zzz", "todo", 0, man), null);
+
 // moveByOrder / moveTaskAfter
 const pj = (id, order) => ({ id, name: id, order, created: order });
 const ps = [pj("a", 1000), pj("b", 2000), pj("c", 3000)];

@@ -269,6 +269,38 @@ Item {
         store.drop(id, r.changes, r.beforeId, r.afterId, r.label);
     }
 
+    // Se soltó una tarjeta en el Tablero: cambia de estado y/o de lugar
+    function dropOnBoard(id, status, index) {
+        const r = Drop.boardDrop(groups, id, status, index, {
+            sort: store.sortMode
+        });
+        if (!r)
+            return;
+        select(id);
+        if (r.noop) {
+            if (r.hint) {
+                hint = r.hint;
+                hintTimer.restart();
+            }
+            return;
+        }
+        hint = "";
+        if (r.status === "") {
+            store.drop(id, {}, r.beforeId, r.afterId, r.label);
+        } else if (r.status === "done") {
+            moveTo(id, "done");
+        } else if (r.status === "blocked") {
+            // Pregunta el motivo: el lugar y el estado quedan como dos pasos de deshacer
+            if (r.beforeId !== "" || r.afterId !== "")
+                store.drop(id, {}, r.beforeId, r.afterId, "Tarea movida");
+            moveTo(id, "blocked");
+        } else {
+            store.drop(id, {
+                status: r.status
+            }, r.beforeId, r.afterId, r.label);
+        }
+    }
+
     // Se soltó una tarea sobre una entrada de la barra lateral
     function dropOnSidebar(view, id) {
         const t = store.get(id);
@@ -365,7 +397,7 @@ Item {
 
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
-        if (list.cancelDrag())
+        if (list.cancelDrag() || boardView.cancelDrag())
             return true;
         if (dialog.visible) {
             dialog.close();
@@ -781,10 +813,8 @@ Item {
                 root.focusList();
             }
             onTaskOpened: id => root.openDetail(id)
-            onMoved: (id, status) => {
-                root.select(id);
-                root.moveTo(id, status);
-            }
+            manualOrder: root.store.sortMode === "manual"
+            onTaskDropped: (id, status, index) => root.dropOnBoard(id, status, index)
             onProjectPicked: id => root.boardProject = id
         }
 

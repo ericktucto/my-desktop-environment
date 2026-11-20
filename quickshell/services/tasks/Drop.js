@@ -159,6 +159,63 @@ function sidebarDrop(task, targetView, opts) {
     return null;
 }
 
+// Soltar en el Tablero. `groups` = [{ key: todo|doing|blocked|done, tasks }] (pueden faltar los vacíos);
+// `targetKey` es la columna donde se suelta e `index` la posición dentro de ella sin contar la tarjeta.
+// opts = { sort }. → { noop, hint, status, beforeId, afterId, label } o null si no vale.
+//  - `status` es el estado nuevo ("" si sigue en su columna).
+//  - «Hecha hoy» va por hora de cierre: ahí solo cambia el estado, sin orden.
+var BOARD_LABELS = {
+    todo: "Tarea reabierta",
+    doing: "Tarea en curso",
+    blocked: "Tarea bloqueada",
+    done: "Tarea completada"
+};
+
+function boardDrop(groups, id, targetKey, index, opts) {
+    var from = null;
+    var to = null;
+    groups.forEach(function (g) {
+        if (g.key === targetKey)
+            to = g;
+        if (indexOfIn(g.tasks, id) >= 0)
+            from = g;
+    });
+    if (!from || !BOARD_LABELS[targetKey])
+        return null;
+    if (!to)
+        to = {
+            key: targetKey,
+            tasks: []
+        };
+    var manual = opts.sort === "manual";
+    var res = {
+        noop: false,
+        status: from === to ? "" : targetKey,
+        beforeId: "",
+        afterId: "",
+        label: from === to ? "Tarea movida" : BOARD_LABELS[targetKey]
+    };
+    var rest = to.tasks.filter(function (t) {
+        return t.id !== id;
+    });
+    var at = Math.max(0, Math.min(rest.length, index));
+    if (manual && targetKey !== "done") {
+        if (at < rest.length)
+            res.beforeId = rest[at].id;
+        else if (rest.length > 0)
+            res.afterId = rest[rest.length - 1].id;
+    }
+    if (from === to) {
+        if (targetKey === "done" || (manual && at === indexOfIn(from.tasks, id)))
+            res.noop = true;
+        else if (!manual) {
+            res.noop = true;
+            res.hint = ORDER_HINT;
+        }
+    }
+    return res;
+}
+
 // Cuánto se corre la fila `i` para dejar el hueco cuando la fila `from` se arrastra para quedar antes de
 // la fila `at` (`at` cuenta con la arrastrada todavía en su sitio; todas del alto `h`).
 // La arrastrada deja su lugar (las de abajo suben `h`) y el hueco se abre en `at` (bajan `h`).

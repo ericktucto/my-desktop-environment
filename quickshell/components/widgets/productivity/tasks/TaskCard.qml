@@ -3,8 +3,9 @@ import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../" as App
 
-// Una tarea como tarjeta del Tablero. Se arrastra a otra columna (cambia de estado); mientras se
-// arrastra pasa a `dragParent` para poder salir de su columna.
+// Una tarea como tarjeta del Tablero. Se arrastra a otra columna (cambia de estado), dentro de la
+// suya (orden) o a la barra lateral; mientras se arrastra pasa a `dragParent` para poder salir de su
+// columna.
 Item {
     id: root
 
@@ -13,8 +14,14 @@ Item {
     // Item donde vive la tarjeta mientras se arrastra (el tablero entero)
     property Item dragParent
 
+    // Se canceló el arrastre (Esc): se suelta sin hacer nada
+    property bool cancelled: false
+
     signal clicked
     signal opened
+    // Arrastre: empieza (con la tarjeta que se mueve) y termina (cancelado o no)
+    signal dragBegan(Item card)
+    signal dragEnded(bool cancelled)
 
     readonly property var store: TS.TaskStore
     readonly property bool overdue: Dates.isOverdue(task, store.now)
@@ -37,12 +44,15 @@ Item {
         // Se saca de la columna mientras se arrastra
         Drag.active: dragArea.drag.active
         Drag.keys: ["task"]
-        Drag.hotSpot.x: width / 2
-        Drag.hotSpot.y: height / 2
+        // El punto de la tarjeta que agarró el mouse: es el que cuenta para saber dónde cae
+        property real grabX: width / 2
+        property real grabY: height / 2
+        Drag.hotSpot.x: grabX
+        Drag.hotSpot.y: grabY
         property string taskId: root.task.id
 
         states: State {
-            when: root.dragging
+            when: root.dragging && !root.cancelled
             ParentChange {
                 target: card
                 parent: root.dragParent
@@ -129,14 +139,24 @@ Item {
         id: dragArea
         anchors.fill: parent
         hoverEnabled: true
-        drag.target: card
+        drag.target: root.cancelled ? null : card
+        drag.threshold: 6
+        onPressed: mouse => {
+            root.cancelled = false;
+            card.grabX = mouse.x;
+            card.grabY = mouse.y;
+        }
         onClicked: root.clicked()
         onDoubleClicked: root.opened()
-        // Al soltar: se avisa a la columna donde cae y la tarjeta vuelve a su sitio (el estado la
-        // reencuentra en su lugar cuando el modelo se actualiza)
+        // Al soltar: se avisa a la barra lateral si cae ahí y al tablero; la tarjeta vuelve a su sitio
+        // (el estado la reencuentra en su lugar cuando el modelo se actualiza)
         drag.onActiveChanged: {
-            if (!drag.active) {
-                card.Drag.drop();
+            if (drag.active) {
+                root.dragBegan(card);
+            } else {
+                if (!root.cancelled)
+                    card.Drag.drop();
+                root.dragEnded(root.cancelled);
                 // (si la lista se rehízo al soltar, la tarjeta ya no existe)
                 Qt.callLater(() => {
                     if (card) {
@@ -145,6 +165,14 @@ Item {
                     }
                 });
             }
+        }
+    }
+
+    // Esc a mitad del arrastre: la tarjeta vuelve a su sitio sin esperar a soltar el botón
+    onCancelledChanged: {
+        if (cancelled) {
+            card.x = 0;
+            card.y = 0;
         }
     }
 }
