@@ -27,6 +27,7 @@ Singleton {
     readonly property var tasks: data.tasks
     readonly property var timer: data.timer
     readonly property var appearance: data.appearance
+    readonly property var island: data.island
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -110,6 +111,14 @@ Singleton {
             property string battery: App.Config.profiles.battery
             property string ac: App.Config.profiles.ac
         }
+        // Qué hace cada clic y la rueda sobre la isla central (ids de services/actions/ActionRunner.qml)
+        property JsonObject island: JsonObject {
+            property string left: "productivity"
+            property string right: "control"
+            property string middle: "none"
+            property string wheel: "volume"
+            property string shiftWheel: "brightness"
+        }
         property JsonObject appearance: JsonObject {
             property bool animations: true                  // false = sin animaciones (todas las duraciones en 0)
             property string wallpaperDir: ""                // vacío = Config.wallpaperPicker.dir
@@ -163,6 +172,12 @@ Singleton {
             data.nightLight.end = App.Config.nightLight.end;
             data.nightLight.latitude = "";
             data.nightLight.longitude = "";
+        } else if (name === "island") {
+            data.island.left = "productivity";
+            data.island.right = "control";
+            data.island.middle = "none";
+            data.island.wheel = "volume";
+            data.island.shiftWheel = "brightness";
         } else if (name === "appearance") {
             data.appearance.animations = true;
             data.appearance.wallpaperDir = "";

@@ -3,6 +3,8 @@ import "../../base" as Base
 import "../../../" as App
 import "../../../services/osd/" as O
 import "../../../services/panels/" as P
+import "../../../services/actions/" as AC
+import "../../../services/settings/" as ST
 
 Base.Island {
     id: root
@@ -67,24 +69,51 @@ Base.Island {
         showDate: clockMouse.containsMouse
     }
 
-    // Clic izquierdo en el reloj: Productividad. Clic derecho: centro de control.
+    // Clic en el reloj, según Preferencias → Barra e isla (por defecto: izquierdo Productividad, derecho el centro
+    // de control). Esas dos abren su panel aquí mismo; el resto llama a ActionRunner.
     // parent: root porque los hijos de Island van a un Row (anchors.fill lo rompe).
+    function runClick(id) {
+        if (id === 'control') {
+            root.current = 'control';
+            islandBody.refreshControl();
+            root.open();
+        } else if (id === 'productivity') {
+            root.current = 'productivity';
+            islandBody.openProductivity();
+            root.open();
+        } else {
+            AC.ActionRunner.run(id);
+        }
+    }
+
     MouseArea {
         id: clockMouse
         parent: root
         anchors.fill: parent
         enabled: !root.expanded && !root.compact
         hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        property real wheelAcc: 0
         onClicked: mouse => {
-            if (mouse.button === Qt.RightButton) {
-                root.current = 'control';
-                islandBody.refreshControl();
-            } else {
-                root.current = 'productivity';
-                islandBody.openProductivity();
+            const c = ST.SettingsStore.island;
+            root.runClick(mouse.button === Qt.RightButton ? c.right : (mouse.button === Qt.MiddleButton ? c.middle : c.left));
+        }
+        // La rueda (el touchpad acumula): con Shift, la otra acción
+        onWheel: wheel => {
+            const dy = wheel.angleDelta.y;
+            const id = (wheel.modifiers & Qt.ShiftModifier) ? ST.SettingsStore.island.shiftWheel : ST.SettingsStore.island.wheel;
+            // Con Shift muchos sistemas mandan el giro por el eje X
+            const d = dy !== 0 ? dy : wheel.angleDelta.x;
+            if (d === 0 || id === "none")
+                return;
+            if (wheelAcc * d < 0)
+                wheelAcc = 0;
+            wheelAcc += d;
+            while (Math.abs(wheelAcc) >= App.Config.workspaces.wheelStep) {
+                AC.ActionRunner.wheel(id, wheelAcc > 0 ? 1 : -1);
+                wheelAcc -= (wheelAcc > 0 ? 1 : -1) * App.Config.workspaces.wheelStep;
             }
-            root.open();
+            wheel.accepted = true;
         }
     }
 

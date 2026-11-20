@@ -21,6 +21,12 @@ FloatingWindow {
             source: "pages/AppearancePage.qml"
         },
         {
+            id: "bar",
+            name: "Barra e isla",
+            glyph: 0xf0c9,
+            source: "pages/BarPage.qml"
+        },
+        {
             id: "nightlight",
             name: "Luz nocturna",
             glyph: 0xf186,
