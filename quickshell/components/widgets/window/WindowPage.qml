@@ -1,6 +1,7 @@
 import QtQuick
 import "../controlcenter/" as CC
 import "../../../services/windows/" as WS
+import "../../../services/keybinds/" as K
 import "../../../services/windows/WindowMenu.js" as WM
 import "../../../" as App
 
@@ -20,9 +21,21 @@ Column {
     // Fila elegida con el teclado (la fija el panel)
     property int cursor: -1
 
+    // Los atajos que se muestran: los de Config.activeWindow.hyprKeys (los de fábrica) pasan por la lista real de
+    // Hyprland, así salen los que cambiaste en Preferencias → Atajos (o ninguno si lo quitaste)
+    readonly property var k: {
+        const out = {};
+        const d = cfg.hyprKeys;
+        Object.keys(d).forEach(n => {
+            const b = K.KeybindStore.byId(d[n].replace(/\+/g, " + "));
+            out[n] = b ? (b.bind ?? "").replace(/ \+ /g, "+") : d[n];
+        });
+        return out;
+    }
+
     // Acciones de la lista, en el orden en que se ven (el teclado recorre las mismas)
     readonly property var entries: {
-        const k = cfg.hyprKeys;
+        const k = root.k;
         const list = [
             {
                 id: "float",
@@ -180,7 +193,7 @@ Column {
             spacing: 6
             KeyCaps {
                 anchors.verticalCenter: parent.verticalCenter
-                keys: root.cfg.hyprKeys.moveTo
+                keys: root.k.moveTo
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -194,7 +207,7 @@ Column {
             spacing: 6
             KeyCaps {
                 anchors.verticalCenter: parent.verticalCenter
-                keys: root.cfg.hyprKeys.stash
+                keys: root.k.stash
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter

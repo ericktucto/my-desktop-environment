@@ -7,10 +7,10 @@ Lo que la shell ya hace está en el [README](../README.md).
 ## 🔴 Prioridad alta: lo básico de toda shell
 
 ### Preferencias del sistema (en curso, por fases; detalle en `plan.md`)
-Hechas la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de) la Fase 2 (clics, reloj, pills visibles y su orden) y la Fase 3 (Pantallas).
+Hechas la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de) la Fase 2 (clics, reloj, pills visibles y su orden) y la Fase 3 (Pantallas) y la Fase 4 (Atajos).
 - [ ] **Fase 2. Barra e isla** (hecho: clics y rueda de la isla central, reloj y pills visibles). hecho también el clic de Workspaces, Ventana activa y Notificaciones. Falta: workspaces (cantidad, puntos o números) y el orden de las pills.
 - [ ] **Fase 3, lo que quedó fuera:** arrastrar los monitores para cambiar su disposición (hoy el modo Extender pone el externo a la derecha) y probar con un monitor externo real (solo se probó con la laptop).
-- [ ] **Fase 4. Atajos de teclado:** lista, editar grabando la combinación, conflictos y ayuda (`Super+/`).
+- [ ] **Fase 4, lo que quedó fuera:** grabar la tecla Super (Hyprland no se la pasa a la ventana; se añade con un botón), teclas con símbolos (`[`, `;`…) y atajos de varios pasos (submapas).
 - [ ] **Fase 5. Sonidos del sistema:** notificaciones, dispositivos, energía y acciones de la shell.
 - [ ] **Fase 6. Cuentas:** Google y GitHub.
 - [ ] **Fase 7. El resto de las pills:** Notificaciones, Bloqueo y reloj, Apps y launcher, Productividad.
@@ -40,10 +40,6 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 
 ### Historial del portapapeles
 - [ ] Opcional: pegar solo al elegir en el portapapeles (ya hay `wtype`, falta hacerlo ahí) y más destinos para compartir (KDE Connect, LocalSend…).
-
-### Ayuda de atajos de teclado
-- [ ] Panel con todos los atajos (`Super+/`).
-- [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell. Con eso, el menú de la ventana activa leería sus atajos de ahí en vez de `Config.activeWindow.hyprKeys` (hoy escritos a mano).
 
 ### Batería y energía
 - [ ] Opcional: pasar a Ahorro al llegar a batería baja, mostrar el perfil en la pill y un atajo de teclado para cambiarlo.

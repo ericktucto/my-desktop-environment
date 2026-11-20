@@ -26,6 +26,10 @@ map.add({ map.SUPER, map.SHIFT, "period" }, hl.dsp.exec_cmd("qs ipc call stixshe
 map.add({ map.SUPER, "comma" }, hl.dsp.exec_cmd("qs ipc call stixshell@settings toggle"), nil,
     "Preferencias del sistema")
 
+-- ayuda de atajos: la página Atajos de Preferencias (con búsqueda)
+map.add({ map.SUPER, "slash" }, hl.dsp.exec_cmd("qs ipc call stixshell@settings open shortcuts"), nil,
+    "Ayuda de atajos")
+
 -- menú de sesión
 map.add({ map.SUPER, "Escape" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil, "Menú de sesión")
 map.add({ "XF86PowerOff" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil,
