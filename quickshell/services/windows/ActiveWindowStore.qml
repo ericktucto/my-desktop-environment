@@ -149,6 +149,23 @@ Singleton {
         if (targetAddress !== "")
             run(WM.sendShortcut(targetAddress, keys));
     }
+    // Manda el atajo un momento después, cuando la isla ya se cerró y el teclado volvió a la app
+    // (la ventana se guarda antes: al cerrar la isla se suelta la fijada)
+    property string pendingAddress: ""
+    property string pendingKeys: ""
+    function sendShortcutLater(keys) {
+        if (targetAddress === "")
+            return;
+        pendingAddress = targetAddress;
+        pendingKeys = keys;
+        shortcutTimer.restart();
+    }
+    Timer {
+        id: shortcutTimer
+        interval: 150
+        onTriggered: store.run(WM.sendShortcut(store.pendingAddress, store.pendingKeys))
+    }
+
     function focusWindow(t) {
         run(WM.focus(t.address));
     }
