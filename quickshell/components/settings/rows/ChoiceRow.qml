@@ -14,10 +14,8 @@ SettingRow {
     changed: defaultValue !== "" && value !== defaultValue
     onResetRequested: picked(defaultValue)
 
-    Flow {
-        width: Math.min(root.width * 0.55, implicitWidth)
+    Row {
         spacing: 6
-        layoutDirection: Qt.RightToLeft
         Repeater {
             model: root.options
             CC.Chip {

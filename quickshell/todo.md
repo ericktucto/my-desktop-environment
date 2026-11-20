@@ -6,6 +6,15 @@ Lo que la shell ya hace está en el [README](../README.md).
 
 ## 🔴 Prioridad alta: lo básico de toda shell
 
+### Preferencias del sistema (en curso, por fases; detalle en `plan.md`)
+Hecha la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de).
+- [ ] **Fase 2. Barra e isla:** clics y rueda de la isla central y de cada pill (la rueda: volumen, y con Shift brillo), pills visibles y su orden, reloj y workspaces.
+- [ ] **Fase 3. Pantallas:** disposición, resolución, escala, rotación, espejo, perfiles automáticos y `Super+Shift+P`.
+- [ ] **Fase 4. Atajos de teclado:** lista, editar grabando la combinación, conflictos y ayuda (`Super+/`).
+- [ ] **Fase 5. Sonidos del sistema:** notificaciones, dispositivos, energía y acciones de la shell.
+- [ ] **Fase 6. Cuentas:** Google y GitHub.
+- [ ] **Fase 7. El resto de las pills:** Notificaciones, Bloqueo y reloj, Apps y launcher, Productividad.
+
 ### Brillo de pantalla
 - [ ] Rueda del mouse sobre el reloj de la isla central para subir o bajar el volumen o el brillo (alternativa por decidir).
 

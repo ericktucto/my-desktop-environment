@@ -15,6 +15,8 @@ SettingRow {
     property var format: v => Math.round(v * 100) + " %"
 
     signal moved(real value)
+    // Al soltar el botón (para aplicar una sola vez algo costoso)
+    signal released
 
     controlWidth: 260
     changed: Math.abs(value - defaultValue) > step / 2
@@ -36,5 +38,6 @@ SettingRow {
         to: 1
         value: root.to > root.from ? (root.value - root.from) / (root.to - root.from) : 0
         onMoved: v => root.moved(Math.round((root.from + v * (root.to - root.from)) / root.step) * root.step)
+        onReleased: root.released()
     }
 }

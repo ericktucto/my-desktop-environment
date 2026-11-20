@@ -19,6 +19,24 @@ FloatingWindow {
             name: "Apariencia",
             glyph: 0xf1fc,
             source: "pages/AppearancePage.qml"
+        },
+        {
+            id: "nightlight",
+            name: "Luz nocturna",
+            glyph: 0xf186,
+            source: "pages/NightLightPage.qml"
+        },
+        {
+            id: "energy",
+            name: "Energía",
+            glyph: 0xf240,
+            source: "pages/EnergyPage.qml"
+        },
+        {
+            id: "about",
+            name: "Acerca de",
+            glyph: 0xf05a,
+            source: "pages/AboutPage.qml"
         }
     ]
 
