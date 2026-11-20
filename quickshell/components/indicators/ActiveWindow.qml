@@ -38,8 +38,8 @@ Base.Island {
     // La ventana se cerró (o se fue) con la isla abierta: se cierra también
     Connections {
         target: root.store
-        function onTargetChanged() {
-            if (root.expanded && root.store.target === null)
+        function onTargetWindowChanged() {
+            if (root.expanded && root.store.targetWindow === null)
                 root.close();
         }
     }

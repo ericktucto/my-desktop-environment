@@ -61,9 +61,9 @@ Singleton {
     // ── Menú de la pill: acciones sobre la ventana que estaba activa al abrirlo ──
     // La ventana se fija por su dirección al abrir (aunque el foco cambie mientras el menú está abierto)
     property string targetAddress: ""
-    readonly property var target: targetAddress === "" ? null : (Hyprland.toplevels.values.find(t => t.address === targetAddress) ?? null)
+    readonly property var targetWindow: targetAddress === "" ? null : (Hyprland.toplevels.values.find(t => t.address === targetAddress) ?? null)
     // Datos de Hyprland de esa ventana (flotante, fijada, workspace, pid…); se leen al abrir
-    readonly property var info: target?.lastIpcObject ?? ({})
+    readonly property var info: targetWindow?.lastIpcObject ?? ({})
     readonly property string className: info.class ?? appId
 
     // Otras ventanas de la misma app (la fijada primero)
