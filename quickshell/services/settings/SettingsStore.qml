@@ -29,6 +29,7 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var keybinds: data.keybinds
     readonly property var displays: data.displays
     readonly property var bar: data.bar
     readonly property var wsPill: data.wsPill
@@ -162,6 +163,10 @@ Singleton {
             property var monitors: ({})
             property var profiles: ({})
             property bool auto: true        // aplicar el perfil solo al conectar o quitar un monitor
+        }
+        // Atajos cambiados por el usuario: id (la combinación de fábrica) → combinación nueva, o false = quitado
+        property JsonObject keybinds: JsonObject {
+            property var overrides: ({})
         }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h

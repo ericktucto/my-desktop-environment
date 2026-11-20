@@ -106,6 +106,10 @@ var KEY_NAMES = {
     SHIFT: "⇧",
     PRINT: "Impr",
     PERIOD: ".",
+    COMMA: ",",
+    SLASH: "/",
+    MINUS: "-",
+    EQUAL: "=",
     RETURN: "Enter",
     ENTER: "Enter",
     TAB: "Tab",
@@ -121,6 +125,12 @@ function keyLabels(text) {
         return s !== "";
     }).map(function (k) {
         var up = k.toUpperCase();
+        if (up === "MOUSE:272")
+            return "Clic izq.";
+        if (up === "MOUSE:273")
+            return "Clic der.";
+        if (up === "MOUSE:274")
+            return "Clic central";
         if (KEY_NAMES[up])
             return KEY_NAMES[up];
         return k.length === 1 ? up : k;

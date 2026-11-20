@@ -34,6 +34,12 @@ FloatingWindow {
             source: "pages/DisplaysPage.qml"
         },
         {
+            id: "shortcuts",
+            name: "Atajos",
+            glyph: 0xf11c,
+            source: "pages/ShortcutsPage.qml"
+        },
+        {
             id: "nightlight",
             name: "Luz nocturna",
             glyph: 0xf186,
