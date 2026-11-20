@@ -104,13 +104,17 @@ function compute(tasks, projects, opts) {
         byTag[k].sort(cmp);
     });
 
-    var upcoming = Object.keys(upcomingMap).sort().map(function (k) {
-        return {
+    // Próximos: siempre los días de la ventana, aunque estén vacíos (en la lista sirven para soltar ahí)
+    var upcoming = [];
+    for (var d = 1; d <= (opts.upcomingDays || 7); d++) {
+        var k = Dates.addDays(today, d);
+        upcoming.push({
             key: k,
             label: Dates.dayLabel(k, now),
-            tasks: upcomingMap[k].sort(cmp)
-        };
-    });
+            tasks: (upcomingMap[k] || []).sort(cmp),
+            drop: true
+        });
+    }
     var upcomingCount = 0;
     upcoming.forEach(function (g) {
         upcomingCount += g.tasks.length;
@@ -281,7 +285,7 @@ function list(v, view, query, projects, now) {
     var kind = i < 0 ? view : view.slice(0, i);
     var arg = i < 0 ? "" : view.slice(i + 1);
     if (kind === "upcoming")
-        groups = v.upcoming;
+        groups = v.counts.upcoming > 0 ? v.upcoming : [];
     else if (kind === "inbox")
         groups = [
             {
@@ -341,7 +345,9 @@ function list(v, view, query, projects, now) {
             {
                 key: "today",
                 label: "Hoy",
-                tasks: v.today
+                tasks: v.today,
+                // Con vencidas, «Hoy» se ve aunque esté vacía: ahí se sueltan para dejarlas para hoy
+                drop: v.overdue.length > 0
             }
         ];
     var match = query && !isEmptyQuery(parseQuery(query)) ? matcher(query, projects, now) : null;
@@ -352,7 +358,8 @@ function list(v, view, query, projects, now) {
             tasks: g.tasks.filter(match)
         } : g;
     }).filter(function (g) {
-        return g.tasks.length > 0;
+        // Sin búsqueda, los grupos donde se puede soltar (`drop`) se quedan aunque estén vacíos
+        return g.tasks.length > 0 || (!match && g.drop === true);
     });
 }
 

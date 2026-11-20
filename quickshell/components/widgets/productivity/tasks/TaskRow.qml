@@ -15,6 +15,8 @@ Item {
     property Item dragParent
     // Se canceló el arrastre (Esc): se suelta sin hacer nada
     property bool cancelled: false
+    // Está sobre un destino donde no vale soltar
+    property bool forbidden: false
 
     // Clic en la fila (selecciona), en el círculo (completa o reabre) y doble clic (abre el detalle)
     signal clicked
@@ -147,7 +149,7 @@ Item {
         hoverEnabled: true
         drag.target: root.cancelled ? null : card
         drag.threshold: 6
-        cursorShape: drag.active ? Qt.ClosedHandCursor : Qt.ArrowCursor
+        cursorShape: drag.active ? (root.forbidden ? Qt.ForbiddenCursor : Qt.ClosedHandCursor) : Qt.ArrowCursor
         onPressed: root.cancelled = false
         onClicked: root.clicked()
         onDoubleClicked: root.opened()

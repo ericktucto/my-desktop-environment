@@ -27,6 +27,12 @@ ListView {
     property int dragAt: -1
     property string dragGroup: ""
     property int dragIndex: 0
+    // Grupos donde no se puede soltar una tarea de otro grupo (Vencidas) y si hay orden manual (hueco)
+    property var lockedGroups: []
+    property bool manualOrder: true
+    property string dragSourceGroup: ""
+    // Está sobre un grupo donde no vale soltar
+    property bool dragInvalid: false
     readonly property bool dragging: dragId !== ""
     readonly property real rowStep: App.Config.tasks.rowHeight + spacing
 
@@ -80,6 +86,12 @@ ListView {
                     late: g.key === "overdue"
                 });
             }
+            if (g.tasks.length === 0)
+                out.push({
+                    kind: "empty",
+                    group: g.key,
+                    id: "e:" + g.key
+                });
             for (const t of g.tasks)
                 out.push({
                     kind: "task",
@@ -128,6 +140,8 @@ ListView {
         dragAt = index;
         dragItem = card;
         dragGroup = rows[index].group;
+        dragSourceGroup = dragGroup;
+        dragInvalid = false;
         dragIndex = 0;
         tick();
     }
@@ -148,6 +162,7 @@ ListView {
         dragItem = null;
         dragFrom = -1;
         dragAt = -1;
+        dragInvalid = false;
     }
 
     function endDrag(cancelled) {
@@ -155,7 +170,7 @@ ListView {
         const group = dragGroup;
         const index = dragIndex;
         clearDrag();
-        if (!cancelled && id !== "")
+        if (!cancelled && id !== "" && group !== "")
             taskDropped(id, group, index);
     }
 
@@ -176,8 +191,18 @@ ListView {
             returnToBounds();
         }
         const y = contentItem.mapFromItem(dragItem, cx, cy).y;
-        // Por ahora solo se reordena dentro de su propia sección
-        const group = rows[dragFrom].group;
+        // Grupo bajo la fila: el de la fila donde está (arriba de todo = el primero, abajo de todo = el último)
+        let group = rows[rows.length - 1].group;
+        for (let i = 0; i < rows.length; i++) {
+            const it = itemAtIndex(i);
+            if (it && y < it.y + it.height + spacing / 2) {
+                group = rows[i].group;
+                break;
+            }
+        }
+        dragInvalid = group !== dragSourceGroup && lockedGroups.includes(group);
+        if (dragInvalid)
+            group = "";
         const others = [];
         let header = -1;
         for (let i = 0; i < rows.length; i++) {
@@ -197,7 +222,11 @@ ListView {
         }
         dragGroup = group;
         dragIndex = n;
-        dragAt = n < others.length ? others[n] : (others.length > 0 ? others[others.length - 1] + 1 : (header >= 0 ? header + 1 : dragFrom));
+        // Sin orden manual la tarea cae donde la deja el orden: no se abre hueco, solo se resalta la sección
+        if (!manualOrder || group === "")
+            dragAt = dragFrom;
+        else
+            dragAt = n < others.length ? others[n] : (others.length > 0 ? others[others.length - 1] + 1 : (header >= 0 ? header + 1 : dragFrom));
     }
 
     Timer {
@@ -223,7 +252,7 @@ ListView {
                 }
             }
         }
-        sourceComponent: modelData.kind === "task" ? rowComponent : headerComponent
+        sourceComponent: modelData.kind === "task" ? rowComponent : (modelData.kind === "empty" ? emptyComponent : headerComponent)
 
         Component {
             id: rowComponent
@@ -232,11 +261,24 @@ ListView {
                 selected: root.selectedId === cell.modelData.id
                 showProject: root.showProject
                 dragParent: root.dragParent
+                forbidden: root.dragInvalid
                 onDragBegan: card => root.beginDrag(cell.modelData.id, cell.index, card)
                 onDragEnded: cancelled => root.endDrag(cancelled)
                 onClicked: root.taskClicked(cell.modelData.id)
                 onToggled: root.taskToggled(cell.modelData.id)
                 onOpened: root.taskOpened(cell.modelData.id)
+            }
+        }
+
+        Component {
+            id: emptyComponent
+            Text {
+                leftPadding: 10
+                verticalAlignment: Text.AlignVCenter
+                text: "Sin tareas"
+                color: root.dragging && root.dragGroup === cell.modelData.group ? App.Theme.primary : App.Theme.grayDark
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.sm
             }
         }
 
@@ -250,7 +292,8 @@ ListView {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 4
                     text: cell.modelData.label.toUpperCase() + (cell.modelData.extra !== "" ? " · " + cell.modelData.extra : "")
-                    color: cell.modelData.late ? App.Theme.red : App.Theme.gray
+                    // Sección de destino mientras se arrastra otra tarea
+                    color: cell.modelData.late ? App.Theme.red : (root.dragging && root.dragGroup === cell.modelData.group && root.dragGroup !== root.dragSourceGroup ? App.Theme.primary : App.Theme.gray)
                     font.family: App.Config.fonts.text
                     font.pixelSize: App.Config.fontSize.xs
                     font.weight: Font.DemiBold

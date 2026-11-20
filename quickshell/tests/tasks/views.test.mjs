@@ -29,7 +29,11 @@ const ids = l => l.map(t => t.id);
 
 eq("vencidas (por hora)", ids(v.overdue), ["vieja", "hoypasada"]);
 eq("hoy", ids(v.today), ["hoyhora", "hoy", "curso"]);
-eq("próximos agrupados", v.upcoming.map(g => [g.key, g.label, ids(g.tasks)]), [["2026-11-18", "Mañana", ["man", "bloq"]]]);
+eq("próximos: los 7 días, con los vacíos", v.upcoming.map(g => [g.key, ids(g.tasks)]), [["2026-11-18", ["man", "bloq"]], ["2026-11-19", []], ["2026-11-20", []], ["2026-11-21", []], ["2026-11-22", []], ["2026-11-23", []], ["2026-11-24", []]]);
+eq("próximos: etiqueta del primer día", v.upcoming[0].label, "Mañana");
+eq("lista de Próximos conserva los días vacíos", V.list(v, "upcoming", "", projects, NOW).length, 7);
+eq("lista de Próximos con búsqueda sin vacíos", V.list(v, "upcoming", "Deploy", projects, NOW).map(g => g.key), ["2026-11-18"]);
+eq("Hoy con vencidas: ambos grupos", V.list(v, "today", "", projects, NOW).map(g => g.key), ["overdue", "today"]);
 eq("próximos excluye a 10 días", v.upcoming.some(g => g.key === "2026-11-27"), false);
 eq("bandeja", ids(v.inbox), ["hoypasada", "futura", "bloq", "lejos", "curso", "sinfecha"]);
 eq("start futuro no está en Hoy", ids(v.today).includes("futura") || ids(v.overdue).includes("futura"), false);
@@ -104,3 +108,4 @@ eq("sin novedades", sd([]), "Sin novedades");
 eq("sin secciones vacías", sd([T({ title: "x", due: "2026-11-17" })]), "**Hoy**\n- x");
 
 done();
+

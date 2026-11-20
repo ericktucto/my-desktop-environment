@@ -741,6 +741,8 @@ Item {
             }
             onTaskOpened: id => root.openDetail(id)
             dragParent: dragLayer
+            manualOrder: root.store.sortMode === "manual"
+            lockedGroups: root.effectiveView === "today" ? ["overdue"] : []
             onTaskDropped: (id, group, index) => root.dropTask(id, group, index)
         }
 
