@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
 import "../base" as Base
+import "../widgets/window/" as WW
 import "../../services/windows/" as WS
 import "../../" as App
 
-// Pill de la ventana activa: ícono, nombre de la app y su título. El clic central cierra la ventana.
+// Pill de la ventana activa: ícono, nombre de la app y su título. El clic izquierdo abre la isla en la pestaña
+// App, el derecho en la pestaña Ventana (acciones sobre la ventana) y el central cierra la ventana.
 Base.Island {
     id: root
 
@@ -13,8 +15,35 @@ Base.Island {
 
     readonly property var store: WS.ActiveWindowStore
 
-    visible: store.visible && !workspacesOpen
+    visible: (store.visible && !workspacesOpen) || expanded
     openOnClick: false
+
+    expandedWidth: App.Config.activeWindow.panelWidth
+    expandedHeight: panel.implicitHeight + 2 * paddingContainer
+    paddingContainer: App.Config.media.padding
+    preventFocus: true
+    // Esc: primero cancela lo que esté a medias (p. ej. el segundo clic de Forzar cierre)
+    escapeBack: function () {
+        return panel.back();
+    }
+
+    function openTab(tab) {
+        if (!store.visible)
+            return;
+        store.lock();
+        panel.tab = tab;
+        open();
+    }
+
+    // La ventana se cerró (o se fue) con la isla abierta: se cierra también
+    Connections {
+        target: root.store
+        function onTargetChanged() {
+            if (root.expanded && root.store.target === null)
+                root.close();
+        }
+    }
+    onClosed: store.unlock()
 
     // Lo que cabe para el texto: el máximo menos el ícono, el relleno y los espacios
     readonly property real textMax: App.Config.activeWindow.maxWidth - 2 * App.Config.pill.paddingX - App.Config.activeWindow.iconSize - App.Config.pill.contentSpacing
@@ -62,11 +91,24 @@ Base.Island {
         parent: root
         anchors.fill: parent
         hoverEnabled: true
-        acceptedButtons: Qt.MiddleButton
-        onClicked: root.store.closeActive()
+        enabled: !root.expanded
+        cursorShape: Qt.PointingHandCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.MiddleButton)
+                root.store.closeActive();
+            else
+                root.openTab(mouse.button === Qt.RightButton ? "window" : "app");
+        }
 
         ToolTip.visible: containsMouse
         ToolTip.delay: App.Config.activeWindow.tooltipDelay
-        ToolTip.text: (root.store.title !== "" ? root.store.name + " · " + root.store.title : root.store.name) + "\nClic central: cerrar"
+        ToolTip.text: (root.store.title !== "" ? root.store.name + " · " + root.store.title : root.store.name) + "\nClic: app · Clic derecho: ventana · Clic central: cerrar"
+    }
+
+    body: WW.WindowPanel {
+        id: panel
+        width: parent ? parent.width : 0
+        onCloseRequested: root.close()
     }
 }
