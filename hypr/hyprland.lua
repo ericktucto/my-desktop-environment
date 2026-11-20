@@ -95,6 +95,16 @@ end
 
 hl.window_rule({ "maximize", "class:.*" })
 
+-- Preferencias del sistema (ventana de la shell): flotante, centrada y con su tamaño
+hl.window_rule({
+    name  = "stixshell-settings",
+    match = { title = "^Preferencias del sistema$" },
+
+    float  = true,
+    size   = "1000 680",
+    center = true,
+})
+
 -- ============================================
 -- MODO TABLET: ocultar/mostrar apps
 -- ============================================

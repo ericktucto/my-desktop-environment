@@ -3,6 +3,7 @@ import "../../controls/" as C
 import "../../../services/launcher/" as L
 import "../../../services/launcher/Search.js" as Search
 import "../../../services/session/" as SS
+import "../../../services/settings/" as ST
 import "../../../services/tasks/" as TS
 import "../../../services/timer/" as TM
 import "../../../" as App
@@ -75,6 +76,10 @@ Item {
             disarm();
             closeRequested();
             SS.SessionStore.run(row.id);
+            break;
+        case "settings":
+            closeRequested();
+            ST.SettingsUi.show("");
             break;
         case "emoji":
             closeRequested();

@@ -255,8 +255,8 @@ Item {
                 anchors.right: parent.right
                 glyph: root.glyph(0xf0493)
                 onClicked: {
-                    // kitty con tu editor (EDITOR, o nvim) sobre settings.json; se aplica al guardar
-                    Quickshell.execDetached(["kitty", "sh", "-c", 'exec "${EDITOR:-nvim}" "$1"', "_", ST.SettingsStore.filePath]);
+                    // Preferencias del sistema (settings.json se edita ahí, o a mano desde «Acerca de»)
+                    ST.SettingsUi.show("");
                     root.closeRequested();
                 }
             }

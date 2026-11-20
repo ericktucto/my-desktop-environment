@@ -14,6 +14,7 @@ import "./services/lock/" as LK
 import "./services/idle/" as ID
 import "./services/power/" as PW
 import "./services/settings/" as SE
+import "./components/settings/" as PR
 import "./services/media/" as MD
 import "./components/lock/" as LC
 import "./components/widgets/region/" as RG
@@ -46,6 +47,9 @@ ShellRoot {
     readonly property var calendarUpdated: CAL.CalendarStore.updated
     // Instancia las tareas (lee tasks.json; IPC stixshell@tasks)
     readonly property var tasksReady: TK.TaskStore.ready
+
+    // Preferencias del sistema (ventana propia; Super+, o stixshell@settings)
+    PR.SettingsWindow {}
 
     // ── Pantalla de bloqueo ──
     LC.LockScreen {}

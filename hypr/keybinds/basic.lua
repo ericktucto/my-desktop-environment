@@ -21,6 +21,10 @@ map.add({ map.SUPER, "period" }, hl.dsp.exec_cmd("qs ipc call stixshell@window t
 map.add({ map.SUPER, map.SHIFT, "period" }, hl.dsp.exec_cmd("qs ipc call stixshell@window toggle app"), nil,
     "Menú de la app de la ventana activa")
 
+-- preferencias del sistema (abre y cierra)
+map.add({ map.SUPER, "comma" }, hl.dsp.exec_cmd("qs ipc call stixshell@settings toggle"), nil,
+    "Preferencias del sistema")
+
 -- menú de sesión
 map.add({ map.SUPER, "Escape" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil, "Menú de sesión")
 map.add({ "XF86PowerOff" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil,

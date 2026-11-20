@@ -212,6 +212,34 @@ function sessionRows(toks, ctx) {
     return rows;
 }
 
+// «Preferencias del sistema»: sale con ajustes, configuración, preferencias, settings…
+function settingsRows(toks) {
+    var score = matchScore([
+        {
+            text: "preferencias del sistema ajustes",
+            weight: 0
+        },
+        {
+            text: "configuracion settings opciones",
+            weight: 40
+        }
+    ], toks);
+    if (score < 0)
+        return [];
+    return [
+        {
+            kind: "settings",
+            key: "settings",
+            title: "Preferencias del sistema",
+            subtitle: "Configurar la shell",
+            glyph: 0xf0493,
+            favorite: false,
+            score: score,
+            usage: 0
+        }
+    ];
+}
+
 function emojiRows(rest, ctx) {
     var toks = tokens(rest);
     var rows = [];
@@ -416,7 +444,7 @@ function results(query, ctx) {
     var toks = tokens(query);
     var all = appRows(toks, ctx);
     if (toks.length > 0)
-        all = all.concat(actionRows(toks, ctx), sessionRows(toks, ctx));
+        all = all.concat(actionRows(toks, ctx), sessionRows(toks, ctx), settingsRows(toks));
     all.sort(compare);
     all = all.slice(0, ctx.maxResults);
     // Cualquier texto se puede ejecutar en la terminal (siempre al final)

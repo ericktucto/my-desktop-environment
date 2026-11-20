@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+import Quickshell
 import Quickshell.Io
 
 // Estado de la ventana de Preferencias del sistema: abierta o no, página actual, búsqueda y la fila que

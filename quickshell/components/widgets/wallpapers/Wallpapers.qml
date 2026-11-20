@@ -4,6 +4,7 @@ import QtQuick.Effects
 import Quickshell.Io
 import "../../controls/" as C
 import "../../../services/theme/" as T
+import "../../../services/settings/" as ST
 import "../../../" as App
 
 Item {
@@ -13,7 +14,7 @@ Item {
     height: parent.height
 
     // Directorio de wallpapers
-    readonly property string wallpapersDir: App.Config.wallpaperPicker.dir
+    readonly property string wallpapersDir: ST.SettingsStore.appearance.wallpaperDir !== "" ? ST.SettingsStore.appearance.wallpaperDir : App.Config.wallpaperPicker.dir
 
     // El selector completo de color (acento propio) en lugar de la cuadrícula
     property bool picking: false
