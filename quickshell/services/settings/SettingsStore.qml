@@ -29,6 +29,7 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var displays: data.displays
     readonly property var bar: data.bar
     readonly property var wsPill: data.wsPill
     readonly property var windowPill: data.windowPill
@@ -155,6 +156,12 @@ Singleton {
         property JsonObject bar: JsonObject {
             property var left: ["workspaces", "activeWindow", "zoom"]
             property var right: ["tray", "network", "bluetooth", "battery", "notifications"]
+        }
+        // Pantallas: lo último aplicado a cada monitor y un perfil por cada conjunto de monitores conectados
+        property JsonObject displays: JsonObject {
+            property var monitors: ({})
+            property var profiles: ({})
+            property bool auto: true        // aplicar el perfil solo al conectar o quitar un monitor
         }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h

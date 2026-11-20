@@ -606,6 +606,11 @@ Singleton {
         readonly property var swatches: ["#2979ff", "#3d5afe", "#d500f9", "#ff4081", "#ff1744", "#ff6d00", "#ffb300", "#00e676", "#1de9b6", "#00e5ff"]
     }
 
+    // ===== Pantallas (services/display) =====
+    readonly property QtObject displays: QtObject {
+        readonly property int confirmSeconds: 15     // «¿Mantener esta configuración?» antes de revertir
+    }
+
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
         readonly property int pill: Math.round(280 * root.animScale)

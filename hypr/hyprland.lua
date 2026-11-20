@@ -17,21 +17,26 @@ hl.env("HYPRCURSOR_SIZE", CURSOR_SIZE)
 
 require("keybinds")
 
-hl.monitor({
-    output = "eDP-1",
-    mode = "1920x1080@60",
-    position = "0x0",
-    scale = 1,
-})
+-- Monitores: los de Preferencias del sistema → Pantallas (monitors.lua, generado y fuera de git).
+-- Sin ese archivo quedan los de siempre: la laptop y el HDMI en espejo.
+local monitorsOk = pcall(require, "monitors")
+if not monitorsOk then
+    hl.monitor({
+        output = "eDP-1",
+        mode = "1920x1080@60",
+        position = "0x0",
+        scale = 1,
+    })
 
--- Monitor espejado
-hl.monitor({
-    output = "HDMI-A-1",
-    mode = "preferred",
-    position = "auto",
-    scale = 1,
-    mirror = "eDP-1",
-})
+    -- Monitor espejado
+    hl.monitor({
+        output = "HDMI-A-1",
+        mode = "preferred",
+        position = "auto",
+        scale = 1,
+        mirror = "eDP-1",
+    })
+end
 
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")

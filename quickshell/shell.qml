@@ -14,6 +14,7 @@ import "./services/lock/" as LK
 import "./services/idle/" as ID
 import "./services/power/" as PW
 import "./services/settings/" as SE
+import "./services/display/" as DP
 import "./components/settings/" as PR
 import "./services/media/" as MD
 import "./components/lock/" as LC
@@ -48,6 +49,8 @@ ShellRoot {
     readonly property var calendarUpdated: CAL.CalendarStore.updated
     // Instancia las tareas (lee tasks.json; IPC stixshell@tasks)
     readonly property var tasksReady: TK.TaskStore.ready
+    // Instancia las pantallas (IPC stixshell@display y perfiles al conectar un monitor)
+    readonly property var displayCount: DP.DisplayStore.monitors.length
 
     // Preferencias del sistema (ventana propia; Super+, o stixshell@settings)
     PR.SettingsWindow {}
@@ -155,7 +158,7 @@ ShellRoot {
             anchors.leftMargin: App.Config.bar.marginLeft
             spacing: App.Config.bar.spacing
             Repeater {
-                model: SE.SettingsStore.barOrder("left")
+                model: leftKey.split(",")
                 Loader {
                     required property string modelData
                     visible: item?.inBar ?? true
@@ -272,7 +275,7 @@ ShellRoot {
             spacing: App.Config.bar.spacing
 
             Repeater {
-                model: SE.SettingsStore.barOrder("right")
+                model: rightKey.split(",")
                 Loader {
                     required property string modelData
                     visible: item?.inBar ?? true
@@ -298,6 +301,9 @@ ShellRoot {
     // ── Pills de la barra (el orden de cada lado sale de settings.json → bar) ──
     // `wsOpen`: la vista general de workspaces está abierta (la pill de la ventana activa se oculta)
     property bool wsOpen: false
+    // El orden como texto: así las pills no se vuelven a crear mientras no cambie
+    readonly property string leftKey: SE.SettingsStore.barOrder("left").join(",")
+    readonly property string rightKey: SE.SettingsStore.barOrder("right").join(",")
     Component {
         id: cWorkspaces
         I.Workspaces {
