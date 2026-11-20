@@ -100,13 +100,12 @@ end
 
 hl.window_rule({ "maximize", "class:.*" })
 
--- Preferencias del sistema (ventana de la shell): flotante, centrada y con su tamaño
+-- Preferencias del sistema (ventana de la shell): flotante y centrada; el tamaño lo pone la shell (cabe en la pantalla)
 hl.window_rule({
     name  = "stixshell-settings",
     match = { title = "^Preferencias del sistema$" },
 
     float  = true,
-    size   = "1000 680",
     center = true,
 })
 

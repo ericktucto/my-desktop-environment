@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import "pages/" as PG
 import "../../services/settings/" as ST
+import "../../services/display/" as DP
 import "../../" as App
 
 // Ventana de Preferencias del sistema: a la izquierda el buscador y las páginas; a la derecha la página
@@ -55,9 +56,27 @@ FloatingWindow {
     title: "Preferencias del sistema"
     visible: ui.open
     color: App.Theme.island
-    implicitWidth: 1000
-    implicitHeight: 680
-    minimumSize: Qt.size(760, 480)
+    // Cabe en la pantalla (con otra escala o resolución la pantalla lógica cambia): hasta 1000×680, dejando
+    // aire alrededor y la barra arriba
+    readonly property var mon: DP.DisplayStore.monitors.find(m => m.focused) ?? DP.DisplayStore.monitors[0] ?? null
+    readonly property real logicalW: mon ? mon.width / mon.scale : 1920
+    readonly property real logicalH: mon ? mon.height / mon.scale : 1080
+    implicitWidth: Math.round(Math.max(560, Math.min(1000, logicalW - 80)))
+    implicitHeight: Math.round(Math.max(400, Math.min(680, logicalH - 120)))
+    minimumSize: Qt.size(560, 400)
+
+    // Al cambiar el tamaño de la pantalla con la ventana abierta, se ajusta y vuelve al centro
+    onImplicitWidthChanged: recenter.restart()
+    onImplicitHeightChanged: recenter.restart()
+    Timer {
+        id: recenter
+        interval: 400
+        onTriggered: {
+            if (win.visible)
+                // Hyprland no sigue el tamaño que pide la ventana una vez abierta: se pone y se centra a mano
+                Quickshell.execDetached(["sh", "-c", 'hyprctl dispatch "hl.dsp.window.resize({ x = $1, y = $2, exact = true, window = \\"title:^Preferencias del sistema$\\" })"; hyprctl dispatch "hl.dsp.window.center({ window = \\"title:^Preferencias del sistema$\\" })"', "_", String(win.implicitWidth), String(win.implicitHeight)]);
+        }
+    }
 
     // Cerrar con la X o con el compositor
     onVisibleChanged: {

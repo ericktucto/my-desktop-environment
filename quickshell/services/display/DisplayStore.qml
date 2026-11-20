@@ -57,6 +57,7 @@ Singleton {
                                 transform: m.transform,
                                 mirrorOf: m.mirrorOf,
                                 disabled: m.disabled,
+                                focused: m.focused,
                                 vrr: m.vrr,
                                 modes: (m.availableModes ?? []).map(s => {
                                     const r = /^(\d+)x(\d+)@([\d.]+)Hz$/.exec(s);
