@@ -11,7 +11,7 @@ Hechas la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca
 - [ ] **Fase 2. Barra e isla** (hecho: clics y rueda de la isla central, reloj y pills visibles). hecho también el clic de Workspaces, Ventana activa y Notificaciones. Falta: workspaces (cantidad, puntos o números) y el orden de las pills.
 - [ ] **Fase 3, lo que quedó fuera:** arrastrar los monitores para cambiar su disposición (hoy el modo Extender pone el externo a la derecha) y probar con un monitor externo real (solo se probó con la laptop).
 - [ ] **Fase 4, lo que quedó fuera:** grabar la tecla Super (Hyprland no se la pasa a la ventana; se añade con un botón), teclas con símbolos (`[`, `;`…) y atajos de varios pasos (submapas).
-- [ ] **Fase 5, lo que quedó fuera:** elegir un archivo de audio propio por evento (hoy solo los del tema), sonido por app en las notificaciones y el sonido del cambio de volumen.
+- [ ] **Fase 5, lo que quedó fuera:** sonido por app en las notificaciones y el sonido del cambio de volumen.
 - [ ] **Fase 6. Cuentas:** Google y GitHub.
 - [ ] **Fase 7. El resto de las pills:** Notificaciones, Bloqueo y reloj, Apps y launcher, Productividad.
 

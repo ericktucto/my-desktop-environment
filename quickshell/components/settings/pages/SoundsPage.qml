@@ -15,7 +15,7 @@ Page {
 
     pageId: "sounds"
     pageName: "Sonidos"
-    subtitle: "Los sonidos de la shell. Salen del tema de sonidos de freedesktop."
+    subtitle: "Los sonidos de la shell: del tema de sonidos del sistema (freedesktop) o un archivo tuyo (oga, ogg, wav, flac o mp3)."
 
     R.SwitchRow {
         searchId: "soundsEnabled"

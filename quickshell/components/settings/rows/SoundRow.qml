@@ -1,4 +1,6 @@
 import QtQuick
+import Quickshell
+import Quickshell.Io
 import "../../controls/" as C
 import "../../widgets/controlcenter/" as CC
 import "../../../services/sound/" as SND
@@ -19,7 +21,9 @@ SettingRow {
     keywords: "sonido audio aviso " + (event.group ?? "")
     changed: store.isOn(event.id) !== event.on || sound !== event.sound
     onResetRequested: store.resetEvent(event.id)
-    controlWidth: 430
+    controlWidth: 520
+    readonly property bool custom: sound.startsWith("/")
+    readonly property string soundText: custom ? "♪ " + sound.substring(sound.lastIndexOf("/") + 1) : sound
 
     function move(step) {
         const i = names.indexOf(sound);
@@ -27,10 +31,34 @@ SettingRow {
         store.playFile(sound);
     }
 
+    // Un archivo de audio propio (cuadro de GTK)
+    Process {
+        id: picker
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const p = text.trim();
+                if (p !== "") {
+                    root.store.setSound(root.event.id, p);
+                    root.store.playFile(p);
+                }
+            }
+        }
+    }
+
     // (de derecha a izquierda)
     CC.SmallButton {
         label: "Probar"
         onClicked: root.store.playFile(root.sound)
+    }
+    CC.SmallButton {
+        label: "Archivo…"
+        onClicked: {
+            if (picker.running)
+                return;
+            const cur = root.custom ? root.sound.substring(0, root.sound.lastIndexOf("/")) : "";
+            picker.command = ["python3", Quickshell.shellPath("scripts/pick.py"), "file", cur, "Elegir un sonido", "*.oga", "*.ogg", "*.wav", "*.flac", "*.mp3"];
+            picker.running = true;
+        }
     }
     Row {
         spacing: 4
@@ -52,7 +80,7 @@ SettingRow {
             ]
             Item {
                 required property var modelData
-                width: modelData.step === 0 ? 170 : 26
+                width: modelData.step === 0 ? 150 : 26
                 height: 26
                 Rectangle {
                     visible: parent.modelData.step !== 0
@@ -80,7 +108,7 @@ SettingRow {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
-                    text: root.sound
+                    text: root.soundText
                     color: root.store.isOn(root.event.id) ? App.Theme.white : App.Theme.gray
                     font.family: App.Config.fonts.text
                     font.pixelSize: App.Config.fontSize.xs
