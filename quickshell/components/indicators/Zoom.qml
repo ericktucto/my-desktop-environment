@@ -9,7 +9,9 @@ import "../../" as App
 Base.Island {
     id: root
 
-    visible: ST.SettingsStore.pills.zoom
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: ST.SettingsStore.pills.zoom
+    visible: inBar
 
     readonly property string appId: App.Config.zoom.appId
     readonly property string fallbackIcon: App.Config.zoom.fallbackIcon

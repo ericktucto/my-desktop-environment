@@ -14,7 +14,9 @@ Base.Island {
     animateWidth: false
 
     // Sin íconos en la bandeja la pill desaparece (el Row de la barra ignora lo invisible)
-    visible: ST.SettingsStore.pills.tray && count > 0
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: ST.SettingsStore.pills.tray && count > 0
+    visible: inBar
 
     // Siempre arranca con los íconos visibles (no se persiste)
     property bool shown: true

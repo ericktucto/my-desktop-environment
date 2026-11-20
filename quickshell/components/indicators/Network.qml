@@ -27,7 +27,9 @@ Base.Island {
         return true;
     }
 
-    visible: ST.SettingsStore.pills.network && (store.online || store.enabled || expanded)
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: ST.SettingsStore.pills.network && (store.online || store.enabled || expanded)
+    visible: inBar
 
     // Los datos en vivo solo se leen con el panel abierto
     onOpened: store.panelOpen = true

@@ -12,6 +12,17 @@ Page {
     readonly property var clicks: AC.ActionRunner.clickActions
     readonly property var wheels: AC.ActionRunner.wheelActions
 
+    readonly property var pillNames: ({
+            workspaces: "Workspaces",
+            activeWindow: "Ventana activa",
+            zoom: "Zoom",
+            tray: "Bandeja del sistema",
+            network: "Red",
+            bluetooth: "Bluetooth",
+            battery: "Batería",
+            notifications: "Notificaciones"
+        })
+
     pageId: "bar"
     pageName: "Barra e isla"
     subtitle: "Qué hace cada clic y la rueda sobre el reloj, en el centro de la barra."
@@ -173,6 +184,32 @@ Page {
     }
 
     R.Section {
+        text: "Orden de las pills"
+    }
+    Repeater {
+        model: ["left", "right"]
+        Column {
+            id: side
+            required property string modelData
+            width: page.width - 16
+            spacing: 8
+            readonly property var order: ST.SettingsStore.barOrder(modelData)
+            Repeater {
+                model: side.order
+                R.OrderRow {
+                    required property string modelData
+                    required property int index
+                    label: page.pillNames[modelData] ?? modelData
+                    hint: side.modelData === "left" ? "Izquierda de la barra" : "Derecha de la barra"
+                    first: index === 0
+                    last: index === side.order.length - 1
+                    onMoved: dir => ST.SettingsStore.moveBar(side.modelData, modelData, dir)
+                }
+            }
+        }
+    }
+
+    R.Section {
         text: "Pills de la barra"
     }
     Repeater {
@@ -233,6 +270,7 @@ Page {
         actionLabel: "Restablecer"
         onTriggered: {
             ST.SettingsStore.resetSection("island");
+            ST.SettingsStore.resetSection("barOrder");
             ST.SettingsStore.resetSection("pillClicks");
             ST.SettingsStore.resetSection("clock");
             ST.SettingsStore.resetSection("pills");

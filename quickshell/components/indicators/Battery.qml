@@ -11,7 +11,9 @@ import "../../" as App
 Base.Island {
     id: root
 
-    visible: ST.SettingsStore.pills.battery
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: ST.SettingsStore.pills.battery
+    visible: inBar
 
     expandedWidth: App.Config.panel.batteryWidth
     expandedHeight: panel.implicitHeight + 2 * paddingContainer

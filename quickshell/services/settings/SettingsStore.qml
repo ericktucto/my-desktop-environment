@@ -29,6 +29,7 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var bar: data.bar
     readonly property var wsPill: data.wsPill
     readonly property var windowPill: data.windowPill
     readonly property var notifPill: data.notifPill
@@ -150,6 +151,11 @@ Singleton {
             property string right: "dnd"
             property string middle: "none"
         }
+        // Orden de las pills de la barra (ids; se reasigna el arreglo entero para que se guarde)
+        property JsonObject bar: JsonObject {
+            property var left: ["workspaces", "activeWindow", "zoom"]
+            property var right: ["tray", "network", "bluetooth", "battery", "notifications"]
+        }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h
             property bool seconds: false
@@ -187,6 +193,29 @@ Singleton {
         file.writeAdapter();
     }
 
+    // Las pills de cada lado, en orden: lo guardado sin ids repetidos ni desconocidos y con las que falten al final
+    readonly property var barDefaults: ({
+            left: ["workspaces", "activeWindow", "zoom"],
+            right: ["tray", "network", "bluetooth", "battery", "notifications"]
+        })
+    function barOrder(side) {
+        const def = barDefaults[side];
+        const saved = (data.bar[side] ?? []).filter((id, i, a) => def.includes(id) && a.indexOf(id) === i);
+        return saved.concat(def.filter(id => !saved.includes(id)));
+    }
+
+    // Mueve una pill un lugar (dir = -1 antes, +1 después) dentro de su lado
+    function moveBar(side, id, dir) {
+        const list = barOrder(side);
+        const i = list.indexOf(id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= list.length)
+            return;
+        list.splice(i, 1);
+        list.splice(j, 0, id);
+        data.bar[side] = list;
+    }
+
     // Restablece una sección a los valores de fábrica (los de Config.qml o los iniciales de arriba).
     // `energy` = inactividad, avisos de batería y perfiles (lo mismo que reset()).
     function resetSection(name) {
@@ -222,6 +251,9 @@ Singleton {
             data.windowPill.middle = "closeWindow";
             data.notifPill.right = "dnd";
             data.notifPill.middle = "none";
+        } else if (name === "barOrder") {
+            data.bar.left = barDefaults.left.slice();
+            data.bar.right = barDefaults.right.slice();
         } else if (name === "pills") {
             for (const k of ["activeWindow", "zoom", "tray", "network", "bluetooth", "battery", "notifications"])
                 data.pills[k] = true;

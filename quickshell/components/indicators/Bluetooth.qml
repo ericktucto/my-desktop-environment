@@ -11,7 +11,9 @@ Base.Island {
 
     readonly property var store: BT.BluetoothStore
 
-    visible: ST.SettingsStore.pills.bluetooth && store.connected.length > 0
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: ST.SettingsStore.pills.bluetooth && store.connected.length > 0
+    visible: inBar
     openOnClick: false
 
     Text {

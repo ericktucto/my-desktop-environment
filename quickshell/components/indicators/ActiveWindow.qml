@@ -17,7 +17,9 @@ Base.Island {
 
     readonly property var store: WS.ActiveWindowStore
 
-    visible: (ST.SettingsStore.pills.activeWindow && store.visible && !workspacesOpen) || expanded
+    // Se ve (lo lee la barra para no dejar hueco cuando no)
+    readonly property bool inBar: (ST.SettingsStore.pills.activeWindow && store.visible && !workspacesOpen) || expanded
+    visible: inBar
     openOnClick: false
 
     expandedWidth: App.Config.activeWindow.panelWidth

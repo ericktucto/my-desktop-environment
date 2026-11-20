@@ -7,7 +7,7 @@ Lo que la shell ya hace está en el [README](../README.md).
 ## 🔴 Prioridad alta: lo básico de toda shell
 
 ### Preferencias del sistema (en curso, por fases; detalle en `plan.md`)
-Hecha la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de).
+Hechas la Fase 1 (ventana, buscador, Apariencia, Luz nocturna, Energía y Acerca de) y la Fase 2 (clics, reloj, pills visibles y su orden).
 - [ ] **Fase 2. Barra e isla** (hecho: clics y rueda de la isla central, reloj y pills visibles). hecho también el clic de Workspaces, Ventana activa y Notificaciones. Falta: workspaces (cantidad, puntos o números) y el orden de las pills.
 - [ ] **Fase 3. Pantallas:** disposición, resolución, escala, rotación, espejo, perfiles automáticos y `Super+Shift+P`.
 - [ ] **Fase 4. Atajos de teclado:** lista, editar grabando la combinación, conflictos y ayuda (`Super+/`).

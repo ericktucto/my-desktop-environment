@@ -25,6 +25,7 @@ import "./services/calendar/" as CAL
 import "./services/tasks/" as TK
 
 ShellRoot {
+    id: root
     // Referencia para instanciar el singleton (toma el inhibidor del botón de encendido)
     readonly property var sessionActions: SS.SessionStore.actions
     // Instancia el store de brillo desde el inicio (su IPC debe existir para las teclas)
@@ -147,19 +148,20 @@ ShellRoot {
             id: barRow
         }
 
-        // ══ PILL: en el left, crece hacia abajo ══
+        // ══ PILLS DE LA IZQUIERDA: en el orden de Preferencias → Barra e isla; crecen hacia abajo ══
         Row {
             id: leftPill
             anchors.left: parent.left
             anchors.leftMargin: App.Config.bar.marginLeft
             spacing: App.Config.bar.spacing
-            I.Workspaces {
-                id: workspacesPill
+            Repeater {
+                model: SE.SettingsStore.barOrder("left")
+                Loader {
+                    required property string modelData
+                    visible: item?.inBar ?? true
+                    sourceComponent: modelData === "workspaces" ? cWorkspaces : (modelData === "activeWindow" ? cActiveWindow : cZoom)
+                }
             }
-            I.ActiveWindow {
-                workspacesOpen: workspacesPill.expanded
-            }
-            I.Zoom {}
         }
         // ══ CENTRO: el reloj, a su izquierda la pill de música y a su derecha el temporizador ══
         // Solo uno tiene el foco: con la música expandida, pasa al centro y el reloj (ya círculo) a su derecha;
@@ -269,15 +271,67 @@ ShellRoot {
 
             spacing: App.Config.bar.spacing
 
-            I.Tray {}
-
-            I.Network {}
-
-            I.Bluetooth {}
-
-            I.Battery {}
-
-            I.Notifications {}
+            Repeater {
+                model: SE.SettingsStore.barOrder("right")
+                Loader {
+                    required property string modelData
+                    visible: item?.inBar ?? true
+                    sourceComponent: {
+                        switch (modelData) {
+                        case "tray":
+                            return cTray;
+                        case "network":
+                            return cNetwork;
+                        case "bluetooth":
+                            return cBluetooth;
+                        case "battery":
+                            return cBattery;
+                        default:
+                            return cNotifications;
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    // ── Pills de la barra (el orden de cada lado sale de settings.json → bar) ──
+    // `wsOpen`: la vista general de workspaces está abierta (la pill de la ventana activa se oculta)
+    property bool wsOpen: false
+    Component {
+        id: cWorkspaces
+        I.Workspaces {
+            onExpandedChanged: root.wsOpen = expanded
+        }
+    }
+    Component {
+        id: cActiveWindow
+        I.ActiveWindow {
+            workspacesOpen: root.wsOpen
+        }
+    }
+    Component {
+        id: cZoom
+        I.Zoom {}
+    }
+    Component {
+        id: cTray
+        I.Tray {}
+    }
+    Component {
+        id: cNetwork
+        I.Network {}
+    }
+    Component {
+        id: cBluetooth
+        I.Bluetooth {}
+    }
+    Component {
+        id: cBattery
+        I.Battery {}
+    }
+    Component {
+        id: cNotifications
+        I.Notifications {}
     }
 }
