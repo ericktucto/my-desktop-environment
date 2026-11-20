@@ -715,14 +715,45 @@ Singleton {
 
     // Lo mismo, pero justo después de `afterId`
     function moveAfter(id, afterId) {
-        const sorted = tasks.slice().sort(Model.byOrder);
-        const i = sorted.findIndex(t => t.id === afterId);
-        if (i < 0)
+        if (error !== "")
             return false;
-        let next = sorted[i + 1];
-        if (next && next.id === id)
-            next = sorted[i + 2];
-        return move(id, next ? next.id : "");
+        const next = Model.moveTaskAfter(tasks, id, afterId);
+        if (next === tasks)
+            return false;
+        commit("Tarea movida", next, projects);
+        return true;
+    }
+
+    // Soltar una tarea: cambios (fecha, proyecto…) y lugar en el orden manual en un solo paso de
+    // deshacer. `beforeId` o `afterId` ("" = no reordenar).
+    function drop(id, changes, beforeId, afterId, label) {
+        if (error !== "")
+            return false;
+        unarchive(id);
+        let arr = tasks;
+        if (!arr.some(t => t.id === id))
+            return false;
+        if (changes && Object.keys(changes).length > 0)
+            arr = arr.map(t => t.id === id ? Model.applyChanges(t, changes, Date.now()) : t);
+        if (beforeId)
+            arr = Model.moveTask(arr, id, beforeId);
+        else if (afterId)
+            arr = Model.moveTaskAfter(arr, id, afterId);
+        if (arr === tasks)
+            return false;
+        commit(label || "Tarea movida", arr, projects);
+        return true;
+    }
+
+    // Reordena los proyectos de la barra lateral: `id` justo antes de `beforeId` ("" = al final)
+    function moveProject(id, beforeId) {
+        if (error !== "")
+            return false;
+        const next = Model.moveByOrder(projects, id, beforeId ?? "");
+        if (next === projects)
+            return false;
+        commit("Proyecto movido", tasks, next);
+        return true;
     }
 
     // ── Subtareas ──

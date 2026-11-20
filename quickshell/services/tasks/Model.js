@@ -437,9 +437,10 @@ function byOrder(a, b) {
     return (a.order - b.order) || (a.created - b.created);
 }
 
-// Pone la tarea `id` justo antes de `beforeId` ("" = al final). Usa el promedio de los vecinos y,
-// cuando el espacio se agota, renumera todo de 1000 en 1000.
-function moveTask(tasks, id, beforeId) {
+// Pone el elemento `id` (tarea, proyecto…: cualquier lista con `order`) justo antes de `beforeId`
+// ("" = al final). Usa el promedio de los vecinos y, cuando el espacio se agota, renumera todo de
+// 1000 en 1000. Si no hay nada que mover devuelve la misma lista.
+function moveByOrder(tasks, id, beforeId) {
     var list = tasks.slice().sort(byOrder);
     var from = list.findIndex(function (t) {
         return t.id === id;
@@ -480,6 +481,26 @@ function moveTask(tasks, id, beforeId) {
             order: order
         }) : t;
     });
+}
+
+function moveTask(tasks, id, beforeId) {
+    return moveByOrder(tasks, id, beforeId);
+}
+
+// Lo mismo, pero justo después de `afterId`
+function moveTaskAfter(tasks, id, afterId) {
+    if (id === afterId)
+        return tasks;
+    var sorted = tasks.slice().sort(byOrder);
+    var i = sorted.findIndex(function (t) {
+        return t.id === afterId;
+    });
+    if (i < 0)
+        return tasks;
+    var next = sorted[i + 1];
+    if (next && next.id === id)
+        next = sorted[i + 2];
+    return moveByOrder(tasks, id, next ? next.id : "");
 }
 
 // Mueve la subtarea `subId` a la posición `index` (0 = primera)
