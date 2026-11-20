@@ -6,6 +6,9 @@ import QtQuick
 Singleton {
     id: root
 
+    // Escala de las animaciones (1 = normales, 0 = sin animaciones); la fija SettingsStore (Preferencias → Apariencia)
+    property real animScale: 1
+
     // ===== Wallpaper de fondo =====
     readonly property QtObject wallpaper: QtObject {
         readonly property int radius: 16
@@ -605,13 +608,13 @@ Singleton {
 
     // ===== Animaciones (ms) =====
     readonly property QtObject anim: QtObject {
-        readonly property int pill: 280
-        readonly property int fadeIn: 200
-        readonly property int fadeDelay: 100
-        readonly property int fadeOut: 120
-        readonly property int control: 150
-        readonly property int hover: 120             // hover y pulsación
-        readonly property int highlight: 100         // movimiento del resaltado del launcher
-        readonly property int wallpaper: 600
+        readonly property int pill: Math.round(280 * root.animScale)
+        readonly property int fadeIn: Math.round(200 * root.animScale)
+        readonly property int fadeDelay: Math.round(100 * root.animScale)
+        readonly property int fadeOut: Math.round(120 * root.animScale)
+        readonly property int control: Math.round(150 * root.animScale)
+        readonly property int hover: Math.round(120 * root.animScale)             // hover y pulsación
+        readonly property int highlight: Math.round(100 * root.animScale)         // movimiento del resaltado del launcher
+        readonly property int wallpaper: Math.round(600 * root.animScale)
     }
 }

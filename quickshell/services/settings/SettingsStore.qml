@@ -26,6 +26,7 @@ Singleton {
     readonly property var calendar: data.calendar
     readonly property var tasks: data.tasks
     readonly property var timer: data.timer
+    readonly property var appearance: data.appearance
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -109,6 +110,17 @@ Singleton {
             property string battery: App.Config.profiles.battery
             property string ac: App.Config.profiles.ac
         }
+        property JsonObject appearance: JsonObject {
+            property bool animations: true                  // false = sin animaciones (todas las duraciones en 0)
+            property string wallpaperDir: ""                // vacío = Config.wallpaperPicker.dir
+        }
+    }
+
+    // Preferencias → Apariencia → Animaciones
+    Binding {
+        target: App.Config
+        property: "animScale"
+        value: store.data.appearance.animations ? 1 : 0
     }
 
     // true mientras se cambian varios valores seguidos: se guarda una sola vez al final
@@ -126,6 +138,35 @@ Singleton {
             data.low[k] = d.lowBattery[k];
         for (const k of ["battery", "ac"])
             data.profiles[k] = App.Config.profiles[k];
+        batching = false;
+        file.selfWriteRestart();
+        file.writeAdapter();
+    }
+
+    // Restablece una sección a los valores de fábrica (los de Config.qml o los iniciales de arriba).
+    // `energy` = inactividad, avisos de batería y perfiles (lo mismo que reset()).
+    function resetSection(name) {
+        if (name === "energy") {
+            reset();
+            return;
+        }
+        batching = true;
+        if (name === "theme") {
+            data.theme.mode = "";
+            data.theme.color = "#2979ff";
+            data.theme.scheme = "scheme-tonal-spot";
+            data.theme.tint = "tinted";
+        } else if (name === "nightLight") {
+            data.nightLight.mode = "sun";
+            data.nightLight.temperature = App.Config.nightLight.temperature;
+            data.nightLight.start = App.Config.nightLight.start;
+            data.nightLight.end = App.Config.nightLight.end;
+            data.nightLight.latitude = "";
+            data.nightLight.longitude = "";
+        } else if (name === "appearance") {
+            data.appearance.animations = true;
+            data.appearance.wallpaperDir = "";
+        }
         batching = false;
         file.selfWriteRestart();
         file.writeAdapter();
