@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import Quickshell.Io
 import "../workspaces/" as W
 import "../screenshot/" as SS
 import "../../" as App
@@ -164,6 +165,15 @@ Singleton {
         id: shortcutTimer
         interval: 150
         onTriggered: store.run(WM.sendShortcut(store.pendingAddress, store.pendingKeys))
+    }
+
+    // Abrir la isla desde un atajo: qs ipc call stixshell@window toggle window|app
+    signal toggleRequested(string tab)
+    IpcHandler {
+        target: "stixshell@window"
+        function toggle(tab: string): void {
+            store.toggleRequested(tab === "app" ? "app" : "window");
+        }
     }
 
     function focusWindow(t) {

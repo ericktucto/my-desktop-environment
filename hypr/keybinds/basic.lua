@@ -4,6 +4,23 @@ local terminal = "kitty"
 map.add({ map.SUPER, "T" }, hl.dsp.exec_cmd(terminal), nil, "Abrir la terminal")
 map.add({ map.SUPER, "Q" }, hl.dsp.window.close(), nil, "Cerrar ventana activa")
 
+-- pantalla completa (entra y sale con el mismo atajo) y ventanas flotantes con el mouse
+map.add({ map.SUPER, map.SHIFT, "F" }, hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }), nil,
+    "Pantalla completa (entrar/salir)")
+map.add({ map.SUPER, "V" }, hl.dsp.window.float({ action = "toggle" }), nil, "Ventana flotante (alternar)")
+map.add({ map.SUPER, map.SHIFT, "V" }, hl.dsp.window.pin({ action = "toggle" }), nil,
+    "Fijar en todos los workspaces (flotante)")
+map.add({ map.SUPER, "CTRL", "V" }, hl.dsp.window.center(), nil, "Centrar ventana flotante")
+map.add({ map.SUPER, map.SHIFT, "G" }, hl.dsp.group.toggle(), nil, "Agrupar en pestañas (alternar)")
+map.add({ map.SUPER, "mouse:272" }, hl.dsp.window.drag(), { mouse = true }, "Mover ventana flotante")
+map.add({ map.SUPER, "mouse:273" }, hl.dsp.window.resize(), { mouse = true }, "Redimensionar ventana flotante")
+
+-- isla de la ventana activa: Super+. (acciones de la ventana) y Super+Shift+. (acciones de la app)
+map.add({ map.SUPER, "period" }, hl.dsp.exec_cmd("qs ipc call stixshell@window toggle window"), nil,
+    "Menú de la ventana activa")
+map.add({ map.SUPER, map.SHIFT, "period" }, hl.dsp.exec_cmd("qs ipc call stixshell@window toggle app"), nil,
+    "Menú de la app de la ventana activa")
+
 -- menú de sesión
 map.add({ map.SUPER, "Escape" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil, "Menú de sesión")
 map.add({ "XF86PowerOff" }, hl.dsp.exec_cmd("qs ipc call stixshell@session toggle \"\""), nil,

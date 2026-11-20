@@ -43,6 +43,18 @@ Base.Island {
                 root.close();
         }
     }
+    // Atajo (Super+. / Super+Shift+.): abre en esa pestaña; si ya está abierta en ella, cierra; si no, cambia
+    Connections {
+        target: root.store
+        function onToggleRequested(tab) {
+            if (!root.expanded)
+                root.openTab(tab);
+            else if (panel.tab === tab)
+                root.close();
+            else
+                panel.tab = tab;
+        }
+    }
     onClosed: store.unlock()
 
     // Lo que cabe para el texto: el máximo menos el ícono, el relleno y los espacios
