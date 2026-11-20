@@ -128,6 +128,43 @@ Singleton {
         readonly property int maxWidth: 300          // la pill no pasa de este ancho (los paneles del centro empiezan en x ≈ 520)
         readonly property int iconSize: 16
         readonly property int tooltipDelay: 600
+        readonly property int panelWidth: 380        // ancho de la isla de menús (clic izquierdo o derecho)
+        readonly property int killConfirmMs: 3000    // «Forzar cierre» espera este tiempo el segundo clic
+        // Atajos que el menú «App» manda a la ventana (formato "CTRL+SHIFT+C")
+        readonly property var shortcuts: [
+            { label: "Deshacer", keys: "CTRL+Z" },
+            { label: "Rehacer", keys: "CTRL+SHIFT+Z" },
+            { label: "Cortar", keys: "CTRL+X" },
+            { label: "Copiar", keys: "CTRL+C" },
+            { label: "Pegar", keys: "CTRL+V" },
+            { label: "Seleccionar todo", keys: "CTRL+A" },
+            { label: "Buscar", keys: "CTRL+F" },
+            { label: "Guardar", keys: "CTRL+S" }
+        ]
+        // Ajustes por app (appId en minúsculas): `replace` cambia la lista común por `items`; si no, se suman
+        readonly property var appShortcuts: ({
+                "kitty": {
+                    replace: true,
+                    items: [
+                        { label: "Copiar", keys: "CTRL+SHIFT+C" },
+                        { label: "Pegar", keys: "CTRL+SHIFT+V" },
+                        { label: "Buscar", keys: "CTRL+SHIFT+H" },
+                        { label: "Nueva pestaña", keys: "CTRL+SHIFT+T" },
+                        { label: "Nueva ventana", keys: "CTRL+SHIFT+N" }
+                    ]
+                },
+                "firefox": {
+                    replace: false,
+                    items: [
+                        { label: "Nueva pestaña", keys: "CTRL+T" },
+                        { label: "Cerrar pestaña", keys: "CTRL+W" },
+                        { label: "Reabrir pestaña", keys: "CTRL+SHIFT+T" },
+                        { label: "Recargar", keys: "F5" },
+                        { label: "Historial", keys: "CTRL+H" },
+                        { label: "Descargas", keys: "CTRL+SHIFT+Y" }
+                    ]
+                }
+            })
     }
 
     // ===== Pills =====
