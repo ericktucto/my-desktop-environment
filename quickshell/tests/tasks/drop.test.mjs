@@ -71,9 +71,12 @@ eq("barra: hechas ya hecha", D.sidebarDrop(T("y", { status: "done" }), "done", o
 eq("barra: tablero no vale", D.sidebarDrop(x, "board", o), null);
 eq("barra: start posterior", D.sidebarDrop(T("z", { due: "2026-11-25", start: "2026-11-24" }), "today", o).changes, { due: "2026-11-17", dueTime: "", start: "" });
 
-// gapShift
-eq("hueco: baja", [0, 1, 2, 3].map(i => D.gapShift(i, 0, 2, 50)), [0, -50, -50, 0]);
+// gapShift: (i, from, at, h)
+eq("hueco: baja", [0, 1, 2, 3].map(i => D.gapShift(i, 0, 3, 50)), [0, -50, -50, 0]);
 eq("hueco: sube", [0, 1, 2, 3].map(i => D.gapShift(i, 3, 1, 50)), [0, 50, 50, 0]);
+eq("hueco: mismo lugar", [0, 1, 2].map(i => D.gapShift(i, 1, 1, 50)), [0, 0, 0]);
+eq("hueco: justo después", [0, 1, 2].map(i => D.gapShift(i, 1, 2, 50)), [0, 0, 0]);
+eq("hueco: otra sección", [0, 1, 2, 3, 4].map(i => D.gapShift(i, 0, 4, 50)), [0, -50, -50, -50, 0]);
 eq("hueco: sin arrastre", D.gapShift(1, -1, -1, 50), 0);
 
 // moveByOrder / moveTaskAfter

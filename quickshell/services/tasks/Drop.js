@@ -159,14 +159,11 @@ function sidebarDrop(task, targetView, opts) {
     return null;
 }
 
-// Cuánto se corre la fila `i` para dejar el hueco cuando la fila `from` se arrastra sobre `to`
-// (todas del alto `h`): 0, +h (baja) o -h (sube).
-function gapShift(i, from, to, h) {
-    if (from < 0 || to < 0 || i === from)
+// Cuánto se corre la fila `i` para dejar el hueco cuando la fila `from` se arrastra para quedar antes de
+// la fila `at` (`at` cuenta con la arrastrada todavía en su sitio; todas del alto `h`).
+// La arrastrada deja su lugar (las de abajo suben `h`) y el hueco se abre en `at` (bajan `h`).
+function gapShift(i, from, at, h) {
+    if (from < 0 || at < 0 || i === from)
         return 0;
-    if (from < to && i > from && i <= to)
-        return -h;
-    if (from > to && i >= to && i < from)
-        return h;
-    return 0;
+    return (i > from ? -h : 0) + (i >= at ? h : 0);
 }

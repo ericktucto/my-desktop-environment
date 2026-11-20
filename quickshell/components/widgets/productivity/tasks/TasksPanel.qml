@@ -2,6 +2,7 @@ import QtQuick
 import "../../../../services/tasks/" as TS
 import "../../../../services/tasks/Dates.js" as Dates
 import "../../../../services/tasks/Parse.js" as Parse
+import "../../../../services/tasks/Drop.js" as Drop
 import "../../../../services/settings/" as ST
 import "../../../../" as App
 
@@ -9,7 +10,7 @@ import "../../../../" as App
 // Teclado (con la lista enfocada), estilo vim:
 //   j/k o ↓/↑ mover · g/G primera/última · x o Espacio completar · n nueva · / buscar
 //   dd borrar · 1–4 prioridad · t hoy · m mañana · s en curso · b bloqueada · u o Ctrl+Z deshacer
-//   Alt+j / Alt+k reordenar (orden manual)
+//   Alt+j / Alt+k reordenar (orden manual) · arrastrar una fila con el mouse la reordena
 Item {
     id: root
 
@@ -240,6 +241,34 @@ Item {
             store.setStatus(id, status, "");
     }
 
+    // Aviso corto (sin «Deshacer»), por ejemplo cuando se arrastra sin el orden manual
+    property string hint: ""
+    Timer {
+        id: hintTimer
+        interval: 2500
+        onTriggered: root.hint = ""
+    }
+
+    // Se soltó una tarea en la lista: cambios y orden en un solo paso de deshacer
+    function dropTask(id, group, index) {
+        const r = Drop.listDrop(effectiveView, groups, id, group, index, {
+            sort: store.sortMode,
+            now: store.now
+        });
+        if (!r)
+            return;
+        select(id);
+        if (r.noop) {
+            if (r.hint) {
+                hint = r.hint;
+                hintTimer.restart();
+            }
+            return;
+        }
+        hint = "";
+        store.drop(id, r.changes, r.beforeId, r.afterId, r.label);
+    }
+
     function deleteSelected() {
         requestDelete(selectedId);
     }
@@ -318,6 +347,8 @@ Item {
 
     // Esc: cierra lo que esté abierto; true si había algo
     function back() {
+        if (list.cancelDrag())
+            return true;
         if (dialog.visible) {
             dialog.close();
             return true;
@@ -455,6 +486,7 @@ Item {
     Connections {
         target: root.store
         function onActed() {
+            root.hint = "";
             root.toastVisible = true;
             toastTimer.restart();
         }
@@ -708,6 +740,8 @@ Item {
                 root.toggleDone();
             }
             onTaskOpened: id => root.openDetail(id)
+            dragParent: dragLayer
+            onTaskDropped: (id, group, index) => root.dropTask(id, group, index)
         }
 
         TaskBoard {
@@ -937,7 +971,7 @@ Item {
             color: App.Theme.island
             border.color: App.Theme.border
             border.width: 1
-            opacity: root.toastVisible && root.store.lastAction !== "" ? 1 : 0
+            opacity: root.hint !== "" || (root.toastVisible && root.store.lastAction !== "") ? 1 : 0
             visible: opacity > 0
 
             Behavior on opacity {
@@ -952,12 +986,13 @@ Item {
                 spacing: 12
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.store.lastAction
+                    text: root.hint !== "" ? root.hint : root.store.lastAction
                     color: App.Theme.white
                     font.family: App.Config.fonts.text
                     font.pixelSize: App.Config.fontSize.sm
                 }
                 Text {
+                    visible: root.hint === ""
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Deshacer"
                     color: App.Theme.primary
@@ -976,6 +1011,13 @@ Item {
                 }
             }
         }
+    }
+
+    // Donde vive lo que se arrastra: encima de todo el panel para poder llegar a la barra lateral
+    Item {
+        id: dragLayer
+        anchors.fill: parent
+        z: 50
     }
 
     // Motivo del bloqueo / borrar una tarea que se repite
