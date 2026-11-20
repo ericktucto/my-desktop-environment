@@ -29,6 +29,7 @@ Singleton {
     readonly property var appearance: data.appearance
     readonly property var island: data.island
     readonly property var pills: data.pills
+    readonly property var accounts: data.accounts
     readonly property var sounds: data.sounds
     readonly property var keybinds: data.keybinds
     readonly property var displays: data.displays
@@ -174,6 +175,9 @@ Singleton {
             property bool enabled: true
             property real volume: 0.8
             property var events: ({})
+        }
+        property JsonObject accounts: JsonObject {
+            property string githubClientId: ""      // client_id de una OAuth App de GitHub con «Device flow» activado
         }
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h

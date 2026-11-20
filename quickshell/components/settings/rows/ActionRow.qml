@@ -13,6 +13,8 @@ SettingRow {
     CC.SmallButton {
         label: root.actionLabel
         primary: root.primary
+        enabled: root.enabled
+        opacity: enabled ? 1 : 0.4
         onClicked: root.triggered()
     }
 }

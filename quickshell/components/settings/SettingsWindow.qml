@@ -60,6 +60,12 @@ FloatingWindow {
             source: "pages/EnergyPage.qml"
         },
         {
+            id: "accounts",
+            name: "Cuentas",
+            glyph: 0xf007,
+            source: "pages/AccountsPage.qml"
+        },
+        {
             id: "about",
             name: "Acerca de",
             glyph: 0xf05a,
