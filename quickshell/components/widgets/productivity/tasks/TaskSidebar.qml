@@ -1,5 +1,6 @@
 import QtQuick
 import "../../../../services/tasks/" as TS
+import "../../../../services/tasks/Drop.js" as Drop
 import "../../../../" as App
 
 // Barra lateral: las vistas, los proyectos (con "+") y las etiquetas, cada uno con su contador.
@@ -10,6 +11,12 @@ Item {
     readonly property var store: TS.TaskStore
     // La vista activa: today | upcoming | inbox | board | done | project:<id> | tag:<nombre>
     property string view: ""
+
+    // Arrastre de un proyecto para ordenarlo: fila que se agarra y fila donde caería (en activeProjects)
+    property int projFrom: -1
+    property int projTo: -1
+    readonly property real projStep: 34
+    readonly property int projAt: projTo > projFrom ? projTo + 1 : projTo
 
     signal viewSelected(string view)
     // Se soltó una tarea sobre una entrada (la vista de la entrada y el id de la tarea)
@@ -117,6 +124,11 @@ Item {
         property bool selected: false
         // Vista a la que se mandan las tareas que se sueltan encima ("" = no recibe)
         property string dropView: ""
+        // Se puede ordenar arrastrando (los proyectos); rowIndex = su lugar en la lista
+        property bool reorderable: false
+        property int rowIndex: -1
+        readonly property bool reordering: reorderable && root.projFrom === rowIndex
+        property real dragY: 0
 
         signal clicked
         signal rightClicked
@@ -125,9 +137,22 @@ Item {
         width: parent ? parent.width : 0
         height: 32
         radius: 10
-        color: selected || dropArea.containsDrag ? App.Theme.surfaceActive : (entryMouse.containsMouse ? App.Theme.surface : "transparent")
-        border.width: dropArea.containsDrag ? 1 : 0
+        color: selected || dropArea.containsDrag ? App.Theme.surfaceActive : (entryMouse.containsMouse || entry.reordering ? App.Theme.surface : "transparent")
+        border.width: dropArea.containsDrag || entry.reordering ? 1 : 0
         border.color: App.Theme.primary
+        z: entry.reordering ? 10 : 0
+
+        // Hueco del arrastre de proyectos
+        transform: Translate {
+            y: entry.reordering ? entry.dragY : (entry.reorderable && root.projFrom >= 0 ? Drop.gapShift(entry.rowIndex, root.projFrom, root.projAt, root.projStep) : 0)
+            Behavior on y {
+                enabled: !entry.reordering
+                NumberAnimation {
+                    duration: App.Config.anim.hover
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
 
         // Soltar aquí una tarea arrastrada (solo las tareas: no los proyectos)
         DropArea {
@@ -196,8 +221,50 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            cursorShape: Qt.PointingHandCursor
-            onClicked: mouse => mouse.button === Qt.RightButton ? entry.rightClicked() : entry.clicked()
+            cursorShape: entry.reordering ? Qt.ClosedHandCursor : Qt.PointingHandCursor
+            property real pressPy: 0
+            property bool moved: false
+            property bool wasDragged: false
+            onPressed: mouse => {
+                pressPy = mapToItem(column, mouse.x, mouse.y).y;
+                moved = false;
+                wasDragged = false;
+            }
+            onPositionChanged: mouse => {
+                if (!entry.reorderable || !pressed || !(pressedButtons & Qt.LeftButton))
+                    return;
+                const dy = mapToItem(column, mouse.x, mouse.y).y - pressPy;
+                if (!moved && Math.abs(dy) < 6)
+                    return;
+                moved = true;
+                root.projFrom = entry.rowIndex;
+                entry.dragY = dy;
+                root.projTo = Math.max(0, Math.min(root.store.activeProjects.length - 1, entry.rowIndex + Math.round(dy / root.projStep)));
+            }
+            function finish(apply) {
+                const from = root.projFrom;
+                const to = root.projTo;
+                root.projFrom = -1;
+                root.projTo = -1;
+                entry.dragY = 0;
+                wasDragged = moved;
+                moved = false;
+                if (apply && wasDragged && from >= 0 && to >= 0 && from !== to) {
+                    const list = root.store.activeProjects;
+                    const id = list[from].id;
+                    const others = list.filter(p => p.id !== id);
+                    root.store.moveProject(id, to < others.length ? others[to].id : "");
+                }
+            }
+            onReleased: finish(true)
+            onCanceled: finish(false)
+            onClicked: mouse => {
+                if (wasDragged) {
+                    wasDragged = false;
+                    return;
+                }
+                mouse.button === Qt.RightButton ? entry.rightClicked() : entry.clicked();
+            }
         }
     }
 
@@ -275,6 +342,9 @@ Item {
                 model: root.store.activeProjects
                 Entry {
                     required property var modelData
+                    required property int index
+                    reorderable: true
+                    rowIndex: index
                     visible: !(nameField.visible && root.renamingId === modelData.id)
                     height: visible ? 32 : 0
                     label: modelData.name
