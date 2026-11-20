@@ -150,7 +150,11 @@ Item {
         drag.target: root.cancelled ? null : card
         drag.threshold: 6
         cursorShape: drag.active ? (root.forbidden ? Qt.ForbiddenCursor : Qt.ClosedHandCursor) : Qt.ArrowCursor
-        onPressed: root.cancelled = false
+        onPressed: mouse => {
+            root.cancelled = false;
+            card.grabX = mouse.x;
+            card.grabY = mouse.y;
+        }
         onClicked: root.clicked()
         onDoubleClicked: root.opened()
         // Al soltar, la tarjeta vuelve a su sitio (la lista se rehace si algo cambió)
@@ -158,6 +162,9 @@ Item {
             if (drag.active) {
                 root.dragBegan(card);
             } else {
+                // Avisa a quien esté debajo (la barra lateral) antes de que la lista decida
+                if (!root.cancelled)
+                    card.Drag.drop();
                 root.dragEnded(root.cancelled);
                 // (si la lista se rehizo al soltar, la tarjeta ya no existe)
                 Qt.callLater(() => {
@@ -183,8 +190,12 @@ Item {
         // Se saca de la lista mientras se arrastra
         Drag.active: root.dragging
         Drag.keys: ["task"]
-        Drag.hotSpot.x: width / 2
-        Drag.hotSpot.y: height / 2
+        // El punto de la tarjeta que agarró el mouse: es el que cuenta para saber dónde cae
+        // (la fila es ancha y su centro queda lejos del puntero)
+        property real grabX: width / 2
+        property real grabY: height / 2
+        Drag.hotSpot.x: grabX
+        Drag.hotSpot.y: grabY
         property string taskId: root.task.id
 
         states: State {

@@ -269,6 +269,24 @@ Item {
         store.drop(id, r.changes, r.beforeId, r.afterId, r.label);
     }
 
+    // Se soltó una tarea sobre una entrada de la barra lateral
+    function dropOnSidebar(view, id) {
+        const t = store.get(id);
+        if (!t)
+            return;
+        const r = Drop.sidebarDrop(t, view, {
+            now: store.now,
+            projects: store.projects
+        });
+        if (!r)
+            return;
+        hint = "";
+        if (r.kind === "complete")
+            store.complete(id);
+        else
+            store.drop(id, r.changes, "", "", r.label);
+    }
+
     function deleteSelected() {
         requestDelete(selectedId);
     }
@@ -504,6 +522,7 @@ Item {
         height: parent.height
         view: root.effectiveView
         onViewSelected: v => root.setView(v)
+        onTaskDropped: (view, id) => root.dropOnSidebar(view, id)
         onEditingFinished: root.focusList()
     }
 
@@ -754,6 +773,7 @@ Item {
             height: parent.height - y
             groups: root.groups
             selectedId: root.selectedId
+            dragParent: dragLayer
             project: root.boardProject
             emptyText: root.emptyText
             onTaskClicked: id => {

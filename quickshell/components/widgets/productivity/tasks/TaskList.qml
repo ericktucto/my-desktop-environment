@@ -178,8 +178,9 @@ ListView {
     function tick() {
         if (!dragging || !dragItem)
             return;
-        const cx = dragItem.width / 2;
-        const cy = dragItem.height / 2;
+        // El puntero (el punto de la fila que se agarró)
+        const cx = dragItem.grabX;
+        const cy = dragItem.grabY;
         const v = mapFromItem(dragItem, cx, cy);
         let dy = 0;
         if (v.y < 40)
@@ -200,7 +201,10 @@ ListView {
                 break;
             }
         }
-        dragInvalid = group !== dragSourceGroup && lockedGroups.includes(group);
+        // Fuera de la lista (sobre la barra lateral) no hay destino aquí: lo recibe la barra
+        if (v.x < 0 || v.x > width)
+            group = "";
+        dragInvalid = group !== "" && group !== dragSourceGroup && lockedGroups.includes(group);
         if (dragInvalid)
             group = "";
         const others = [];

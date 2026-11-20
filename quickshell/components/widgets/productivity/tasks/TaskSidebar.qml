@@ -12,6 +12,8 @@ Item {
     property string view: ""
 
     signal viewSelected(string view)
+    // Se soltó una tarea sobre una entrada (la vista de la entrada y el id de la tarea)
+    signal taskDropped(string view, string id)
     signal editingFinished
 
     // true mientras se escribe el nombre de un proyecto
@@ -113,14 +115,28 @@ Item {
         property int count: 0
         property bool alert: false
         property bool selected: false
+        // Vista a la que se mandan las tareas que se sueltan encima ("" = no recibe)
+        property string dropView: ""
 
         signal clicked
         signal rightClicked
+        signal taskDropped(string id)
 
         width: parent ? parent.width : 0
         height: 32
         radius: 10
-        color: selected ? App.Theme.surfaceActive : (entryMouse.containsMouse ? App.Theme.surface : "transparent")
+        color: selected || dropArea.containsDrag ? App.Theme.surfaceActive : (entryMouse.containsMouse ? App.Theme.surface : "transparent")
+        border.width: dropArea.containsDrag ? 1 : 0
+        border.color: App.Theme.primary
+
+        // Soltar aquí una tarea arrastrada (solo las tareas: no los proyectos)
+        DropArea {
+            id: dropArea
+            anchors.fill: parent
+            keys: ["task"]
+            enabled: entry.dropView !== ""
+            onDropped: drop => entry.taskDropped(drop.source.taskId)
+        }
 
         Text {
             visible: entry.glyph !== 0
@@ -239,6 +255,8 @@ Item {
                     count: modelData.count
                     alert: modelData.alert ?? false
                     selected: root.view === modelData.id
+                    dropView: modelData.id === "board" ? "" : modelData.id
+                    onTaskDropped: id => root.taskDropped(dropView, id)
                     onClicked: root.viewSelected(modelData.id)
                 }
             }
@@ -263,6 +281,8 @@ Item {
                     dot: modelData.color
                     count: root.store.counts.projects[modelData.id] ?? 0
                     selected: root.view === "project:" + modelData.id
+                    dropView: "project:" + modelData.id
+                    onTaskDropped: id => root.taskDropped(dropView, id)
                     onClicked: root.viewSelected("project:" + modelData.id)
                     onRightClicked: {
                         menu.projectId = modelData.id;
@@ -325,6 +345,8 @@ Item {
                     mark: "#"
                     count: root.store.counts.tags[modelData] ?? 0
                     selected: root.view === "tag:" + modelData
+                    dropView: "tag:" + modelData
+                    onTaskDropped: id => root.taskDropped(dropView, id)
                     onClicked: root.viewSelected("tag:" + modelData)
                 }
             }

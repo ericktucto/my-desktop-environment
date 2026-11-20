@@ -15,6 +15,8 @@ Item {
     // Proyecto elegido en el filtro ("" = todos)
     property string project: ""
     property string emptyText: "Sin tareas"
+    // Item donde vive la tarjeta mientras se arrastra (el panel entero, para llegar a la barra)
+    property Item dragParent
 
     signal taskClicked(string id)
     signal taskOpened(string id)
@@ -191,7 +193,7 @@ Item {
                         width: list.width - (bar.visible ? 8 : 0)
                         task: modelData
                         selected: root.selectedId === modelData.id
-                        dragParent: root
+                        dragParent: root.dragParent ?? root
                         onClicked: root.taskClicked(modelData.id)
                         onOpened: root.taskOpened(modelData.id)
                     }
@@ -200,6 +202,7 @@ Item {
                 DropArea {
                     id: drop
                     anchors.fill: parent
+                    keys: ["task"]
                     onDropped: dropEvent => {
                         const id = dropEvent.source.taskId;
                         const t = root.store.get(id);

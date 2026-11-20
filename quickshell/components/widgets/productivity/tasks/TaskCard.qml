@@ -36,6 +36,7 @@ Item {
 
         // Se saca de la columna mientras se arrastra
         Drag.active: dragArea.drag.active
+        Drag.keys: ["task"]
         Drag.hotSpot.x: width / 2
         Drag.hotSpot.y: height / 2
         property string taskId: root.task.id
@@ -136,9 +137,12 @@ Item {
         drag.onActiveChanged: {
             if (!drag.active) {
                 card.Drag.drop();
+                // (si la lista se rehízo al soltar, la tarjeta ya no existe)
                 Qt.callLater(() => {
-                    card.x = 0;
-                    card.y = 0;
+                    if (card) {
+                        card.x = 0;
+                        card.y = 0;
+                    }
                 });
             }
         }
