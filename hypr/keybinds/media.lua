@@ -1,4 +1,5 @@
 local map = require("keybinds.repository")
+map.group("Multimedia")
 
 -- Teclas multimedia. Llaman a la shell por IPC (así respetan el tope de 100 %/150 %);
 -- si la shell no corre, `wpctl` hace lo mismo directamente.

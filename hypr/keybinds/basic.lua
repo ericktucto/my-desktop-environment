@@ -1,4 +1,5 @@
 local map = require("keybinds.repository")
+map.group("General")
 local terminal = "kitty"
 
 map.add({ map.SUPER, "T" }, hl.dsp.exec_cmd(terminal), nil, "Abrir la terminal")

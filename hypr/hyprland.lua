@@ -116,10 +116,7 @@ hl.window_rule({
 -- ============================================
 -- CAMBIAR ENTRE VENTANAS
 -- ============================================
-hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
-hl.bind("ALT + SHIFT + Tab", hl.dsp.window.cycle_next({ prev = true }))
 
 -- ============================================
 -- MAXIMIZE (entrar/salir de pantalla completa)
 -- ============================================
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))

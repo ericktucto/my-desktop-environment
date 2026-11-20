@@ -4,3 +4,4 @@ hypr/hyprlock-colors.conf
 kitty/colors.conf
 # Generado por Preferencias → Pantallas
 hypr/monitors.lua
+hypr/keybinds/user.lua

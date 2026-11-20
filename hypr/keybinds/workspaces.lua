@@ -1,4 +1,5 @@
 local map = require("keybinds.repository")
+map.group("Workspaces")
 
 -- workspaces
 map.add({ map.SUPER, "1" }, hl.dsp.focus({ workspace = 1 }), nil, "Ir al workspace 1")
