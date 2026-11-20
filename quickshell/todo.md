@@ -35,7 +35,7 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 
 ### Ayuda de atajos de teclado
 - [ ] Panel con todos los atajos (`Super+/`).
-- [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell.
+- [ ] `hypr/keybinds/repository.lua` ya guarda la descripción de cada atajo en `S.state`. Falta exportarlo a JSON y mostrarlo en la shell. Con eso, el menú de la ventana activa leería sus atajos de ahí en vez de `Config.activeWindow.hyprKeys` (hoy escritos a mano).
 
 ### Batería y energía
 - [ ] Opcional: pasar a Ahorro al llegar a batería baja, mostrar el perfil en la pill y un atajo de teclado para cambiarlo.
@@ -46,6 +46,7 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 
 ## 🟢 Prioridad baja / extras
 
+- [ ] **Pill de la ventana activa, lo que quedó fuera:** el menú real de la app («Archivo, Editar…»; hoy no existe en Hyprland, solo si implementa `org_kde_kwin_appmenu`), un buscador de acciones tipo paleta de comandos y las acciones del menú también en la vista general de workspaces.
 - [ ] **Multi-monitor:** hoy hay una sola barra (`PanelWindow`). Crear una por pantalla con `Variants { model: Quickshell.screens }`.
 - [ ] **Monitor del sistema:** CPU, RAM, temperatura y disco, leyendo `/proc` y `/sys`. Para temperaturas detalladas falta `lm_sensors` (`sensors`).
 - [ ] **Indicador de distribución del teclado** (us/es): evento `activelayout` de Hyprland.
