@@ -1,6 +1,7 @@
 import QtQuick
 import "../base" as Base
 import "../../services/bluetooth/" as BT
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Bluetooth en la barra: solo se ve con algo conectado. Muestra la batería si es un único dispositivo que la
@@ -10,7 +11,7 @@ Base.Island {
 
     readonly property var store: BT.BluetoothStore
 
-    visible: store.connected.length > 0
+    visible: ST.SettingsStore.pills.bluetooth && store.connected.length > 0
     openOnClick: false
 
     Text {

@@ -3,12 +3,15 @@ import "../base" as Base
 import "../widgets/battery/" as B
 import "../../services/idle/" as I
 import "../../services/power/" as PW
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Pill de batería: porcentaje y, con la cafeína encendida, una taza.
 // Al abrirla es el panel de energía (estado, inactividad y avisos de batería baja).
 Base.Island {
     id: root
+
+    visible: ST.SettingsStore.pills.battery
 
     expandedWidth: App.Config.panel.batteryWidth
     expandedHeight: panel.implicitHeight + 2 * paddingContainer

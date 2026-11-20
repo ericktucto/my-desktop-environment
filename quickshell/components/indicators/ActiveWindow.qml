@@ -3,6 +3,7 @@ import QtQuick.Controls
 import "../base" as Base
 import "../widgets/window/" as WW
 import "../../services/windows/" as WS
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Pill de la ventana activa: ícono, nombre de la app y su título. El clic izquierdo abre la isla en la pestaña
@@ -15,7 +16,7 @@ Base.Island {
 
     readonly property var store: WS.ActiveWindowStore
 
-    visible: (store.visible && !workspacesOpen) || expanded
+    visible: (ST.SettingsStore.pills.activeWindow && store.visible && !workspacesOpen) || expanded
     openOnClick: false
 
     expandedWidth: App.Config.activeWindow.panelWidth

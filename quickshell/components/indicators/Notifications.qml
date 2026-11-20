@@ -3,11 +3,14 @@ import "../base/" as Base
 import "../controls/" as C
 import "../widgets/notifylist/" as N
 import "../../services/notify/" as S
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Pill de notificaciones: campana + no leídas. Al abrirla muestra el historial.
 Base.Island {
     id: root
+
+    visible: ST.SettingsStore.pills.notifications
 
     expandedWidth: App.Config.panel.notificationsWidth
     expandedHeight: panel.implicitHeight + 2 * paddingContainer

@@ -3,10 +3,13 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
 import "../base" as Base
+import "../../services/settings/" as ST
 import "../../" as App
 
 Base.Island {
     id: root
+
+    visible: ST.SettingsStore.pills.zoom
 
     readonly property string appId: App.Config.zoom.appId
     readonly property string fallbackIcon: App.Config.zoom.fallbackIcon

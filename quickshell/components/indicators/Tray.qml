@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
 import "../base" as Base
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Pill del system tray. Nunca se expande (no tiene body).
@@ -13,7 +14,7 @@ Base.Island {
     animateWidth: false
 
     // Sin íconos en la bandeja la pill desaparece (el Row de la barra ignora lo invisible)
-    visible: count > 0
+    visible: ST.SettingsStore.pills.tray && count > 0
 
     // Siempre arranca con los íconos visibles (no se persiste)
     property bool shown: true

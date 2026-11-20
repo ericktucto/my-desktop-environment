@@ -28,6 +28,8 @@ Singleton {
     readonly property var timer: data.timer
     readonly property var appearance: data.appearance
     readonly property var island: data.island
+    readonly property var pills: data.pills
+    readonly property var clock: data.clock
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -119,6 +121,20 @@ Singleton {
             property string wheel: "volume"
             property string shiftWheel: "brightness"
         }
+        // Qué pills se ven en la barra (las que dependen de algo, como la red o Bluetooth, además lo necesitan)
+        property JsonObject pills: JsonObject {
+            property bool activeWindow: true
+            property bool zoom: true
+            property bool tray: true
+            property bool network: true
+            property bool bluetooth: true
+            property bool battery: true
+            property bool notifications: true
+        }
+        property JsonObject clock: JsonObject {
+            property bool hour12: true      // 12 h con AM/PM; apagado = 24 h
+            property bool seconds: false
+        }
         property JsonObject appearance: JsonObject {
             property bool animations: true                  // false = sin animaciones (todas las duraciones en 0)
             property string wallpaperDir: ""                // vacío = Config.wallpaperPicker.dir
@@ -178,6 +194,12 @@ Singleton {
             data.island.middle = "none";
             data.island.wheel = "volume";
             data.island.shiftWheel = "brightness";
+        } else if (name === "pills") {
+            for (const k of ["activeWindow", "zoom", "tray", "network", "bluetooth", "battery", "notifications"])
+                data.pills[k] = true;
+        } else if (name === "clock") {
+            data.clock.hour12 = true;
+            data.clock.seconds = false;
         } else if (name === "appearance") {
             data.appearance.animations = true;
             data.appearance.wallpaperDir = "";

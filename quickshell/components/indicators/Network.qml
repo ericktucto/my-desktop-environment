@@ -2,6 +2,7 @@ import QtQuick
 import "../base" as Base
 import "../widgets/network/" as NW
 import "../../services/network/" as NS
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Red en la barra: intensidad de la señal (o cable) y un candado con la VPN activa. Se oculta con el Wi-Fi
@@ -26,7 +27,7 @@ Base.Island {
         return true;
     }
 
-    visible: store.online || store.enabled || expanded
+    visible: ST.SettingsStore.pills.network && (store.online || store.enabled || expanded)
 
     // Los datos en vivo solo se leen con el panel abierto
     onOpened: store.panelOpen = true

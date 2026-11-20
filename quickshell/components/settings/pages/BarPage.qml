@@ -65,11 +65,90 @@ Page {
         defaultValue: "brightness"
         onPicked: id => page.isl.shiftWheel = id
     }
+    R.Section {
+        text: "Reloj"
+    }
+    R.SwitchRow {
+        searchId: "clock12"
+        label: "Formato de 12 horas"
+        hint: "Con AM/PM. Apagado, 24 horas."
+        keywords: "hora reloj am pm 24"
+        checked: ST.SettingsStore.clock.hour12
+        defaultValue: true
+        onToggled: c => ST.SettingsStore.clock.hour12 = c
+    }
+    R.SwitchRow {
+        searchId: "clockSeconds"
+        label: "Mostrar segundos"
+        keywords: "hora reloj"
+        checked: ST.SettingsStore.clock.seconds
+        defaultValue: false
+        onToggled: c => ST.SettingsStore.clock.seconds = c
+    }
+
+    R.Section {
+        text: "Pills de la barra"
+    }
+    Repeater {
+        model: [
+            {
+                key: "activeWindow",
+                label: "Ventana activa",
+                hint: "Ícono, nombre y título de la ventana (sus menús salen del clic)."
+            },
+            {
+                key: "zoom",
+                label: "Zoom",
+                hint: "El botón de Zoom."
+            },
+            {
+                key: "tray",
+                label: "Bandeja del sistema",
+                hint: "Los íconos de las apps en segundo plano."
+            },
+            {
+                key: "network",
+                label: "Red",
+                hint: "Wi-Fi o cable."
+            },
+            {
+                key: "bluetooth",
+                label: "Bluetooth",
+                hint: "Sale cuando hay un dispositivo conectado."
+            },
+            {
+                key: "battery",
+                label: "Batería",
+                hint: "El porcentaje y el panel de energía."
+            },
+            {
+                key: "notifications",
+                label: "Notificaciones",
+                hint: "La campana y el historial."
+            }
+        ]
+        R.SwitchRow {
+            required property var modelData
+            searchId: "pill-" + modelData.key
+            label: modelData.label
+            hint: modelData.hint
+            keywords: "barra pill mostrar ocultar"
+            checked: ST.SettingsStore.pills[modelData.key]
+            defaultValue: true
+            onToggled: c => ST.SettingsStore.pills[modelData.key] = c
+        }
+    }
+
     R.ActionRow {
         searchId: "resetIsland"
-        label: "Restablecer la isla central"
+        label: "Restablecer la barra"
+        hint: "Clics, reloj y pills a los valores de fábrica."
         keywords: "restaurar defecto"
         actionLabel: "Restablecer"
-        onTriggered: ST.SettingsStore.resetSection("island")
+        onTriggered: {
+            ST.SettingsStore.resetSection("island");
+            ST.SettingsStore.resetSection("clock");
+            ST.SettingsStore.resetSection("pills");
+        }
     }
 }
