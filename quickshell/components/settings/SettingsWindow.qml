@@ -3,6 +3,8 @@ import Quickshell
 import "pages/" as PG
 import "../../services/settings/" as ST
 import "../../services/display/" as DP
+import "../../services/keybinds/" as KB
+import "../../services/keybinds/Keys.js" as KeyNames
 import "../../" as App
 
 // Ventana de Preferencias del sistema: a la izquierda el buscador y las páginas; a la derecha la página
@@ -88,11 +90,38 @@ FloatingWindow {
     onVisibleChanged: {
         if (!visible && ui.open)
             ui.open = false;
+        if (!visible)
+            KB.KeybindStore.stopRecording();
         if (visible)
             Qt.callLater(() => search.forceActiveFocus());
     }
 
+    // Grabando un atajo, el teclado es de la ventana (no del buscador); al cerrarla se deja de grabar
+    Connections {
+        target: KB.KeybindStore
+        function onRecordingChanged() {
+            if (KB.KeybindStore.recording !== "")
+                Qt.callLater(() => recorder.forceActiveFocus());
+            else
+                search.forceActiveFocus();
+        }
+    }
+
+    // Quien recibe el teclado mientras se graba un atajo (fuera del buscador, que se quedaría las letras)
+    Item {
+        id: recorder
+        focus: false
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Escape)
+                KB.KeybindStore.stopRecording();
+            else
+                KB.KeybindStore.recorded(KeyNames.fromEvent(event.key, event.modifiers, event.nativeScanCode));
+            event.accepted = true;
+        }
+    }
+
     FocusScope {
+        id: keys
         anchors.fill: parent
         focus: true
 

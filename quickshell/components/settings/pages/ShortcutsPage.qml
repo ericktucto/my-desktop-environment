@@ -34,23 +34,37 @@ Page {
                     required property var modelData
                     searchId: "bind-" + modelData.id
                     label: modelData.description || modelData.id
-                    hint: modelData.bind === null ? "Sin atajo" : ""
+                    readonly property bool recording: page.store.recording === modelData.id
+                    hint: recording ? (page.store.recordMessage !== "" ? page.store.recordMessage : "Pulsa la combinación (Ctrl, Alt y Shift con la tecla; Super se añade con el botón). Esc cancela.") : (modelData.bind === null ? "Sin atajo" : "")
                     keywords: modelData.id + " " + (modelData.bind ?? "") + " tecla combinacion"
                     changed: page.store.isChanged(modelData)
                     onResetRequested: page.store.reset(modelData.id)
 
+                    CC.Chip {
+                        visible: row.recording
+                        anchors.verticalCenter: parent.verticalCenter
+                        label: "Super"
+                        selected: page.store.recordSuper
+                        onClicked: page.store.recordSuper = !page.store.recordSuper
+                    }
                     CC.SmallButton {
-                        visible: row.modelData.bind !== null
+                        label: row.recording ? "Cancelar" : "Cambiar"
+                        primary: row.recording
+                        onClicked: row.recording ? page.store.stopRecording() : page.store.startRecording(row.modelData.id)
+                    }
+                    CC.SmallButton {
+                        visible: row.modelData.bind !== null && !row.recording
                         label: "Quitar"
                         onClicked: page.store.setBind(row.modelData.id, "")
                     }
                     CC.SmallButton {
-                        visible: page.store.isChanged(row.modelData)
+                        visible: page.store.isChanged(row.modelData) && !row.recording
                         label: "Restablecer"
                         onClicked: page.store.reset(row.modelData.id)
                     }
                     WW.KeyCaps {
                         anchors.verticalCenter: parent.verticalCenter
+                        visible: !row.recording
                         keys: (row.modelData.bind ?? "").replace(/ \+ /g, "+")
                     }
                 }

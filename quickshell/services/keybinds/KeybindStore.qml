@@ -74,6 +74,56 @@ Singleton {
         return b.bind !== b.default;
     }
 
+    // ── Grabar una combinación nueva ──
+    // Mientras se graba, Hyprland está en un submapa sin atajos (así la combinación llega a la ventana en vez de
+    // disparar su acción). Esc cancela; sin pulsar nada se cancela solo.
+    property string recording: ""
+    property string recordMessage: ""
+    // Hyprland no le pasa la tecla Super a la ventana: se añade con este interruptor (activo por defecto, casi
+    // todos los atajos la llevan)
+    property bool recordSuper: true
+
+    function submap(name) {
+        Quickshell.execDetached(["hyprctl", "dispatch", 'hl.dsp.submap("' + name + '")']);
+    }
+
+    function startRecording(id) {
+        recording = id;
+        recordMessage = "";
+        submap("stix-record");
+        recordTimer.restart();
+    }
+
+    function stopRecording() {
+        if (recording === "")
+            return;
+        recording = "";
+        recordMessage = "";
+        recordTimer.stop();
+        submap("reset");
+    }
+
+    Timer {
+        id: recordTimer
+        interval: 12000
+        onTriggered: store.stopRecording()
+    }
+
+    // Una combinación pulsada: si ya la usa otro atajo avisa y sigue esperando; si no, la aplica
+    function recorded(pressed) {
+        if (recording === "" || pressed === "")
+            return;
+        const bind = recordSuper && !pressed.includes("SUPER") ? "SUPER + " + pressed : pressed;
+        const other = conflictOf(bind, recording);
+        if (other !== "") {
+            recordMessage = "Ya lo usa «" + (byId(other)?.description || other) + "». Pulsa otra combinación o Esc.";
+            recordTimer.restart();
+            return;
+        }
+        setBind(recording, bind);
+        stopRecording();
+    }
+
     // Cambia el atajo `id` a `bind` (texto "SUPER + SHIFT + Q"); `bind` = "" lo quita
     function setBind(id, bind) {
         const def = byId(id)?.default;
@@ -112,5 +162,16 @@ Singleton {
         id: userFile
         path: store.userPath
         printErrors: false
+    }
+
+    // qs ipc call stixshell@keybinds record "<id>" (para probar la grabación sin el mouse) · reset "<id>"
+    IpcHandler {
+        target: "stixshell@keybinds"
+        function record(id: string): void {
+            store.startRecording(id);
+        }
+        function reset(id: string): void {
+            store.reset(id);
+        }
     }
 }
