@@ -588,22 +588,14 @@ Singleton {
     readonly property QtObject theme: QtObject {
         readonly property int fade: 600                // ms del fundido de colores (igual que anim.wallpaper)
         readonly property int debounce: 150            // ms tras cambiar de wallpaper antes de regenerar
-        readonly property string fallback: "2979ff"    // color fuente al apagar (el azul de siempre)
-        readonly property var schemes: [
-            { id: "scheme-tonal-spot", label: "Suave" },
-            { id: "scheme-fidelity", label: "Fiel" },
-            { id: "scheme-vibrant", label: "Vibrante" },
-            { id: "scheme-expressive", label: "Expresivo" }
-        ]
-        // Qué tan marcado es el borde fino en «Del wallpaper»
+        // Qué tan teñido sale el fondo en «Del wallpaper»
         readonly property var tints: [
             { id: "tinted", label: "Sutil" },
             { id: "vivid", label: "Intensa" }
         ]
-        // Los tres modos de color del selector de wallpapers
+        // Los dos modos de color
         readonly property var modes: [
-            { id: "scheme", label: "Del wallpaper", hint: "Acento y borde de la imagen; fondos neutros." },
-            { id: "accent", label: "Acento del wallpaper", hint: "Acento de la imagen; fondos neutros." },
+            { id: "scheme", label: "Del wallpaper", hint: "Fondo y acento de la imagen, a elegir entre sus combinaciones." },
             { id: "custom", label: "Acento propio", hint: "El acento que elijas; fondos neutros." }
         ]
         // Muestras del acento propio (azul, índigo, violeta, rosa, rojo, naranja, ámbar, verde, turquesa y cian)

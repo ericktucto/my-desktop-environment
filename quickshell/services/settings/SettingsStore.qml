@@ -93,12 +93,15 @@ Singleton {
             property bool blur: false       // false = pixelar, true = difuminar
         }
         property JsonObject theme: JsonObject {
-            property string mode: ""                        // scheme (colores del wallpaper) | accent (acento del wallpaper) | custom (acento propio); vacío = se deduce de dynamic y tint
+            property string mode: ""                        // scheme (colores del wallpaper) | custom (acento propio); «accent» (de antes) se lee como scheme; vacío = se deduce de dynamic
             property string color: "#2979ff"                // el acento propio
             property bool dynamic: true                     // solo para la migración (antes: colores según el wallpaper)
-            property string scheme: "scheme-tonal-spot"
-            property string tint: "tinted"                  // intensidad del modo «colores del wallpaper»: tinted | vivid (neutral se lee como tinted)
-            property var sources: ({})                      // ruta del wallpaper → color fuente elegido (0 a 3)
+            property string intensity: "vivid"              // qué tan teñido sale el fondo: tinted (Sutil) | vivid (Intensa)
+            property var combos: ({})                       // ruta del wallpaper → combinación elegida (se reasigna el objeto entero para que se guarde)
+            property JsonObject apps: JsonObject {          // apps que también toman el fondo de la paleta (el acento lo toman todas)
+                property bool kitty: false
+                property bool gtk: false
+            }
         }
         property JsonObject nightLight: JsonObject {
             property bool enabled: false
@@ -299,8 +302,10 @@ Singleton {
         if (name === "theme") {
             data.theme.mode = "";
             data.theme.color = "#2979ff";
-            data.theme.scheme = "scheme-tonal-spot";
-            data.theme.tint = "tinted";
+            data.theme.intensity = "vivid";
+            data.theme.combos = {};
+            data.theme.apps.kitty = false;
+            data.theme.apps.gtk = false;
         } else if (name === "nightLight") {
             data.nightLight.mode = "sun";
             data.nightLight.temperature = App.Config.nightLight.temperature;

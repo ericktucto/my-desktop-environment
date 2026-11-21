@@ -40,25 +40,25 @@ Page {
         onPicked: hex => page.theme.setColor(hex)
     }
     R.ChoiceRow {
-        visible: page.theme.mode === "scheme"
-        searchId: "scheme"
-        label: "Estilo de la paleta"
-        hint: "Cómo se saca la paleta de la imagen."
-        keywords: "esquema suave fiel vibrante expresivo"
-        options: page.cfg.schemes
-        value: page.theme.scheme
-        defaultValue: "scheme-tonal-spot"
-        onPicked: id => page.theme.setScheme(id)
+        visible: page.theme.mode === "scheme" && page.theme.combos.length > 0
+        searchId: "combo"
+        label: "Combinación"
+        hint: "Fondo y acento que salen de este wallpaper."
+        keywords: "paleta fondo acento lila verde colores imagen"
+        options: page.theme.combos.map(c => ({ id: c.id, label: c.name }))
+        value: page.theme.combo
+        defaultValue: page.theme.combos.length > 0 ? page.theme.combos[0].id : ""
+        onPicked: id => page.theme.setCombo(id)
     }
     R.ChoiceRow {
         visible: page.theme.mode === "scheme"
         searchId: "tint"
-        label: "Intensidad del borde"
-        hint: "Qué tan marcado es el borde fino de color."
-        keywords: "tinte sutil intensa borde"
+        label: "Intensidad del fondo"
+        hint: "Qué tan teñido sale el fondo con el color de la imagen."
+        keywords: "tinte sutil intensa fondo borde"
         options: page.cfg.tints
         value: page.theme.tint
-        defaultValue: "tinted"
+        defaultValue: "vivid"
         onPicked: id => page.theme.setTint(id)
     }
 

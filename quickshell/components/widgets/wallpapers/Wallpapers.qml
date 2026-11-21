@@ -118,13 +118,13 @@ Item {
         keyNavigationWraps: false
         highlightFollowsCurrentItem: true
 
-        // 1, 2 y 3 cambian el modo de color; p abre el selector completo (acento propio)
+        // 1 y 2 cambian el modo de color; p abre el selector completo (acento propio)
         Keys.onPressed: event => {
             if (event.modifiers !== Qt.NoModifier)
                 return;
-            const modes = ["scheme", "accent", "custom"];
-            if (event.key >= Qt.Key_1 && event.key <= Qt.Key_3) {
-                if (event.key === Qt.Key_1 + 2 || T.ThemeStore.available)
+            const modes = ["scheme", "custom"];
+            if (event.key >= Qt.Key_1 && event.key <= Qt.Key_2) {
+                if (event.key === Qt.Key_2 || T.ThemeStore.available)
                     T.ThemeStore.setMode(modes[event.key - Qt.Key_1]);
             } else if (event.key === Qt.Key_P && T.ThemeStore.mode === "custom") {
                 root.picking = !root.picking;

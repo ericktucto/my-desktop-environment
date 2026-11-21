@@ -3,11 +3,9 @@ import "../controlcenter/" as CC
 import "../../../services/theme/" as T
 import "../../../" as App
 
-// Encabezado del selector de wallpapers: cómo se colorea la shell. Tres modos:
-//   Del wallpaper:        el acento y el borde fino salen de la paleta de la imagen (borde, estilo y color base).
-//   Acento del wallpaper: solo el acento sale de la imagen (color base).
-//   Acento propio:        el acento lo eliges tú (muestras).
-// Los fondos son siempre los del sistema.
+// Encabezado del selector de wallpapers: cómo se colorea la shell. Dos modos:
+//   Del wallpaper: fondo y acento de la imagen, a elegir entre sus combinaciones («Lila + verde»).
+//   Acento propio: el acento lo eliges tú (muestras); los fondos son los del sistema.
 // Dos filas de alto fijo (los modos y sus opciones), así la isla no cambia de alto al cambiar de modo.
 Item {
     id: root
@@ -15,7 +13,7 @@ Item {
     readonly property var store: T.ThemeStore
     readonly property var cfg: App.Config.theme
     readonly property string mode: store.mode
-    // Los dos primeros modos necesitan matugen
+    // «Del wallpaper» necesita Pillow
     readonly property bool wallpaperMode: mode !== "custom"
     readonly property bool usable: store.available || !wallpaperMode
     // El selector completo está abierto (lo muestra Wallpapers en lugar de la cuadrícula)
@@ -104,7 +102,7 @@ Item {
             anchors.right: current.left
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            text: root.store.message !== "" ? root.store.message : (!root.store.available && root.wallpaperMode ? "Instala matugen para usar los colores de la imagen" : root.cfg.modes.find(m => m.id === root.mode).hint)
+            text: root.store.message !== "" ? root.store.message : (!root.store.available && root.wallpaperMode ? "Instala python3-Pillow para usar los colores de la imagen" : root.cfg.modes.find(m => m.id === root.mode).hint)
             color: root.store.message !== "" || (!root.store.available && root.wallpaperMode) ? App.Theme.amber : App.Theme.subtext
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.xs
@@ -120,7 +118,7 @@ Item {
         height: App.Config.wallpaperPicker.tintRow
         opacity: root.store.busy ? 0.6 : 1
 
-        // Del wallpaper: intensidad, estilo de la paleta y color base
+        // Del wallpaper: intensidad del fondo y combinaciones
         Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
@@ -128,7 +126,7 @@ Item {
             enabled: root.usable
 
             Label {
-                text: "Borde"
+                text: "Fondo"
             }
             Repeater {
                 model: root.cfg.tints
@@ -146,57 +144,42 @@ Item {
                 height: 1
             }
             Label {
-                text: "Estilo"
+                text: "Combinación"
             }
             Repeater {
-                model: root.cfg.schemes
-                CC.Chip {
+                model: root.store.combos
+                Rectangle {
+                    id: swatch
                     required property var modelData
-                    height: 28
-                    radius: 14
-                    label: modelData.label
-                    selected: root.store.scheme === modelData.id
-                    onClicked: root.store.setScheme(modelData.id)
+                    readonly property var pv: modelData.preview[root.store.tint]
+                    width: 44
+                    height: 24
+                    radius: 12
+                    color: pv.island
+                    border.width: root.store.combo === modelData.id ? 2 : 1
+                    border.color: root.store.combo === modelData.id ? App.Theme.white : App.Theme.islandEdge
+                    Rectangle {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 4
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 14
+                        height: 14
+                        radius: 7
+                        color: swatch.pv.primary
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.store.setCombo(swatch.modelData.id)
+                    }
                 }
             }
-            Item {
-                width: 10
-                height: 1
-            }
-            Label {
-                text: "Color base"
-            }
-            Repeater {
-                model: root.store.sources
-                Dot {
-                    required property int index
-                    required property string modelData
-                    color: modelData
-                    selected: root.store.index === index
-                    onClicked: root.store.setSource(index)
-                }
-            }
-        }
-
-        // Acento del wallpaper: cuál de los colores de la imagen
-        Row {
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 6
-            visible: root.mode === "accent"
-            enabled: root.usable
-
-            Label {
-                text: "Color base de la imagen"
-            }
-            Repeater {
-                model: root.store.sources
-                Dot {
-                    required property int index
-                    required property string modelData
-                    color: modelData
-                    selected: root.store.index === index
-                    onClicked: root.store.setSource(index)
-                }
+            Text {
+                leftPadding: 4
+                text: root.store.current ? root.store.current.name : ""
+                color: App.Theme.subtext
+                font.family: App.Config.fonts.text
+                font.pixelSize: App.Config.fontSize.xs
             }
         }
 

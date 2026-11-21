@@ -569,14 +569,11 @@ def apply(args):
                 "color": color,
                 "image": args.get("image", ""),
                 "combo": combo["id"] if combo else "",
+                "wanted": wanted,
                 "tint": tint,
                 "apps": sorted(apps),
                 "palette": pal,
                 "combos": combos,
-                # Para el ThemeStore de antes de las combinaciones (se quita con él)
-                "scheme": args.get("scheme", "scheme-tonal-spot"),
-                "index": int(args.get("index", 0)),
-                "sources": [],
             }
         ),
     )
@@ -590,7 +587,7 @@ def apply(args):
             job()
         except OSError:
             pass
-    print(json.dumps({"ok": True, "palette": pal, "combos": combos, "combo": combo["id"] if combo else "", "color": color, "sources": []}))
+    print(json.dumps({"ok": True, "palette": pal, "combos": combos, "combo": combo["id"] if combo else "", "color": color}))
 
 
 def main():
