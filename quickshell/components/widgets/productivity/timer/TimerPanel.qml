@@ -214,7 +214,7 @@ FocusScope {
         spacing: 6
 
         Repeater {
-            model: root.cfg.presets
+            model: ST.SettingsStore.timer.presets
             CC.Chip {
                 required property int modelData
                 label: root.presetLabel(modelData)

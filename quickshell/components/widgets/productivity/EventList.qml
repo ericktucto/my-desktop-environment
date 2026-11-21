@@ -29,7 +29,7 @@ Item {
     readonly property bool canLogin: !sample && store.hasClient && (!store.connected || store.error === "expired")
     readonly property string status: {
         if (store.error === "offline")
-            return "Sin conexión" + (store.updated > 0 ? " · actualizado " + store.time12(store.updated) : "");
+            return "Sin conexión" + (store.updated > 0 ? " · actualizado " + store.timeText(store.updated) : "");
         if (store.error !== "" && store.error !== "expired" && store.error !== "no-token" && store.error !== "no-client")
             return store.error;
         return "";

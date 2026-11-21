@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell.Services.Notifications
 import "../../../services/notify/" as S
+import "../../../services/settings/" as ST
 import "../../../" as App
 
 // Un popup: la tarjeta con animación de entrada/salida y cierre automático.
@@ -70,7 +71,7 @@ Item {
     // y al salir vuelve a contar desde cero.
     Timer {
         // expireTimeout viene en ms (-1 = la app no indicó uno)
-        interval: root.entry && root.entry.expireTimeout > 0 ? root.entry.expireTimeout : root.cfg.popupTimeout
+        interval: root.entry && root.entry.expireTimeout > 0 ? root.entry.expireTimeout : ST.SettingsStore.notifications.timeout * 1000
         running: !root.critical && !hover.hovered && !root.closing && !card.expanded && root.shown >= 1
         onTriggered: root.close()
     }

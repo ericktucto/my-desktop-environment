@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Networking
 import "../region/" as RG
 import "../../" as App
+import "../apps/" as AP
 
 // Red: Wi-Fi (Quickshell.Networking), conexión por cable, VPN de WireGuard y OpenVPN, detalles de cada red (IP, DNS),
 // QR para compartir el Wi-Fi y redes de empresa 802.1X (nmcli, que Quickshell no cubre; los comandos largos, en scripts/net.py).
@@ -411,7 +412,7 @@ Singleton {
                 if (j.ok && j.url)
                     url = j.url;
             } catch (e) {}
-            Quickshell.execDetached(["xdg-open", url]);
+            AP.AppsStore.openUrl(url);
         });
     }
 

@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import "../sound/" as SND
+import "../settings/" as ST
 import "../../" as App
 
 // Historial de notificaciones.
@@ -132,8 +133,119 @@ Singleton {
         save();
     }
 
-    function setDnd(on) {
+    function isMuted(app) {
+        return !!app && (ST.SettingsStore.notifications.muted ?? []).indexOf(app) >= 0;
+    }
+
+    function setMuted(app, on) {
+        const list = (ST.SettingsStore.notifications.muted ?? []).filter(a => a !== app);
+        if (on)
+            list.push(app);
+        ST.SettingsStore.notifications.muted = list;
+        if (on) {
+            // Lo que ya había sin leer de esa app deja de contar
+            history = history.map(e => e.appName === app && !e.read ? Object.assign({}, e, {
+                    read: true
+                }) : e);
+            popups = popups.filter(k => entry(k)?.appName !== app);
+            save();
+        }
+    }
+
+    // Todas las apps que han notificado (y las silenciadas aunque ya no estén en el historial), por nombre
+    readonly property var appNames: {
+        const set = new Set(ST.SettingsStore.notifications.muted ?? []);
+        for (const e of history)
+            if (e.appName)
+                set.add(e.appName);
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    // ── No molestar programado ──
+    // Al llegar la hora de inicio se activa No molestar y a la de fin se desactiva (si lo activó el horario).
+    // Un solo temporizador que salta al próximo límite: sin consultas periódicas.
+    property bool dndBySchedule: false
+
+    function minutesOf(hhmm) {
+        const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm ?? "");
+        return m ? Math.min(23, +m[1]) * 60 + Math.min(59, +m[2]) : -1;
+    }
+
+    // Minutos desde 00:00 de la hora actual
+    function nowMinutes() {
+        const d = new Date();
+        return d.getHours() * 60 + d.getMinutes();
+    }
+
+    function inSchedule() {
+        const c = ST.SettingsStore.notifications.dndSchedule;
+        const a = minutesOf(c.from), b = minutesOf(c.to), n = nowMinutes();
+        if (!c.enabled || a < 0 || b < 0 || a === b)
+            return false;
+        return a < b ? n >= a && n < b : n >= a || n < b;
+    }
+
+    // Pone No molestar según el horario y programa el próximo límite
+    function applySchedule(boundary) {
+        const c = ST.SettingsStore.notifications.dndSchedule;
+        scheduleTimer.stop();
+        if (!c.enabled || minutesOf(c.from) < 0 || minutesOf(c.to) < 0 || minutesOf(c.from) === minutesOf(c.to)) {
+            if (dndBySchedule)
+                setDnd(false);
+            return;
+        }
+        const inside = inSchedule();
+        if (inside && (boundary || !dnd)) {
+            // Al entrar al horario; al arrancar dentro de él solo si no estaba ya activo a mano
+            if (!dnd)
+                setDnd(true, true);
+        } else if (!inside && dndBySchedule) {
+            setDnd(false);
+        }
+        // Próximo límite: el inicio o el fin que venga antes
+        const n = nowMinutes();
+        const d = new Date();
+        const secs = d.getSeconds() + d.getMilliseconds() / 1000;
+        let wait = 24 * 60;
+        for (const t of [minutesOf(c.from), minutesOf(c.to)]) {
+            let diff = t - n;
+            if (diff <= 0)
+                diff += 24 * 60;
+            wait = Math.min(wait, diff);
+        }
+        scheduleTimer.interval = Math.max(1000, Math.round(wait * 60000 - secs * 1000));
+        scheduleTimer.start();
+    }
+
+    Timer {
+        id: scheduleTimer
+        onTriggered: store.applySchedule(true)
+    }
+
+    // Al cargar o editar el horario cambian varios valores seguidos: se aplica una vez, cuando se asientan
+    Timer {
+        id: recheck
+        interval: 250
+        onTriggered: store.applySchedule(true)
+    }
+
+    Connections {
+        target: ST.SettingsStore.notifications.dndSchedule
+        function onEnabledChanged() {
+            recheck.restart();
+        }
+        function onFromChanged() {
+            recheck.restart();
+        }
+        function onToChanged() {
+            recheck.restart();
+        }
+    }
+
+    // `bySchedule`: lo activa el horario (solo entonces el horario lo apaga al llegar la hora de fin)
+    function setDnd(on, bySchedule) {
         dnd = on;
+        dndBySchedule = !!bySchedule && on;
         if (on)
             popups = popups.filter(k => {
                 const e = entry(k);
@@ -257,11 +369,14 @@ Singleton {
             return;
         if (dnd && e.urgency !== NotificationUrgency.Critical)
             return;
+        // Apps silenciadas (Preferencias → Notificaciones): quedan en el historial, sin popup ni sonido
+        if (isMuted(e.appName))
+            return;
         // El sonido de «notificación nueva» (Preferencias → Sonidos)
         SND.SoundStore.playNotification(e.urgency === NotificationUrgency.Critical, e.appName ?? "");
         const list = popups.filter(k => k !== key);
         list.unshift(key);
-        popups = list.slice(0, App.Config.notifications.maxPopups);
+        popups = list.slice(0, Math.max(1, ST.SettingsStore.notifications.maxPopups));
     }
 
     // Conecta un Notification vivo a una entrada
@@ -300,7 +415,7 @@ Singleton {
             return;
         const e = snapshot(n, key, prev);
         e.time = Date.now();
-        e.read = false;
+        e.read = isMuted(e.appName);
         history = [e].concat(history.filter(x => x.key !== key));
         showPopup(key);
         save();
@@ -330,7 +445,11 @@ Singleton {
 
         const key = Date.now() + "-" + n.id + "-" + (seq++);
         attach(n, key);
-        history = [snapshot(n, key, null)].concat(history);
+        const first = snapshot(n, key, null);
+        // Una app silenciada llega ya leída: no cuenta en la pill ni en el bloqueo
+        if (isMuted(first.appName))
+            first.read = true;
+        history = [first].concat(history);
         showPopup(key);
         save();
     }
@@ -350,6 +469,7 @@ Singleton {
                             alive: false
                         }));
                 dnd = !!d.dnd;
+                dndBySchedule = !!d.dndBySchedule && dnd;
             }
         } catch (err) {
             console.warn("NotificationStore: no se pudo leer el historial:", err);
@@ -374,6 +494,7 @@ Singleton {
             const data = {
                 version: 1,
                 dnd: store.dnd,
+                dndBySchedule: store.dndBySchedule,
                 history: store.history.map(e => {
                     const c = Object.assign({}, e);
                     delete c.alive;
@@ -415,5 +536,6 @@ Singleton {
     Component.onCompleted: {
         Quickshell.execDetached(["mkdir", "-p", Quickshell.stateDir]);
         ensureLoaded();
+        applySchedule(false);
     }
 }

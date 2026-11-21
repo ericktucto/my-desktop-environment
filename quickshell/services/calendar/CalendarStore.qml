@@ -6,6 +6,8 @@ import "../settings/" as ST
 import "../../" as App
 import "../tasks/" as TK
 import "../tasks/Dates.js" as TDates
+import "../settings/Clock.js" as Fmt
+import "../apps/" as AP
 
 // Calendario del panel Productividad: fechas, vistas, eventos de Google (scripts/gcal.py) y feriados.
 // Las fechas se manejan como Date a medianoche local y, para indexar, como texto "AAAA-MM-DD" (`keyOf`).
@@ -125,23 +127,23 @@ Singleton {
         return daysFull[weekday(d)] + ", " + d.getDate() + " de " + months[d.getMonth()].toLowerCase();
     }
 
-    function time12(ms) {
-        const d = new Date(ms);
-        const h = d.getHours();
-        return (h % 12 === 0 ? 12 : h % 12) + ":" + pad(d.getMinutes()) + " " + (h < 12 ? "AM" : "PM");
+    // Hora de un instante, en 12 o 24 h según Preferencias → Bloqueo y reloj
+    function timeText(ms) {
+        const t = Fmt.time(new Date(ms), ST.SettingsStore.clock.hour12, false);
+        return ST.SettingsStore.clock.hour12 ? t.replace(/^0/, "") : t;
     }
 
     // "9:00 – 10:00 AM", "11:30 AM – 12:30 PM", "Todo el día"
     function timeLabel(ev) {
         if (ev.allDay)
             return "Todo el día";
-        const a = time12(ev.start), b = time12(ev.end);
+        const a = timeText(ev.start), b = timeText(ev.end);
         const sd = new Date(ev.start), ed = new Date(ev.end);
         const sameDay = keyOf(sd) === keyOf(ed);
         const nextDay = keyOf(addDays(sd, 1)) === keyOf(ed);
         if (!sameDay && !nextDay)
             return sd.getDate() + " " + monthsShort[sd.getMonth()] + " " + a + " – " + ed.getDate() + " " + monthsShort[ed.getMonth()] + " " + b;
-        if (a.slice(-2) === b.slice(-2) && sameDay)
+        if (ST.SettingsStore.clock.hour12 && a.slice(-2) === b.slice(-2) && sameDay)
             return a.slice(0, -3) + " – " + b;
         return a + " – " + b;
     }
@@ -379,7 +381,7 @@ Singleton {
 
     // Lo que dice el reloj con el mouse encima: "lun 16 nov" o "lun 16 nov · Reunión en 25 min"
     readonly property string hoverText: {
-        let t = shortDate(now);
+        let t = Fmt.date(now, ST.SettingsStore.clock.dateFormat, false);
         const ev = next;
         if (ev) {
             const name = ev.title.length > cfg.titleMax ? ev.title.slice(0, cfg.titleMax - 1) + "…" : ev.title;
@@ -402,7 +404,7 @@ Singleton {
     }
 
     function newEventUrl(startMs, endMs) {
-        let url = "https://calendar.google.com/calendar/render?action=TEMPLATE&dates=" + stamp(startMs) + "/" + stamp(endMs) + "&ctz=" + encodeURIComponent(cfg.timeZone);
+        let url = "https://calendar.google.com/calendar/render?action=TEMPLATE&dates=" + stamp(startMs) + "/" + stamp(endMs) + "&ctz=" + encodeURIComponent(timeZone);
         if (email)
             url += "&authuser=" + encodeURIComponent(email);
         return url;
@@ -419,7 +421,7 @@ Singleton {
     }
 
     function openUrl(url) {
-        Quickshell.execDetached(["xdg-open", url]);
+        AP.AppsStore.openUrl(url);
     }
 
     function copyText(text) {
@@ -519,7 +521,7 @@ Singleton {
         again = false;
         const r = rangeFor(selected);
         lastFetch = Date.now();
-        const cmd = cfg.testSample !== "" ? ["cat", cfg.testSample] : ["python3", script, "events", "--from", r.from, "--to", r.to, "--skip-holidays"].filter(x => cfg.holidays !== "" || x !== "--skip-holidays");
+        const cmd = cfg.testSample !== "" ? ["cat", cfg.testSample] : ["python3", script, "events", "--from", r.from, "--to", r.to, "--skip-holidays"].filter(x => holidayId !== "" || x !== "--skip-holidays");
         run(cmd, function (j, code) {
             store.loading = false;
             if (!j) {
@@ -584,7 +586,35 @@ Singleton {
         });
     }
 
+    // ── Zona horaria (Preferencias → Productividad): la elegida o, vacía, la del sistema ──
+    property string systemZone: "America/Lima"
+    readonly property string timeZone: ST.SettingsStore.calendar.timeZone !== "" ? ST.SettingsStore.calendar.timeZone : systemZone
+
+    Process {
+        running: true
+        command: ["sh", "-c", 'p=$(readlink -f /etc/localtime); echo "${p#*/zoneinfo/}"']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const z = text.trim();
+                if (z !== "" && z.indexOf("/") !== 0)
+                    store.systemZone = z;
+            }
+        }
+    }
+
     // ── Feriados ──
+    // El calendario público de feriados (Preferencias → Productividad); vacío = sin feriados
+    readonly property string holidayId: ST.SettingsStore.calendar.holidays
+    onHolidayIdChanged: {
+        holidayList = [];
+        holidaysUpdated = 0;
+        holidaysTried = 0;
+        ensureHolidays();
+        // Los eventos se piden con o sin los feriados del calendario de Google
+        if (loadedFrom !== "")
+            refresh(true);
+    }
+
     property double holidaysUpdated: 0
     property double holidaysTried: 0
 
@@ -593,7 +623,7 @@ Singleton {
     }
 
     function ensureHolidays() {
-        if (cfg.holidays === "" || holidaysBusy)
+        if (holidayId === "" || holidaysBusy)
             return;
         const stale = Date.now() - holidaysUpdated > cfg.holidaysMaxAge * 86400000;
         const missing = !holidaysCover(selected.getFullYear());
@@ -607,14 +637,14 @@ Singleton {
     function fetchHolidays() {
         holidaysBusy = true;
         holidaysTried = Date.now();
-        run(["python3", script, "holidays", "--id", cfg.holidays], function (j) {
+        run(["python3", script, "holidays", "--id", holidayId], function (j) {
             store.holidaysBusy = false;
             if (j && j.ok) {
                 store.holidayList = j.events;
                 store.holidaysUpdated = j.updated;
                 holidaysFile.setText(JSON.stringify({
                     version: 1,
-                    id: store.cfg.holidays,
+                    id: store.holidayId,
                     updated: j.updated,
                     events: j.events
                 }));
@@ -664,7 +694,7 @@ Singleton {
         } catch (e) {}
         try {
             const h = JSON.parse(holidaysFile.text());
-            if (h.version === 1 && h.id === cfg.holidays && Array.isArray(h.events)) {
+            if (h.version === 1 && h.id === holidayId && Array.isArray(h.events)) {
                 holidayList = h.events;
                 holidaysUpdated = h.updated || 0;
             }

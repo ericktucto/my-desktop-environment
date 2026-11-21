@@ -163,27 +163,6 @@ Page {
     }
 
     R.Section {
-        text: "Reloj"
-    }
-    R.SwitchRow {
-        searchId: "clock12"
-        label: "Formato de 12 horas"
-        hint: "Con AM/PM. Apagado, 24 horas."
-        keywords: "hora reloj am pm 24"
-        checked: ST.SettingsStore.clock.hour12
-        defaultValue: true
-        onToggled: c => ST.SettingsStore.clock.hour12 = c
-    }
-    R.SwitchRow {
-        searchId: "clockSeconds"
-        label: "Mostrar segundos"
-        keywords: "hora reloj"
-        checked: ST.SettingsStore.clock.seconds
-        defaultValue: false
-        onToggled: c => ST.SettingsStore.clock.seconds = c
-    }
-
-    R.Section {
         text: "Orden de las pills"
     }
     Repeater {

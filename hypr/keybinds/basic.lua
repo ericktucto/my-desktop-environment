@@ -1,8 +1,16 @@
 local map = require("keybinds.repository")
 map.group("General")
-local terminal = "kitty"
 
-map.add({ map.SUPER, "T" }, hl.dsp.exec_cmd(terminal), nil, "Abrir la terminal")
+-- La terminal se elige en Preferencias → Apps y launcher; la shell deja el comando en este archivo
+-- (sin él, kitty) y se lee al pulsar, así que cambiarla no pide recargar Hyprland.
+local function terminal()
+    local f = io.open(os.getenv("HOME") .. "/.cache/stixshell/terminal", "r")
+    local cmd = f and f:read("l") or nil
+    if f then f:close() end
+    return (cmd and cmd ~= "") and cmd or "kitty"
+end
+
+map.add({ map.SUPER, "T" }, function() hl.exec_cmd(terminal()) end, nil, "Abrir la terminal")
 map.add({ map.SUPER, "Q" }, hl.dsp.window.close(), nil, "Cerrar ventana activa")
 
 -- pantalla completa (entra y sale con el mismo atajo) y ventanas flotantes con el mouse

@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
+import "../apps/" as AP
 
 // Cuentas (Preferencias → Cuentas). Google lo maneja CalendarStore (scripts/gcal.py); aquí está GitHub
 // (scripts/github.py): login por código de dispositivo o con un token pegado. El token queda en
@@ -128,7 +129,7 @@ Singleton {
                 store.deviceCode = j.user_code;
                 store.deviceUri = j.verification_uri;
                 Quickshell.execDetached(["wl-copy", "--", j.user_code]);
-                Quickshell.execDetached(["xdg-open", j.verification_uri]);
+                AP.AppsStore.openUrl(j.verification_uri);
                 pollProc.command = ["python3", store.script, "device-poll", store.cfg.githubClientId.trim(), j.device_code, String(j.interval ?? 5), String(j.expires_in ?? 900)];
                 pollProc.running = true;
             }

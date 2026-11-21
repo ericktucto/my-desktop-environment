@@ -154,7 +154,7 @@ Singleton {
 
     function pushRecent(ms, name) {
         // Los tiempos rápidos sin nombre ya están a un clic
-        if (name === "" && cfg.presets.indexOf(ms / 60000) >= 0)
+        if (name === "" && ST.SettingsStore.timer.presets.indexOf(ms / 60000) >= 0)
             return;
         const list = recents.filter(r => !(r.ms === ms && r.name === name));
         list.unshift({
@@ -246,7 +246,12 @@ Singleton {
 
     // ── Pomodoro ──
     // Un temporizador con `pomo` = { phase: work|short|long, cycle: 1..every, task, credited }. Hay uno a la vez.
-    readonly property var pomoCfg: cfg.pomodoro
+    readonly property var pomoCfg: ({
+            work: ST.SettingsStore.timer.pomodoro.work,
+            short: ST.SettingsStore.timer.pomodoro.shortBreak,
+            long: ST.SettingsStore.timer.pomodoro.longBreak,
+            every: ST.SettingsStore.timer.pomodoro.every
+        })
     readonly property var pomodoro: timers.find(t => t.pomo) ?? null
 
     function phaseMs(phase) {

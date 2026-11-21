@@ -48,6 +48,30 @@ FloatingWindow {
             source: "pages/SoundsPage.qml"
         },
         {
+            id: "notifications",
+            name: "Notificaciones",
+            glyph: 0xf0f3,
+            source: "pages/NotificationsPage.qml"
+        },
+        {
+            id: "lock",
+            name: "Bloqueo y reloj",
+            glyph: 0xf023,
+            source: "pages/LockPage.qml"
+        },
+        {
+            id: "apps",
+            name: "Apps y launcher",
+            glyph: 0xf009,
+            source: "pages/AppsPage.qml"
+        },
+        {
+            id: "productivity",
+            name: "Productividad",
+            glyph: 0xf073,
+            source: "pages/ProductivityPage.qml"
+        },
+        {
             id: "nightlight",
             name: "Luz nocturna",
             glyph: 0xf186,

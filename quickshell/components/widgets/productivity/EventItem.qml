@@ -78,7 +78,7 @@ Rectangle {
                 anchors.leftMargin: root.isTask ? 26 : 10
                 anchors.verticalCenter: parent.verticalCenter
                 width: 124
-                text: root.ev.holiday ? "Feriado" : root.ev.observance ? "Celebración" : root.isTask ? (root.ev.allDay ? "Tarea" : "Tarea · " + root.store.time12(root.ev.segStart)) : root.store.timeLabel(root.ev)
+                text: root.ev.holiday ? "Feriado" : root.ev.observance ? "Celebración" : root.isTask ? (root.ev.allDay ? "Tarea" : "Tarea · " + root.store.timeText(root.ev.segStart)) : root.store.timeLabel(root.ev)
                 elide: Text.ElideRight
                 color: App.Theme.gray
                 font.family: App.Config.fonts.text

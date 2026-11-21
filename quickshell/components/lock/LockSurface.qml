@@ -3,6 +3,8 @@ import QtQuick.Effects
 import Quickshell
 import "../indicators/" as I
 import "../../services/lock/" as L
+import "../../services/settings/" as ST
+import "../../services/settings/Clock.js" as Fmt
 import "../../" as App
 
 // Contenido de la pantalla de bloqueo: wallpaper difuminado, reloj, música, usuario, contraseña (con el aviso
@@ -15,12 +17,13 @@ Item {
     // Nombre de la pantalla (las notificaciones salen en la de la laptop)
     property string screenName: ""
 
-    readonly property var days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
-    readonly property var months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    // Preferencias → Bloqueo y reloj
+    readonly property var prefs: ST.SettingsStore.lock
+    readonly property var clockPrefs: ST.SettingsStore.clock
 
     SystemClock {
         id: clock
-        precision: SystemClock.Minutes
+        precision: root.clockPrefs.seconds ? SystemClock.Seconds : SystemClock.Minutes
     }
 
     // ── Fondo: wallpaper difuminado y oscurecido, con las esquinas redondeadas de la shell ──
@@ -40,7 +43,7 @@ Item {
         layer.enabled: true
         layer.effect: MultiEffect {
             blurEnabled: true
-            blur: root.cfg.blur
+            blur: root.prefs.blur
             blurMax: root.cfg.blurMax
             maskEnabled: true
             maskThresholdMin: 0.5
@@ -59,7 +62,7 @@ Item {
         anchors.fill: parent
         radius: App.Config.wallpaper.radius
         color: "black"
-        opacity: root.cfg.dim
+        opacity: root.prefs.dim
     }
 
     // ── Batería (arriba a la derecha) ──
@@ -86,7 +89,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.formatDateTime(clock.date, "hh:mm AP")
+            text: Fmt.time(clock.date, root.clockPrefs.hour12, root.clockPrefs.seconds)
             color: App.Theme.white
             font.family: App.Config.fonts.mono
             font.pixelSize: root.cfg.clockSize
@@ -95,11 +98,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: {
-                const d = clock.date;
-                const day = root.days[d.getDay()];
-                return day.charAt(0).toUpperCase() + day.slice(1) + ", " + d.getDate() + " de " + root.months[d.getMonth()];
-            }
+            text: Fmt.date(clock.date, root.clockPrefs.dateFormat, true)
             color: App.Theme.gray
             font.family: App.Config.fonts.text
             font.pixelSize: root.cfg.dateSize
@@ -131,7 +130,7 @@ Item {
     // ── Notificaciones: debajo del campo; el reloj y el campo no se mueven ──
     LockNotifications {
         id: notifications
-        visible: groups.length > 0 && L.LockStore.notifyScreen(root.screenName)
+        visible: root.prefs.notifications && groups.length > 0 && L.LockStore.notifyScreen(root.screenName)
         anchors.horizontalCenter: parent.horizontalCenter
         y: Math.round(parent.height / 2) + fieldBottom
         // Alto del reloj, la fecha, la música y el usuario por encima del centro varía: se mide el bloque

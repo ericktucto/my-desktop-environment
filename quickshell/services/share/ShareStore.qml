@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../apps/" as AP
 
 // Compartir archivos con "destinos" intercambiables. No sabe nada del portapapeles:
 // recibe rutas, así que sirve para cualquier cosa que se quiera compartir.
@@ -52,6 +53,11 @@ Singleton {
     // No se usa xdg-open: en este equipo kitty-open queda como app de carpetas y las abriría en la terminal.
     function showInFolder(path) {
         const dir = path.substring(0, path.lastIndexOf("/"));
+        // Con un gestor de archivos elegido en Preferencias → Apps y launcher se abre la carpeta en ese
+        if (AP.AppsStore.command("files", []).length > 0) {
+            AP.AppsStore.openFolder(dir);
+            return;
+        }
         Quickshell.execDetached(["sh", "-c", 'gdbus call --session --dest org.freedesktop.FileManager1 --object-path /org/freedesktop/FileManager1 --method org.freedesktop.FileManager1.ShowItems "[\"$1\"]" "" >/dev/null 2>&1 || gio open "$2"', "_", encodeURI("file://" + path), dir]);
     }
 

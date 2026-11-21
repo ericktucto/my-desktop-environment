@@ -38,6 +38,9 @@ Singleton {
     readonly property var windowPill: data.windowPill
     readonly property var notifPill: data.notifPill
     readonly property var clock: data.clock
+    readonly property var notifications: data.notifications
+    readonly property var lock: data.lock
+    readonly property var apps: data.apps
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -62,6 +65,8 @@ Singleton {
             property int suspend: App.Config.idle.lowBattery.suspend
         }
         property JsonObject launcher: JsonObject {
+            property int maxResults: App.Config.launcher.maxResults     // resultados que muestra la búsqueda
+            property int historyMax: App.Config.launcher.historyMax     // comandos de t: que recuerda
             // ids de .desktop (se reasigna el arreglo entero para que se guarde)
             property var favorites: []
         }
@@ -107,15 +112,27 @@ Singleton {
         property JsonObject calendar: JsonObject {
             property string view: "month"                   // month | week | days3 | day
             property int refresh: 0                         // minutos entre actualizaciones; 0 = al abrir, al iniciar y al despertar
+            property string timeZone: ""                    // vacío = la del sistema
+            property string holidays: App.Config.calendar.holidays   // id del calendario público de feriados; vacío = sin feriados
         }
         property JsonObject tasks: JsonObject {
             property string view: "today"                   // today | upcoming | inbox | board | done | project:<id> | tag:<nombre>
             property string sort: "manual"                  // manual | due | priority
             property string lastTab: "calendar"             // calendar | tasks | timer | stopwatch
             property string lastSummary: ""                 // AAAA-MM-DD del último resumen de la mañana
+            property int upcomingDays: App.Config.tasks.upcomingDays    // días de la vista Próximos
+            property int summaryHour: App.Config.tasks.summaryHour      // hora desde la que sale el resumen; 24 = sin resumen
+            property int archiveDays: App.Config.tasks.archiveDays      // lo hecho hace más se archiva
         }
         property JsonObject timer: JsonObject {
             property string sound: "system"                 // system (alarm-clock-elapsed) o la ruta de un archivo de audio
+            property var presets: App.Config.timer.presets.slice()      // tiempos rápidos (min)
+            property JsonObject pomodoro: JsonObject {
+                property int work: App.Config.timer.pomodoro.work
+                property int shortBreak: App.Config.timer.pomodoro.short
+                property int longBreak: App.Config.timer.pomodoro.long
+                property int every: App.Config.timer.pomodoro.every
+            }
         }
         property JsonObject profiles: JsonObject {
             property string battery: App.Config.profiles.battery
@@ -182,6 +199,31 @@ Singleton {
         property JsonObject clock: JsonObject {
             property bool hour12: true      // 12 h con AM/PM; apagado = 24 h
             property bool seconds: false
+            property string dateFormat: "text"  // text (lun 16 nov) | dmy | mdy | iso
+        }
+        property JsonObject notifications: JsonObject {
+            property int timeout: App.Config.notifications.popupTimeout / 1000     // s que dura un popup si la app no indica uno
+            property int maxPopups: App.Config.notifications.maxPopups
+            property JsonObject dndSchedule: JsonObject {
+                property bool enabled: false
+                property string from: "22:00"
+                property string to: "07:00"
+            }
+            property var muted: []          // nombres de app sin popup ni sonido
+        }
+        property JsonObject lock: JsonObject {
+            property real blur: App.Config.lock.blur
+            property real dim: App.Config.lock.dim
+            property bool notifications: true
+            property bool media: true
+        }
+        property JsonObject apps: JsonObject {
+            property string terminal: ""    // vacío = kitty
+            property string browser: ""     // vacío = el del sistema (xdg-open)
+            property string files: ""       // vacío = el del sistema (xdg-open)
+            property string terminalCmd: ""
+            property string browserCmd: ""
+            property string filesCmd: ""
         }
         property JsonObject appearance: JsonObject {
             property bool animations: true                  // false = sin animaciones (todas las duraciones en 0)
@@ -287,6 +329,40 @@ Singleton {
         } else if (name === "clock") {
             data.clock.hour12 = true;
             data.clock.seconds = false;
+            data.clock.dateFormat = "text";
+        } else if (name === "notifications") {
+            data.notifications.timeout = App.Config.notifications.popupTimeout / 1000;
+            data.notifications.maxPopups = App.Config.notifications.maxPopups;
+            data.notifications.dndSchedule.enabled = false;
+            data.notifications.dndSchedule.from = "22:00";
+            data.notifications.dndSchedule.to = "07:00";
+            data.notifications.muted = [];
+        } else if (name === "calendar") {
+            data.calendar.timeZone = "";
+            data.calendar.holidays = App.Config.calendar.holidays;
+            data.calendar.refresh = 0;
+        } else if (name === "tasks") {
+            data.tasks.upcomingDays = App.Config.tasks.upcomingDays;
+            data.tasks.summaryHour = App.Config.tasks.summaryHour;
+            data.tasks.archiveDays = App.Config.tasks.archiveDays;
+        } else if (name === "timer") {
+            data.timer.presets = App.Config.timer.presets.slice();
+            data.timer.pomodoro.work = App.Config.timer.pomodoro.work;
+            data.timer.pomodoro.shortBreak = App.Config.timer.pomodoro.short;
+            data.timer.pomodoro.longBreak = App.Config.timer.pomodoro.long;
+            data.timer.pomodoro.every = App.Config.timer.pomodoro.every;
+            data.timer.sound = "system";
+        } else if (name === "apps") {
+            for (const k of ["terminal", "browser", "files", "terminalCmd", "browserCmd", "filesCmd"])
+                data.apps[k] = "";
+        } else if (name === "launcher") {
+            data.launcher.maxResults = App.Config.launcher.maxResults;
+            data.launcher.historyMax = App.Config.launcher.historyMax;
+        } else if (name === "lock") {
+            data.lock.blur = App.Config.lock.blur;
+            data.lock.dim = App.Config.lock.dim;
+            data.lock.notifications = true;
+            data.lock.media = true;
         } else if (name === "appearance") {
             data.appearance.animations = true;
             data.appearance.wallpaperDir = "";

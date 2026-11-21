@@ -54,7 +54,7 @@ Singleton {
     readonly property var views: Views.compute(tasks, projects, {
         now: now,
         sort: sortMode,
-        upcomingDays: cfg.upcomingDays
+        upcomingDays: ST.SettingsStore.tasks.upcomingDays
     })
 
     readonly property var overdue: views.overdue
@@ -99,7 +99,7 @@ Singleton {
             const old = Views.list(Views.compute(archived, projects, {
                 now: now,
                 sort: sortMode,
-                upcomingDays: cfg.upcomingDays
+                upcomingDays: ST.SettingsStore.tasks.upcomingDays
             }), "done", query, projects, now);
             return groups.concat(old).sort((a, b) => a.key < b.key ? 1 : (a.key > b.key ? -1 : 0));
         }
@@ -366,7 +366,7 @@ Singleton {
     }
 
     function maybeSummary() {
-        if (!ready || error !== "" || !unlocked || now.getHours() < cfg.summaryHour)
+        if (!ready || error !== "" || !unlocked || now.getHours() < ST.SettingsStore.tasks.summaryHour)
             return;
         if (ST.SettingsStore.tasks.lastSummary === todayKey || counts.today === 0)
             return;
@@ -485,7 +485,7 @@ Singleton {
         if (!ready || !archiveReady || archiveBroken || error !== "")
             return 0;
         archiveDay = todayKey;
-        const limit = Date.now() - cfg.archiveDays * 86400000;
+        const limit = Date.now() - ST.SettingsStore.tasks.archiveDays * 86400000;
         const old = tasks.filter(t => (t.status === "done" || t.status === "cancelled") && t.completed > 0 && t.completed < limit);
         if (old.length === 0)
             return 0;

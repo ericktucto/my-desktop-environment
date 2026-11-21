@@ -1,6 +1,7 @@
 import QtQuick
 import "../widgets/media/" as MW
 import "../../services/media/" as M
+import "../../services/settings/" as ST
 import "../../" as App
 
 // Tarjeta de música de la pantalla de bloqueo: carátula, título y artista, y ⏮ ⏯ ⏭. Solo con una canción.
@@ -10,7 +11,7 @@ Rectangle {
     readonly property var store: M.MediaStore
     readonly property var player: store.player
 
-    visible: store.visible
+    visible: store.visible && ST.SettingsStore.lock.media
     width: row.implicitWidth + 24
     height: App.Config.lock.mediaArt + 20
     radius: 18

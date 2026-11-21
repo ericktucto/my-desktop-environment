@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../apps/" as AP
 import "../../" as App
 
 // Historial del portapapeles con cliphist. Quien lo llena son los dos `wl-paste --watch cliphist store`
@@ -460,10 +461,10 @@ Singleton {
         });
     }
 
-    // Ejecuta el texto en kitty (--hold: la terminal queda abierta para ver la salida)
+    // Ejecuta el texto en la terminal (queda abierta para ver la salida)
     function runInTerminal(id) {
         run(["cliphist", "decode", id], function (text) {
-            Quickshell.execDetached(["kitty", "--hold", Quickshell.env("SHELL") || "sh", "-c", text]);
+            AP.AppsStore.runInTerminal([Quickshell.env("SHELL") || "sh", "-c", text], true);
         });
     }
 

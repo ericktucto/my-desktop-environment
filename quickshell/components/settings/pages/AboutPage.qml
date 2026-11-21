@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../rows/" as R
+import "../../../services/apps/" as AP
 import "../../../services/settings/" as ST
 import "../../../" as App
 
@@ -73,8 +74,8 @@ Page {
         }
     }
 
-    function openTerminal(args) {
-        Quickshell.execDetached(["kitty"].concat(args));
+    function openTerminal(args, hold) {
+        AP.AppsStore.runInTerminal(args, hold);
     }
 
     R.Section {
@@ -102,7 +103,7 @@ Page {
         hint: ST.SettingsStore.filePath
         keywords: "ajustes archivo editar json"
         actionLabel: "Abrir"
-        onTriggered: page.openTerminal(["sh", "-c", 'exec "${EDITOR:-nvim}" "$1"', "_", ST.SettingsStore.filePath])
+        onTriggered: page.openTerminal(["sh", "-c", 'exec "${EDITOR:-nvim}" "$1"', "_", ST.SettingsStore.filePath], false)
     }
     R.ActionRow {
         searchId: "openLog"
@@ -110,7 +111,7 @@ Page {
         hint: "qs log, en una terminal."
         keywords: "log errores avisos"
         actionLabel: "Abrir"
-        onTriggered: page.openTerminal(["--hold", "sh", "-c", "qs log | less -R +G"])
+        onTriggered: page.openTerminal(["sh", "-c", "qs log | less -R +G"], true)
     }
     R.ActionRow {
         searchId: "openDataDir"
@@ -118,7 +119,7 @@ Page {
         hint: ST.SettingsStore.dir
         keywords: "carpeta stixshell tareas temporizadores"
         actionLabel: "Abrir"
-        onTriggered: Quickshell.execDetached(["xdg-open", ST.SettingsStore.dir])
+        onTriggered: AP.AppsStore.openFolder(ST.SettingsStore.dir)
     }
 
     R.Section {

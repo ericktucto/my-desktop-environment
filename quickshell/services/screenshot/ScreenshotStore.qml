@@ -9,6 +9,7 @@ import "../lock/" as LK
 import "../settings/" as ST
 import "../share/" as SH
 import "../../" as App
+import "../apps/" as AP
 
 // Capturador de pantalla (Impr Pant, Super+Shift+S o la casilla Captura del centro de control).
 // grim congela cada monitor (scripts/screenshot.py) y el capturador (components/widgets/screenshot) muestra esa
@@ -288,7 +289,7 @@ Singleton {
     }
 
     function openLink(url) {
-        Quickshell.execDetached(["xdg-open", url]);
+        AP.AppsStore.openUrl(url);
         finish();
     }
 

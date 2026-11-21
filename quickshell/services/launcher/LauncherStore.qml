@@ -5,6 +5,7 @@ import Quickshell.Io
 import "./Search.js" as Search
 import "../session/" as S
 import "../settings/" as ST
+import "../apps/" as AP
 import "../../" as App
 
 // Datos y acciones del launcher: favoritos, uso, historial de comandos, emojis, y cómo lanzar o pegar.
@@ -43,12 +44,31 @@ Singleton {
     function remember(cmd) {
         const h = history.filter(c => c !== cmd);
         h.unshift(cmd);
-        history = h.slice(0, App.Config.launcher.historyMax);
+        history = h.slice(0, ST.SettingsStore.launcher.historyMax);
         save();
     }
 
     function save() {
         saveTimer.restart();
+    }
+
+    // Preferencias → Apps y launcher: olvida los usos (el orden por frecuencia) y los comandos de t:
+    function clearData() {
+        usage = ({});
+        history = [];
+        save();
+    }
+
+    // Sube o baja un favorito un lugar
+    function moveFavorite(id, dir) {
+        const list = favorites.slice();
+        const i = list.indexOf(id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= list.length)
+            return;
+        list.splice(i, 1);
+        list.splice(j, 0, id);
+        ST.SettingsStore.launcher.favorites = list;
     }
 
     function load() {
@@ -127,9 +147,9 @@ Singleton {
 
     // ── Lanzar ──
     function launchApp(entry) {
-        // DesktopEntry.execute() ignora Terminal=true (nvim…): esas apps van dentro de kitty
+        // DesktopEntry.execute() ignora Terminal=true (nvim…): esas apps van dentro de la terminal elegida
         if (entry.runInTerminal)
-            Quickshell.execDetached(["kitty", "-e"].concat(entry.command));
+            AP.AppsStore.runInTerminal(entry.command, false);
         else
             entry.execute();
         use("app:" + entry.id);
@@ -139,13 +159,13 @@ Singleton {
         action.execute();
     }
 
-    // Comando en una kitty interactiva: sudo, confirmaciones (y/n) y cualquier pregunta se responden en
+    // Comando en una terminal interactiva: sudo, confirmaciones (y/n) y cualquier pregunta se responden en
     // la propia ventana, tus alias funcionan, y al terminar queda tu shell abierta.
     function runCommand(cmd) {
         const c = cmd.trim();
         if (c === "")
             return;
-        Quickshell.execDetached(["kitty", "bash", "-ic", c + "; exec bash"]);
+        AP.AppsStore.runInTerminal(["bash", "-ic", c + "; exec bash"], false);
         remember(c);
     }
 

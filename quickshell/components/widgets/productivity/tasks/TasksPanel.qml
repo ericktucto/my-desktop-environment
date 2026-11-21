@@ -40,7 +40,7 @@ Item {
             return "#" + v.slice(4);
         return {
             today: "Hoy",
-            upcoming: "Próximos " + cfg.upcomingDays + " días",
+            upcoming: "Próximos " + ST.SettingsStore.tasks.upcomingDays + " días",
             inbox: "Bandeja",
             board: "Tablero",
             done: "Hechas"

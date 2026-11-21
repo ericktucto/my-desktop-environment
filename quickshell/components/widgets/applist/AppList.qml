@@ -44,7 +44,7 @@ Item {
                     labels: TS.TaskStore.chipsFor(r).map(c => c.label)
                 };
             },
-            maxResults: cfg.maxResults
+            maxResults: ST.SettingsStore.launcher.maxResults
         })
     readonly property var found: Search.results(searchInput.text, context)
     readonly property var rows: found.rows
