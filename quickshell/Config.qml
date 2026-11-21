@@ -585,7 +585,7 @@ Singleton {
 
     // ===== Colores dinámicos según el wallpaper (matugen, scripts/theme.py, services/theme) =====
     readonly property QtObject theme: QtObject {
-        readonly property int fade: 600                // ms del fundido de colores (igual que anim.wallpaper)
+        readonly property int fade: 250                // ms del fundido de colores (con 600 ms, cada cambio costaba el doble de CPU)
         readonly property int debounce: 150            // ms tras cambiar de wallpaper antes de regenerar
         // Qué tan teñido sale el fondo en «Del wallpaper»
         readonly property var tints: [

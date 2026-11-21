@@ -100,6 +100,7 @@ Base.Island {
                 font.pixelSize: App.Config.fontSize.sm
                 font.weight: Font.DemiBold
                 font.letterSpacing: -0.5
+                font.features: ({ "tnum": 1 })
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -158,6 +159,7 @@ Base.Island {
                 font.pixelSize: App.Config.fontSize.sm
                 font.weight: Font.DemiBold
                 font.letterSpacing: -0.5
+                font.features: ({ "tnum": 1 })
             }
         }
 
