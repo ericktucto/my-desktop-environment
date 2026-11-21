@@ -2,6 +2,7 @@ import QtQuick
 import "../rows/" as R
 import "../../../services/actions/" as AC
 import "../../../services/settings/" as ST
+import "../../../services/workspaces/" as WS
 import "../../../" as App
 
 // Barra e isla: qué hace cada clic y la rueda sobre el reloj (la isla central). Se aplican al instante.
@@ -77,7 +78,61 @@ Page {
         onPicked: id => page.isl.shiftWheel = id
     }
     R.Section {
-        text: "Workspaces (los puntos)"
+        text: "Workspaces"
+    }
+    R.StepperRow {
+        searchId: "wsCount"
+        label: "Cantidad de workspaces"
+        hint: "De 1 a 10. Los atajos Super+N que pasan de la cantidad no hacen nada; los que tengan ventanas se siguen viendo, atenuados."
+        keywords: "workspaces escritorios espacios numero"
+        text: String(WS.WorkspaceStore.count)
+        changed: ST.SettingsStore.workspaces.count !== App.Config.workspaces.count
+        onResetRequested: ST.SettingsStore.workspaces.count = App.Config.workspaces.count
+        onDecrement: ST.SettingsStore.workspaces.count = Math.max(1, WS.WorkspaceStore.count - 1)
+        onIncrement: ST.SettingsStore.workspaces.count = Math.min(10, WS.WorkspaceStore.count + 1)
+    }
+    R.CycleRow {
+        searchId: "wsStyle"
+        label: "Estilo"
+        hint: "Cómo se dibujan en la barra. También: qs ipc call stixshell@workspaces style <id>|next|prev"
+        keywords: "workspaces puntos numeros iconos lineas bloques circulos romanos japoneses minimo apariencia"
+        options: WS.WorkspaceStore.styles
+        value: ST.SettingsStore.workspaces.style
+        defaultValue: "dots"
+        onPicked: id => ST.SettingsStore.workspaces.style = id
+    }
+    // Vista previa, con tus workspaces de verdad
+    Rectangle {
+        width: parent.width
+        height: 48
+        radius: 12
+        color: App.Theme.surface
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: preview.implicitWidth + 2 * App.Config.pill.paddingX
+            height: App.Config.pill.height
+            radius: height / 2
+            color: App.Theme.island
+            border.width: 1
+            border.color: App.Theme.border
+
+            Loader {
+                id: preview
+                anchors.centerIn: parent
+                readonly property var def: WS.WorkspaceStore.styles.find(d => d.id === ST.SettingsStore.workspaces.style) ?? WS.WorkspaceStore.styles[0]
+                source: Qt.resolvedUrl("../../indicators/workspaces/" + def.source)
+                Binding {
+                    target: preview.item
+                    property: "numerals"
+                    value: preview.def.numerals ?? "arabic"
+                    when: preview.item !== null && preview.def.numerals !== undefined
+                }
+            }
+        }
+    }
+    R.Section {
+        text: "Clics y rueda de los workspaces"
     }
     R.CycleRow {
         searchId: "wsRight"
@@ -100,7 +155,7 @@ Page {
     R.CycleRow {
         searchId: "wsWheel"
         label: "Rueda"
-        hint: "El clic izquierdo va al workspace del punto."
+        hint: "El clic izquierdo va al workspace que está bajo el mouse."
         keywords: "barra pill click boton rueda"
         options: page.wheels
         value: ST.SettingsStore.wsPill.wheel
