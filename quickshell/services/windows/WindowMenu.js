@@ -117,6 +117,22 @@ var KEY_NAMES = {
     SPACE: "Espacio"
 };
 
+// `code:N` (la tecla física, en xkb) → lo que dice en la distribución latam (sin Shift)
+var CODE_LABELS = {
+    20: "'",
+    21: "¿",
+    34: "´",
+    35: "+",
+    47: "ñ",
+    48: "{",
+    49: "|",
+    51: "}",
+    59: ",",
+    60: ".",
+    61: "-",
+    94: "<"
+};
+
 // "SUPER+SHIFT+F" → ["Super", "⇧", "F"] (para dibujar cada tecla en su cajita)
 function keyLabels(text) {
     return String(text || "").split("+").map(function (s) {
@@ -133,6 +149,9 @@ function keyLabels(text) {
             return "Clic central";
         if (KEY_NAMES[up])
             return KEY_NAMES[up];
+        var code = /^CODE:(\d+)$/.exec(up);
+        if (code)
+            return CODE_LABELS[code[1]] || "Tecla " + code[1];
         return k.length === 1 ? up : k;
     });
 }

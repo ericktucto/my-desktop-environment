@@ -17,6 +17,16 @@ eq("flecha", K.fromEvent(0x01000012, META, 113), "SUPER + left");
 eq("Print", K.fromEvent(0x01000009, 0, 107), "Print");
 eq("solo un modificador", K.fromEvent(0x01000022, META, 133), "");
 eq("solo Shift", K.fromEvent(0x01000020, SHIFT, 50), "");
-eq("tecla desconocida", K.fromEvent(0x01000099, 0, 200), "");
+eq("tecla sin nombre: por su código", K.fromEvent(0x01000099, 0, 200), "code:200");
+eq("tecla desconocida sin código", K.fromEvent(0x01000099, 0, 0), "");
+
+// símbolos con Shift y teclas de latam: por el código de la tecla física
+eq("mayor que (Shift + punto)", K.fromEvent(0x3e, META | SHIFT, 94), "SUPER + SHIFT + code:94");
+eq("ñ", K.fromEvent(0xd1, META, 47), "SUPER + code:47");
+eq("dead acute", K.fromEvent(0x01001247, ALT, 34), "ALT + code:34");
+eq("sin scancode", K.fromEvent(0x3e, META, 0), "");
+eq("canon: comma = code:59", K.canon("SUPER + comma"), K.canon("super + code:59"));
+eq("sameKey", K.sameKey("SUPER + SHIFT + period", "SHIFT + SUPER + code:60"), true);
+eq("sameKey distinto", K.sameKey("SUPER + period", "SUPER + code:61"), false);
 
 done();

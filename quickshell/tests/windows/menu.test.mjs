@@ -35,6 +35,9 @@ eq("stash: sin info", M.stashTarget(null, 1), "special:stash");
 // keyLabels
 eq("keyLabels Super+Shift+F", M.keyLabels("SUPER+SHIFT+F"), ["Super", "⇧", "F"]);
 eq("keyLabels con rango", M.keyLabels("SUPER+SHIFT+1…4"), ["Super", "⇧", "1…4"]);
+eq("keyLabels code:", M.keyLabels("SUPER+SHIFT+code:94"), ["Super", "⇧", "<"]);
+eq("keyLabels code desconocido", M.keyLabels("code:200"), ["Tecla 200"]);
+eq("keyLabels ñ", M.keyLabels("SUPER + code:47"), ["Super", "ñ"]);
 eq("keyLabels Print", M.keyLabels("Print"), ["Impr"]);
 eq("keyLabels period", M.keyLabels("SUPER+period"), ["Super", "."]);
 eq("keyLabels minúscula", M.keyLabels("ctrl+t"), ["Ctrl", "T"]);

@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
 import "../workspaces/" as WS
+import "Keys.js" as Keys
 
 // Atajos de Hyprland: la lista sale de ~/.cache/stixshell/keybinds.json (la escribe hypr/keybinds/repository.lua
 // al cargar y al cambiar uno). Los cambios del usuario se guardan en settings.json (keybinds.overrides) y en
@@ -69,7 +70,7 @@ Singleton {
     }
 
     function norm(bind) {
-        return String(bind).toLowerCase().replace(/\s+/g, "").split("+").sort().join("+");
+        return Keys.canon(bind);
     }
 
     function byId(id) {

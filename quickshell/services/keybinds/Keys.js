@@ -56,7 +56,27 @@ function keyName(key, scanCode) {
         return String.fromCharCode(key);
     if (key >= 0x01000030 && key <= 0x0100003b)
         return "F" + (key - 0x01000030 + 1);
-    return NAMED[key] || "";
+    if (NAMED[key])
+        return NAMED[key];
+    // Un símbolo con Shift (`>`, `{`), ñ, ´, ¿… que Hyprland no conoce por su nombre: por el código de la tecla
+    // física (xkb), que Hyprland acepta como `code:60` y no depende de la distribución
+    if (scanCode >= 8 && scanCode <= 255)
+        return "code:" + scanCode;
+    return "";
+}
+
+// Los nombres de Hyprland que son la misma tecla física que un `code:N` en la distribución latam
+var NAME_CODES = { apostrophe: 20, comma: 59, period: 60, minus: 61 };
+
+// La forma canónica de una combinación para compararlas: "SUPER + comma" y "super + code:59" son la misma
+function canon(bind) {
+    return String(bind).toLowerCase().replace(/\s+/g, "").split("+").map(function (p) {
+        return NAME_CODES[p] ? "code:" + NAME_CODES[p] : p;
+    }).sort().join("+");
+}
+
+function sameKey(a, b) {
+    return canon(a) === canon(b);
 }
 
 // → "SUPER + SHIFT + F", o "" si es solo un modificador o una tecla desconocida
