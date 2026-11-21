@@ -226,7 +226,7 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: pill.label
-                color: pill.selected && pill.accent.hslLightness > 0.65 ? App.Theme.black : App.Theme.white
+                color: pill.selected ? App.Theme.onColor(pill.accent) : App.Theme.white
                 font.family: App.Config.fonts.text
                 font.pixelSize: App.Config.fontSize.sm
                 font.weight: Font.DemiBold

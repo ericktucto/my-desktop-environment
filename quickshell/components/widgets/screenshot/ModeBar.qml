@@ -196,14 +196,14 @@ Rectangle {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.glyph(0xf012c)
-                    color: App.Theme.white
+                    color: App.Theme.onPrimary
                     font.family: App.Config.fonts.icons
                     font.pixelSize: App.Config.fontSize.iconLg
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Listo"
-                    color: App.Theme.white
+                    color: App.Theme.onPrimary
                     font.family: App.Config.fonts.text
                     font.pixelSize: App.Config.fontSize.lg
                     font.weight: Font.DemiBold

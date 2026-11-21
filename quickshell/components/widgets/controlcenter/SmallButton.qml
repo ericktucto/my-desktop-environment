@@ -19,7 +19,7 @@ Rectangle {
         id: text
         anchors.centerIn: parent
         text: root.label
-        color: App.Theme.white
+        color: root.primary ? App.Theme.onPrimary : App.Theme.white
         font.family: App.Config.fonts.text
         font.pixelSize: App.Config.fontSize.sm
         font.weight: Font.DemiBold

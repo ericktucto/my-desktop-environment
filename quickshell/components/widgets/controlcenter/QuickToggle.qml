@@ -42,7 +42,7 @@ Rectangle {
             visible: root.glyph !== ""
             anchors.verticalCenter: parent.verticalCenter
             text: root.glyph
-            color: App.Theme.white
+            color: root.checked ? App.Theme.onColor(root.activeColor) : App.Theme.white
             font.family: App.Config.fonts.icons
             font.pixelSize: App.Config.notifications.headerIconSize
         }
@@ -51,12 +51,12 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             source: root.icon
             size: App.Config.notifications.headerIconSize
-            color: App.Theme.white
+            color: root.checked ? App.Theme.onColor(root.activeColor) : App.Theme.white
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.text
-            color: App.Theme.white
+            color: root.checked ? App.Theme.onColor(root.activeColor) : App.Theme.white
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.md
             font.weight: Font.Medium

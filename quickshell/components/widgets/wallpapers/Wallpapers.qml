@@ -201,7 +201,7 @@ Item {
                     anchors.centerIn: parent
                     source: Qt.resolvedUrl("../../../assets/svg/check.svg")
                     size: 12
-                    color: App.Theme.white
+                    color: App.Theme.onPrimary
                 }
             }
 

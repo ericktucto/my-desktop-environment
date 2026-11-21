@@ -150,7 +150,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: hd.modelData.getDate()
-                            color: hd.isToday ? App.Theme.white : (hd.holiday ? App.Theme.red : App.Theme.white)
+                            color: hd.isToday ? App.Theme.onPrimary : (hd.holiday ? App.Theme.red : App.Theme.white)
                             font.family: App.Config.fonts.text
                             font.pixelSize: App.Config.fontSize.lg
                             font.weight: Font.DemiBold

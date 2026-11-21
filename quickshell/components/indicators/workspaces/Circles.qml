@@ -86,7 +86,7 @@ WsStyle {
                 Text {
                     anchors.centerIn: parent
                     text: parent.modelData.id
-                    color: parent.modelData.active ? App.Theme.black : (parent.modelData.occupied || parent.hovered ? App.Theme.white : App.Theme.gray)
+                    color: parent.modelData.active ? App.Theme.onPrimary : (parent.modelData.occupied || parent.hovered ? App.Theme.white : App.Theme.gray)
                     font.family: App.Config.fonts.mono
                     font.pixelSize: App.Config.fontSize.sm
                     font.weight: parent.modelData.active ? Font.Bold : Font.Medium

@@ -218,7 +218,7 @@ FocusScope {
         Text {
             anchors.centerIn: parent
             text: btn.text
-            color: App.Theme.white
+            color: btn.primary ? App.Theme.onPrimary : App.Theme.white
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.md
             font.weight: Font.DemiBold

@@ -78,7 +78,7 @@ Rectangle {
             id: optionText
             anchors.centerIn: parent
             text: option.label
-            color: App.Theme.white
+            color: option.selected ? App.Theme.onPrimary : App.Theme.white
             font.family: App.Config.fonts.text
             font.pixelSize: App.Config.fontSize.sm
             font.weight: Font.DemiBold
@@ -190,7 +190,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         text: dayButton.modelData
-                        color: App.Theme.white
+                        color: dayButton.on ? App.Theme.onPrimary : App.Theme.white
                         font.family: App.Config.fonts.text
                         font.pixelSize: App.Config.fontSize.sm
                         font.weight: Font.DemiBold

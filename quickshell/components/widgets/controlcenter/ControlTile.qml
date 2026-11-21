@@ -23,8 +23,7 @@ Rectangle {
     signal detailClicked
 
     // Texto e ícono: oscuros sobre un color claro (ámbar, verde) y blancos sobre uno oscuro (azul)
-    readonly property real luminance: 0.299 * activeColor.r + 0.587 * activeColor.g + 0.114 * activeColor.b
-    readonly property color contentColor: checked && luminance > 0.55 ? App.Theme.black : App.Theme.white
+    readonly property color contentColor: checked ? App.Theme.onColor(activeColor) : App.Theme.white
 
     implicitHeight: App.Config.control.tileHeight
     radius: height / 2

@@ -118,7 +118,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         text: cell.modelData.day
-                        color: cell.modelData.inMonth ? App.Theme.white : App.Theme.grayDark
+                        color: cell.modelData.key === root.value ? App.Theme.onPrimary : (cell.modelData.inMonth ? App.Theme.white : App.Theme.grayDark)
                         font.family: App.Config.fonts.text
                         font.pixelSize: App.Config.fontSize.sm
                     }

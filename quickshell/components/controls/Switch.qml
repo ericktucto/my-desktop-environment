@@ -32,7 +32,7 @@ Item {
         radius: size / 2
         anchors.verticalCenter: parent.verticalCenter
         x: root.checked ? root.width - width - 3 : 7 + (10 - width) / 2
-        color: root.checked ? App.Theme.white : App.Theme.grayDark
+        color: root.checked ? App.Theme.onPrimary : App.Theme.grayDark
 
         Behavior on x { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }
         Behavior on size { NumberAnimation { duration: App.Config.anim.control; easing.type: Easing.OutCubic } }

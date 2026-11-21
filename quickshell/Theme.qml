@@ -66,10 +66,22 @@ Singleton {
     property color white:  dyn.white ?? "#ffffff"      // con colores Teñido o Intenso lleva un toque del tono
     property color gray:   dyn.gray ?? "#b4bcd0"
     property color grayDark: dyn.grayDark ?? "#6b7394"
-    readonly property color black:  "#0a0a0f"
+    property color black:  dyn.black ?? "#0a0a0f"      // con el fondo de la imagen, un negro del tono
 
     // ===== Nombrados =====
     property color primary:    dyn.primary ?? "#2979ff"
+    // Texto e íconos sobre un relleno del acento: blanco si contrasta 3:1 o más, si no el negro
+    property color onPrimary:  onColor(primary)
+
+    // La luminancia relativa (WCAG) de un color
+    function luma(c) {
+        const f = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+    }
+    // Texto sobre cualquier relleno `c`: blanco si contrasta 3:1 o más; si no, el negro
+    function onColor(c) {
+        return (luma(root.white) + 0.05) / (luma(c) + 0.05) >= 3 ? root.white : root.black;
+    }
 
     // ===== Colores (vívidos) =====
     readonly property color red:     "#ff1744"
@@ -99,4 +111,6 @@ Singleton {
     Fade on grayDark {}
     Fade on white {}
     Fade on primary {}
+    Fade on black {}
+    Fade on onPrimary {}
 }

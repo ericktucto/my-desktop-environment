@@ -153,6 +153,7 @@ Rectangle {
                 onClicked: root.store.setTool(modelData.id)
 
                 Glyph {
+                    color: tb.active ? App.Theme.onPrimary : App.Theme.white
                     visible: tb.modelData.glyph !== 0
                     text: tb.modelData.glyph !== 0 ? String.fromCodePoint(tb.modelData.glyph) : ""
                 }
@@ -164,7 +165,7 @@ Rectangle {
                     height: 2.5
                     radius: 1.25
                     rotation: -45
-                    color: App.Theme.white
+                    color: tb.active ? App.Theme.onPrimary : App.Theme.white
                 }
                 Rectangle {
                     visible: tb.modelData.id === "marker"
@@ -179,7 +180,7 @@ Rectangle {
                     visible: tb.modelData.id === "text"
                     anchors.centerIn: parent
                     text: "T"
-                    color: App.Theme.white
+                    color: tb.active ? App.Theme.onPrimary : App.Theme.white
                     font.family: App.Config.fonts.text
                     font.pixelSize: 19
                     font.weight: Font.Bold
@@ -195,7 +196,7 @@ Rectangle {
                             required property int index
                             width: 6
                             height: 6
-                            color: App.Theme.white
+                            color: tb.active ? App.Theme.onPrimary : App.Theme.white
                             opacity: index % 2 === 0 ? 1 : 0.35
                         }
                     }

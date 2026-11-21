@@ -103,14 +103,14 @@ Variants {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: String.fromCodePoint(0xf012c)
-                            color: App.Theme.white
+                            color: root.has ? App.Theme.onPrimary : App.Theme.white
                             font.family: App.Config.fonts.icons
                             font.pixelSize: App.Config.fontSize.iconLg
                         }
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Aceptar"
-                            color: App.Theme.white
+                            color: root.has ? App.Theme.onPrimary : App.Theme.white
                             font.family: App.Config.fonts.text
                             font.pixelSize: App.Config.fontSize.lg
                             font.weight: Font.DemiBold

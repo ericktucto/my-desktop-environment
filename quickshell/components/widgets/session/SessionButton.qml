@@ -37,7 +37,7 @@ Item {
             anchors.centerIn: parent
             source: Qt.resolvedUrl("../../../assets/svg/" + root.icon + ".svg")
             size: root.cfg.iconSize
-            color: App.Theme.white
+            color: root.selected && !root.armed ? App.Theme.onPrimary : App.Theme.white
         }
     }
 
