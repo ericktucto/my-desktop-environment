@@ -12,7 +12,7 @@ Base.Island {
     id: root
 
     expandedHeight: S.WorkspaceStore.overviewHeight
-    expandedWidth: App.Config.workspaces.overviewWidth
+    expandedWidth: S.WorkspaceStore.overviewWidth
 
     preventFocus: true
 
@@ -22,7 +22,7 @@ Base.Island {
 
         spacing: App.Config.workspaces.spacing
         Repeater {
-            model: App.Config.workspaces.count
+            model: S.WorkspaceStore.count
             delegate: Rectangle {
                 id: dot
                 required property int index

@@ -2,6 +2,7 @@ import QtQuick
 import "../controlcenter/" as CC
 import "../../../services/windows/" as WS
 import "../../../services/keybinds/" as K
+import "../../../services/workspaces/" as WSP
 import "../../../services/windows/WindowMenu.js" as WM
 import "../../../" as App
 
@@ -144,7 +145,7 @@ Column {
     // Una tecla del teclado: 1–4 mueve a ese workspace, «s» al stash y la letra subrayada de cada fila la ejecuta
     function handleKey(text) {
         const n = parseInt(text);
-        if (n >= 1 && n <= App.Config.workspaces.count) {
+        if (n >= 1 && n <= WSP.WorkspaceStore.count) {
             act(() => store.moveTo(n));
             return true;
         }
@@ -173,7 +174,7 @@ Column {
     Row {
         spacing: 6
         Repeater {
-            model: App.Config.workspaces.count
+            model: WSP.WorkspaceStore.count
             CC.Chip {
                 required property int index
                 label: String(index + 1)

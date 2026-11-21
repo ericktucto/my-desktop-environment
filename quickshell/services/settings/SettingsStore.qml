@@ -41,6 +41,7 @@ Singleton {
     readonly property var notifications: data.notifications
     readonly property var lock: data.lock
     readonly property var apps: data.apps
+    readonly property var workspaces: data.workspaces
 
     // ── Valores del archivo (con los de Config como inicio) ──
     property JsonAdapter data: JsonAdapter {
@@ -217,6 +218,10 @@ Singleton {
             property bool notifications: true
             property bool media: true
         }
+        property JsonObject workspaces: JsonObject {
+            property int count: App.Config.workspaces.count     // 1 a 10
+            property string style: "dots"                       // estilo de la pill de workspaces
+        }
         property JsonObject apps: JsonObject {
             property string terminal: ""    // vacío = kitty
             property string browser: ""     // vacío = el del sistema (xdg-open)
@@ -352,6 +357,9 @@ Singleton {
             data.timer.pomodoro.longBreak = App.Config.timer.pomodoro.long;
             data.timer.pomodoro.every = App.Config.timer.pomodoro.every;
             data.timer.sound = "system";
+        } else if (name === "workspaces") {
+            data.workspaces.count = App.Config.workspaces.count;
+            data.workspaces.style = "dots";
         } else if (name === "apps") {
             for (const k of ["terminal", "browser", "files", "terminalCmd", "browserCmd", "filesCmd"])
                 data.apps[k] = "";

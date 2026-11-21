@@ -272,7 +272,6 @@ Singleton {
         readonly property int iconSize: 20
         readonly property int minRows: 2            // alto mínimo de las tarjetas (en filas)
         readonly property int maxRows: 6            // más ventanas → la última fila dice "+N más"
-        readonly property int overviewWidth: count * cardWidth + (count - 1) * cardSpacing + 2 * root.pill.padding
     }
 
     // ===== Radios pequeños (tarjetas, resaltados) =====

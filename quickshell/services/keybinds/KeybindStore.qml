@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "../settings/" as ST
+import "../workspaces/" as WS
 
 // Atajos de Hyprland: la lista sale de ~/.cache/stixshell/keybinds.json (la escribe hypr/keybinds/repository.lua
 // al cargar y al cambiar uno). Los cambios del usuario se guardan en settings.json (keybinds.overrides) y en
@@ -20,7 +21,12 @@ Singleton {
     // Grupos en el orden en que aparecen: [{ name, binds: […] }]
     readonly property var groups: {
         const out = [];
+        const max = WS.WorkspaceStore.count;
         binds.forEach(b => {
+            // Super+N y Super+Shift+N de workspaces que pasan de la cantidad elegida no se muestran
+            const m = /^SUPER( \+ SHIFT)? \+ (\d)$/.exec(b.default ?? "");
+            if (b.group === "Workspaces" && m && (m[2] === "0" ? 10 : parseInt(m[2])) > max)
+                return;
             let g = out.find(x => x.name === b.group);
             if (!g) {
                 g = {

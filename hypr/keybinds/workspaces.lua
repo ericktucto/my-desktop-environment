@@ -1,25 +1,33 @@
 local map = require("keybinds.repository")
 map.group("Workspaces")
 
--- workspaces
-map.add({ map.SUPER, "1" }, hl.dsp.focus({ workspace = 1 }), nil, "Ir al workspace 1")
-map.add({ map.SUPER, "2" }, hl.dsp.focus({ workspace = 2 }), nil, "Ir al workspace 2")
-map.add({ map.SUPER, "3" }, hl.dsp.focus({ workspace = 3 }), nil, "Ir al workspace 3")
-map.add({ map.SUPER, "4" }, hl.dsp.focus({ workspace = 4 }), nil, "Ir al workspace 4")
+-- Los de 1 a 10 (Super+1…9, Super+0). La cantidad que se usa la elige Preferencias → Barra e isla: la shell la deja
+-- en ~/.cache/stixshell/workspaces y se lee al pulsar (sin el archivo, valen los 10); los que pasan de ella no hacen nada.
+local function count()
+    local f = io.open(os.getenv("HOME") .. "/.cache/stixshell/workspaces", "r")
+    local n = f and tonumber(f:read("l")) or 10
+    if f then f:close() end
+    return n
+end
+
+for n = 1, 10 do
+    local key = tostring(n % 10)
+    map.add({ map.SUPER, key }, function()
+        if n <= count() then hl.dispatch(hl.dsp.focus({ workspace = n })) end
+    end, nil, "Ir al workspace " .. n)
+end
 
 -- vista general de workspaces
 map.add({ map.SUPER, "Tab" }, hl.dsp.exec_cmd("qs ipc call stixshell@workspaces toggle \"\""), nil,
     "Vista general de workspaces")
 
 -- mandar al workspace
-map.add({ map.SUPER, map.SHIFT, "1" }, hl.dsp.window.move({ workspace = 1, follow = false }), nil,
-    "Mandar al workspace 1")
-map.add({ map.SUPER, map.SHIFT, "2" }, hl.dsp.window.move({ workspace = 2, follow = false }), nil,
-    "Mandar al workspace 2")
-map.add({ map.SUPER, map.SHIFT, "3" }, hl.dsp.window.move({ workspace = 3, follow = false }), nil,
-    "Mandar al workspace 3")
-map.add({ map.SUPER, map.SHIFT, "4" }, hl.dsp.window.move({ workspace = 4, follow = false }), nil,
-    "Mandar al workspace 4")
+for n = 1, 10 do
+    local key = tostring(n % 10)
+    map.add({ map.SUPER, map.SHIFT, key }, function()
+        if n <= count() then hl.dispatch(hl.dsp.window.move({ workspace = n, follow = false })) end
+    end, nil, "Mandar al workspace " .. n)
+end
 
 -- Mandar ventana actual al stash (special workspace)
 map.add({ map.SUPER, "A" }, function()

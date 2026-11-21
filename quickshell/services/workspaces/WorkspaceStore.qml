@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import "../settings/" as ST
 import "../../" as App
 
 // Lectura de workspaces y dispatchers de Hyprland (sintaxis Lua) para la pill
@@ -9,7 +10,46 @@ import "../../" as App
 Singleton {
     id: store
 
-    readonly property int count: App.Config.workspaces.count
+    // Cantidad de workspaces (Preferencias → Barra e isla): de 1 a 10
+    readonly property int count: Math.max(1, Math.min(10, ST.SettingsStore.workspaces.count))
+    // Los atajos Super+N de Hyprland leen la cantidad de este archivo al pulsar
+    readonly property string countFile: Quickshell.env("HOME") + "/.cache/stixshell/workspaces"
+    onCountChanged: writeCount()
+    function writeCount() {
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$(dirname "$1")" && printf "%s\n" "$2" > "$1"', "_", countFile, String(count)]);
+    }
+    Component.onCompleted: writeCount()
+
+    // Los que se muestran: de 1 a `count` y los de más arriba que tengan ventanas (para no esconderlas)
+    readonly property var shown: {
+        const ids = [];
+        for (let i = 1; i <= count; i++)
+            ids.push(i);
+        for (const w of Hyprland.workspaces.values)
+            if (w.id > count && w.id <= 10 && (w.toplevels?.values?.length ?? 0) > 0)
+                ids.push(w.id);
+        return ids.sort((a, b) => a - b);
+    }
+    // Un elemento por workspace mostrado: { id, active, occupied, extra, apps: [{ icon, name }] }
+    // (el modelo de todos los estilos de la pill y del aviso al pasar el mouse)
+    readonly property var items: shown.map(id => {
+        const ts = windows(id);
+        return {
+            id: id,
+            active: id === currentId,
+            occupied: ts.length > 0,
+            extra: id > count,
+            apps: ts.map(t => ({
+                        icon: appIcon(t),
+                        name: titleOf(t) !== "" ? (t.wayland?.appId || t.lastIpcObject?.class || titleOf(t)) : ""
+                    }))
+        };
+    })
+
+    // Vista general: en dos filas con 7 o más workspaces, para que quepa en la pantalla
+    readonly property int overviewColumns: count >= 7 ? Math.ceil(count / 2) : count
+    readonly property int overviewRows: Math.ceil(count / overviewColumns)
+    readonly property int overviewWidth: overviewColumns * App.Config.workspaces.cardWidth + (overviewColumns - 1) * App.Config.workspaces.cardSpacing + 2 * App.Config.pill.padding
     // Workspace normal activo (aunque el stash esté visible)
     readonly property int currentId: {
         const id = Hyprland.focusedMonitor?.activeWorkspace?.id;
@@ -25,7 +65,7 @@ Singleton {
     }
     readonly property int rows: Math.max(App.Config.workspaces.minRows, Math.min(App.Config.workspaces.maxRows, maxWindows))
     readonly property int cardHeight: 2 * App.Config.workspaces.cardPadding + App.Config.workspaces.headerHeight + rows * App.Config.workspaces.rowHeight + (rows - 1) * App.Config.workspaces.rowSpacing
-    readonly property int overviewHeight: cardHeight + 2 * App.Config.pill.padding
+    readonly property int overviewHeight: overviewRows * cardHeight + (overviewRows - 1) * App.Config.workspaces.cardSpacing + 2 * App.Config.pill.padding
 
     function workspace(id) {
         return Hyprland.workspaces.values.find(w => w.id === id);
@@ -42,7 +82,8 @@ Singleton {
 
     // Anterior (-1) o siguiente (+1); se detiene en 1 y en count
     function step(delta) {
-        const n = Math.max(1, Math.min(count, currentId + delta));
+        const i = shown.indexOf(currentId);
+        const n = shown[Math.max(0, Math.min(shown.length - 1, (i < 0 ? 0 : i) + delta))];
         if (n !== currentId)
             focus(n);
     }

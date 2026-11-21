@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Hyprland
+import "../../../services/workspaces/" as S
 import "../../../" as App
 
 // Vista general: una tarjeta por workspace.
@@ -13,12 +14,13 @@ Item {
             Hyprland.refreshToplevels();
     }
 
-    Row {
+    Grid {
         anchors.centerIn: parent
+        columns: S.WorkspaceStore.overviewColumns
         spacing: App.Config.workspaces.cardSpacing
 
         Repeater {
-            model: App.Config.workspaces.count
+            model: S.WorkspaceStore.count
 
             WorkspaceCard {
                 required property int index

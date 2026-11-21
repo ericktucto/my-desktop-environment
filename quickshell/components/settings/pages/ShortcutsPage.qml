@@ -14,7 +14,7 @@ Page {
 
     pageId: "shortcuts"
     pageName: "Atajos"
-    subtitle: store.binds.length + " atajos de teclado."
+    subtitle: store.groups.reduce((n, g) => n + g.binds.length, 0) + " atajos de teclado."
 
     Repeater {
         model: page.store.groups
