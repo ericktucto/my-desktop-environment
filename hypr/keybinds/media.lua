@@ -37,3 +37,10 @@ map.add({ "XF86AudioPlay" }, player("playPause", "play-pause"), { locked = true 
 map.add({ "XF86AudioPause" }, player("playPause", "play-pause"), { locked = true }, "Reproducir o pausar")
 map.add({ "XF86AudioNext" }, player("next", "next"), { locked = true }, "Canción siguiente")
 map.add({ "XF86AudioPrev" }, player("previous", "previous"), { locked = true }, "Canción anterior")
+
+-- Shift avisa a la shell mientras está pulsado: la rueda sobre el reloj (isla central) cambia el brillo con
+-- Shift, y la barra no recibe los modificadores del teclado. non_consuming: Shift sigue llegando a las apps.
+for _, key in ipairs({ "Shift_L", "Shift_R" }) do
+    hl.bind(key, hl.dsp.exec_cmd("qs ipc call stixshell@island shift true"), { non_consuming = true })
+    hl.bind(key, hl.dsp.exec_cmd("qs ipc call stixshell@island shift false"), { release = true, non_consuming = true })
+end

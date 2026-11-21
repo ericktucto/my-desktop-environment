@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell.Io
 import "../../base" as Base
 import "../../../" as App
 import "../../../services/osd/" as O
@@ -86,6 +87,23 @@ Base.Island {
         }
     }
 
+    // La barra no tiene el foco del teclado y Wayland no da los modificadores sin él: Hyprland avisa por IPC
+    // cuando se pulsa o suelta Shift (hypr/keybinds/media.lua). Se apaga solo a los 30 s sin girar la rueda (por si se pierde el aviso de soltar).
+    property bool shiftHeld: false
+    IpcHandler {
+        target: "stixshell@island"
+        function shift(on: bool): void {
+            root.shiftHeld = on;
+            if (on)
+                shiftTimeout.restart();
+        }
+    }
+    Timer {
+        id: shiftTimeout
+        interval: 30000
+        onTriggered: root.shiftHeld = false
+    }
+
     MouseArea {
         id: clockMouse
         parent: root
@@ -101,7 +119,9 @@ Base.Island {
         // La rueda (el touchpad acumula): con Shift, la otra acción
         onWheel: wheel => {
             const dy = wheel.angleDelta.y;
-            const id = (wheel.modifiers & Qt.ShiftModifier) ? ST.SettingsStore.island.shiftWheel : ST.SettingsStore.island.wheel;
+            if (shiftHeld)
+                shiftTimeout.restart();
+            const id = ((wheel.modifiers & Qt.ShiftModifier) || shiftHeld) ? ST.SettingsStore.island.shiftWheel : ST.SettingsStore.island.wheel;
             // Con Shift muchos sistemas mandan el giro por el eje X
             const d = dy !== 0 ? dy : wheel.angleDelta.x;
             if (d === 0 || id === "none")
