@@ -11,6 +11,8 @@ Item {
     anchors.leftMargin: App.Config.wallpaper.marginLeft
 
     property int duration: App.Config.anim.wallpaper
+    // Lado del cuadrado donde cabe la imagen (el lado mayor de la pantalla): conserva la proporción y cubre el recorte
+    readonly property int decodeSize: Math.ceil(Math.max(width, height) * Screen.devicePixelRatio)
     // Cuál capa muestra el wallpaper actual: false = A visible, true = B visible
     property bool showingB: false
     readonly property int radiusImage: App.Config.wallpaper.radius
@@ -24,6 +26,9 @@ Item {
         smooth: true
         asynchronous: true
         cache: false
+        // Se descodifica al tamaño de la pantalla: una imagen de 5120×2880 ocuparía ~59 MB para mostrarse a ~1920×1080
+        sourceSize.width: root.decodeSize
+        sourceSize.height: root.decodeSize
         opacity: root.showingB ? 0 : 1
 
         Behavior on opacity {
@@ -56,6 +61,9 @@ Item {
         smooth: true
         asynchronous: true
         cache: false
+        // Se descodifica al tamaño de la pantalla: una imagen de 5120×2880 ocuparía ~59 MB para mostrarse a ~1920×1080
+        sourceSize.width: root.decodeSize
+        sourceSize.height: root.decodeSize
         opacity: root.showingB ? 1 : 0
 
         Behavior on opacity {
