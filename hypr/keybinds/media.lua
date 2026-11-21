@@ -39,8 +39,28 @@ map.add({ "XF86AudioNext" }, player("next", "next"), { locked = true }, "Canció
 map.add({ "XF86AudioPrev" }, player("previous", "previous"), { locked = true }, "Canción anterior")
 
 -- Shift avisa a la shell mientras está pulsado: la rueda sobre el reloj (isla central) cambia el brillo con
--- Shift, y la barra no recibe los modificadores del teclado. non_consuming: Shift sigue llegando a las apps.
+-- Shift, y la barra no recibe los modificadores del teclado. Solo avisa con el cursor sobre la barra (arriba,
+-- 44 px = Config.bar.exclusiveZone), para no lanzar procesos con cada mayúscula que se escribe.
+-- non_consuming: Shift sigue llegando a las apps.
+local BAR_HEIGHT = 44
+local shiftSent = false
+
+local function cursorOnBar()
+    local c, m = hl.get_cursor_pos(), hl.get_active_monitor()
+    return c and m and c.y >= m.y and c.y < m.y + BAR_HEIGHT
+end
+
 for _, key in ipairs({ "Shift_L", "Shift_R" }) do
-    hl.bind(key, hl.dsp.exec_cmd("qs ipc call stixshell@island shift true"), { non_consuming = true })
-    hl.bind(key, hl.dsp.exec_cmd("qs ipc call stixshell@island shift false"), { release = true, non_consuming = true })
+    hl.bind(key, function()
+        if not shiftSent and cursorOnBar() then
+            shiftSent = true
+            hl.exec_cmd("qs ipc call stixshell@island shift true")
+        end
+    end, { non_consuming = true })
+    hl.bind(key, function()
+        if shiftSent then
+            shiftSent = false
+            hl.exec_cmd("qs ipc call stixshell@island shift false")
+        end
+    end, { release = true, non_consuming = true })
 end
