@@ -8,7 +8,11 @@ SettingRow {
     property bool first: false
     property bool last: false
 
+    // Con botón ✕ para quitar la fila
+    property bool removable: false
+
     signal moved(int dir)
+    signal removed
 
     component Arrow: Rectangle {
         id: btn
@@ -37,6 +41,11 @@ SettingRow {
         }
     }
 
+    Arrow {
+        visible: root.removable
+        glyph: "✕"
+        onClicked: root.removed()
+    }
     Arrow {
         glyph: "↓"
         enabled: !root.last

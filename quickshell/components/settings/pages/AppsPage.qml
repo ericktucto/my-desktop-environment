@@ -136,7 +136,7 @@ Page {
     Text {
         width: page.width - 16
         wrapMode: Text.WordWrap
-        text: L.LauncherStore.favorites.length === 0 ? "Aún no hay favoritos. Se agregan con la estrella de cada app en el launcher." : "Salen primero en el launcher, en este orden. Se agregan y se quitan con la estrella de cada app."
+        text: L.LauncherStore.favorites.length === 0 ? "Aún no hay favoritos. Se agregan con la estrella de cada app en el launcher." : "Salen primero en el launcher, en este orden. Se agregan con la estrella de cada app en el launcher y se quitan aquí con ✕ o con esa misma estrella."
         color: App.Theme.gray
         font.family: App.Config.fonts.text
         font.pixelSize: App.Config.fontSize.sm
@@ -149,7 +149,9 @@ Page {
             label: DesktopEntries.byId(modelData)?.name ?? modelData
             first: index === 0
             last: index === L.LauncherStore.favorites.length - 1
+            removable: true
             onMoved: dir => L.LauncherStore.moveFavorite(modelData, dir)
+            onRemoved: L.LauncherStore.toggleFavorite(modelData)
         }
     }
 
