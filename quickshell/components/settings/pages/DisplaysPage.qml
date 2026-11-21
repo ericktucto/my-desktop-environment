@@ -1,6 +1,7 @@
 import QtQuick
 import "../rows/" as R
 import "../../../services/display/" as D
+import "../../../services/display/Snap.js" as Snap
 import "../../../services/settings/" as ST
 import "../../../" as App
 
@@ -97,27 +98,42 @@ Page {
         onTriggered: page.store.revert()
     }
 
-    // ── Disposición (a escala) ──
+    // ── Disposición (a escala): se arrastran los monitores ──
     Item {
+        id: layout
         visible: page.monitors.length > 1
         width: parent.width
-        height: 130
-        readonly property real extentW: Math.max(1, Math.max.apply(null, page.monitors.map(m => (m.x + m.width / m.scale))))
-        readonly property real extentH: Math.max(1, Math.max.apply(null, page.monitors.map(m => (m.y + m.height / m.scale))))
-        readonly property real k: Math.min((width - 40) / extentW, (height - 20) / extentH)
+        height: 150
+        readonly property var rects: page.monitors.map(m => Snap.rectOf(m))
+        readonly property real minX: Math.min.apply(null, rects.map(r => r.x))
+        readonly property real minY: Math.min.apply(null, rects.map(r => r.y))
+        readonly property real extentW: Math.max(1, Math.max.apply(null, rects.map(r => r.x + r.w)) - minX)
+        readonly property real extentH: Math.max(1, Math.max.apply(null, rects.map(r => r.y + r.h)) - minY)
+        // Deja aire alrededor para poder arrastrar un monitor a cualquier lado
+        readonly property real k: Math.min((width - 40) / (extentW * 1.6), (height - 20) / (extentH * 1.6))
+        readonly property real offX: (width - extentW * k) / 2
+        readonly property real offY: (height - extentH * k) / 2
 
         Repeater {
             model: page.monitors
             Rectangle {
+                id: box
                 required property var modelData
-                x: 20 + modelData.x * parent.k
-                y: 10 + modelData.y * parent.k
-                width: modelData.width / modelData.scale * parent.k
-                height: modelData.height / modelData.scale * parent.k
+                required property int index
+                readonly property var r: layout.rects[index] ?? { x: 0, y: 0, w: 1, h: 1 }
+                readonly property bool movable: !modelData.disabled && modelData.mirrorOf === "none" && !page.pending
+                property real dx: 0
+                property real dy: 0
+
+                x: layout.offX + (r.x - layout.minX) * layout.k + dx
+                y: layout.offY + (r.y - layout.minY) * layout.k + dy
+                z: drag.pressed ? 10 : 0
+                width: r.w * layout.k
+                height: r.h * layout.k
                 radius: 6
-                color: modelData.disabled ? "transparent" : App.Theme.surfaceActive
+                color: modelData.disabled ? "transparent" : (drag.pressed ? App.Theme.surfaceHigh : App.Theme.surfaceActive)
                 border.width: 1
-                border.color: modelData.mirrorOf !== "none" ? App.Theme.primary : App.Theme.islandEdge
+                border.color: modelData.mirrorOf !== "none" ? App.Theme.primary : (drag.pressed ? App.Theme.primary : App.Theme.islandEdge)
                 Text {
                     anchors.centerIn: parent
                     text: modelData.name
@@ -125,8 +141,42 @@ Page {
                     font.family: App.Config.fonts.text
                     font.pixelSize: App.Config.fontSize.xs
                 }
+                MouseArea {
+                    id: drag
+                    anchors.fill: parent
+                    enabled: box.movable
+                    cursorShape: box.movable ? (pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor) : Qt.ArrowCursor
+                    property real px: 0
+                    property real py: 0
+                    onPressed: mouse => {
+                        px = mouse.x;
+                        py = mouse.y;
+                    }
+                    onPositionChanged: mouse => {
+                        if (!pressed)
+                            return;
+                        box.dx += mouse.x - px;
+                        box.dy += mouse.y - py;
+                    }
+                    onReleased: {
+                        const x = box.r.x + box.dx / layout.k;
+                        const y = box.r.y + box.dy / layout.k;
+                        box.dx = 0;
+                        box.dy = 0;
+                        page.store.dropMonitor(box.modelData.name, Math.round(x), Math.round(y));
+                    }
+                }
             }
         }
+    }
+    Text {
+        visible: page.monitors.length > 1
+        width: parent.width
+        wrapMode: Text.WordWrap
+        text: "Arrastra un monitor para cambiar su lugar: se pega al borde del otro y pide confirmar."
+        color: App.Theme.gray
+        font.family: App.Config.fonts.text
+        font.pixelSize: App.Config.fontSize.xs
     }
 
     // ── Modo rápido ──

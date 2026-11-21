@@ -183,6 +183,7 @@ Singleton {
             property var monitors: ({})
             property var profiles: ({})
             property bool auto: true        // aplicar el perfil solo al conectar o quitar un monitor
+            property var sides: ({})        // conjunto de monitores → lado donde quedó el externo (left | right | top | bottom)
         }
         // Atajos cambiados por el usuario: id (la combinación de fábrica) → combinación nueva, o false = quitado
         property JsonObject keybinds: JsonObject {

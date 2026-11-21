@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import "../settings/" as ST
+import "Snap.js" as Snap
 import "../../" as App
 
 // Pantallas: lee los monitores de Hyprland (hyprctl monitors all -j), aplica una configuración en vivo
@@ -161,9 +162,48 @@ Singleton {
         confirmTimer.restart();
     }
 
+    // Si el externo quedó junto al portátil (sin espejo ni apagados), recuerda de qué lado: Extender lo repite
+    function rememberSide(cfg) {
+        const l = laptop;
+        const e = externals[0];
+        if (!l || !e || !cfg[l.name] || !cfg[e.name])
+            return;
+        const cl = cfg[l.name], ce = cfg[e.name];
+        if (cl.disabled || ce.disabled || ce.mirror || cl.mirror)
+            return;
+        const rl = Snap.rectOf(Object.assign({}, l, { x: cl.x, y: cl.y }));
+        const re = Snap.rectOf(Object.assign({}, e, { x: ce.x, y: ce.y }));
+        const sides = Object.assign({}, data.sides);
+        sides[setKey] = Snap.sideOf(re, rl);
+        data.sides = sides;
+    }
+
+    // Soltar un monitor arrastrado en (x, y): se pega al lado más cercano de otro, se corre todo para que el de arriba
+    // a la izquierda quede en 0,0 y se pide confirmar
+    function dropMonitor(name, x, y) {
+        const m = monitors.find(o => o.name === name);
+        if (!m || pending)
+            return;
+        const live = monitors.filter(o => !o.disabled && o.mirrorOf === "none");
+        const rects = {};
+        live.forEach(o => rects[o.name] = Snap.rectOf(o));
+        const moved = Object.assign({}, rects[name], { x: x, y: y });
+        rects[name] = Object.assign({}, moved, Snap.snap(moved, live.filter(o => o.name !== name).map(o => rects[o.name]), 80));
+        const norm = Snap.normalize(rects);
+        const cfg = {};
+        live.forEach(o => {
+            const r = norm[o.name];
+            if (Math.abs(r.x - o.x) >= 1 || Math.abs(r.y - o.y) >= 1)
+                cfg[o.name] = Object.assign(configOf(o), { x: r.x, y: r.y });
+        });
+        if (Object.keys(cfg).length > 0)
+            tryConfig(cfg);
+    }
+
     function keep() {
         if (!pending)
             return;
+        rememberSide(pending.applied);
         save(pending.applied);
         pending = null;
         confirmTimer.stop();
@@ -235,8 +275,10 @@ Singleton {
             ce.auto = true;
             ce.mode = "preferred";
         } else if (mode === "extend") {
-            ce.x = Math.round(l.width / l.scale);
-            ce.y = 0;
+            // Del lado donde lo dejaste la última vez (por defecto, a la derecha)
+            const pos = Snap.place(data.sides[setKey] ?? "right", Snap.rectOf(e), Snap.rectOf(l));
+            ce.x = pos.x;
+            ce.y = pos.y;
         } else if (mode === "external") {
             cl.disabled = true;
             ce.x = 0;
@@ -258,6 +300,7 @@ Singleton {
         if (!c)
             return false;
         applyLive(c);
+        rememberSide(c);
         save(c);
         Quickshell.execDetached(["notify-send", "-a", "Pantallas", "-i", "video-display", "-t", "2500", "Pantallas", modeLabels[mode] ?? mode]);
         return true;
@@ -306,6 +349,10 @@ Singleton {
         function cycle(): string {
             const i = store.modeOrder.indexOf(store.currentMode);
             return store.applyMode(store.modeOrder[(i + 1) % store.modeOrder.length]) ? "ok" : "error: sin monitor externo";
+        }
+        // qs ipc call stixshell@display drop <monitor> <x> <y>: como arrastrarlo en Preferencias
+        function drop(name: string, x: int, y: int): void {
+            store.dropMonitor(name, x, y);
         }
         function keep(): void {
             store.keep();
