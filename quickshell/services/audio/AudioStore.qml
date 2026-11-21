@@ -49,12 +49,10 @@ Singleton {
     IpcHandler {
         target: "stixshell@audio"
         function up(): void {
-            store.step(store.sink, store.keyStep);
-            O.OsdStore.show("volume");
+            store.keyPress(1);
         }
         function down(): void {
-            store.step(store.sink, -store.keyStep);
-            O.OsdStore.show("volume");
+            store.keyPress(-1);
         }
         function mute(): void {
             store.toggleMute(store.sink);
@@ -63,6 +61,20 @@ Singleton {
         function micMute(): void {
             store.toggleMute(store.source);
             O.OsdStore.show("mic");
+        }
+    }
+
+    // Una pulsación de subir (+1) o bajar (-1): mueve el volumen y muestra el OSD; con el nivel ya en el tope
+    // (el máximo de ahora o 0, con sonido) no se mueve y la isla se estira
+    function keyPress(dir) {
+        const a = sink && sink.audio ? sink.audio : null;
+        const atEdge = a && !a.muted && (dir > 0 ? a.volume >= maxFor(sink) - 0.001 : a.volume <= 0.001);
+        O.OsdStore.show("volume");
+        if (atEdge) {
+            O.OsdStore.edge(dir);
+        } else {
+            O.OsdStore.settle();
+            step(sink, dir * keyStep);
         }
     }
 

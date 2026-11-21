@@ -28,6 +28,18 @@ Singleton {
         writeTimer.restart();
     }
 
+    // Una pulsación de subir (+1) o bajar (-1) con OSD; en el tope no se mueve y la isla se estira
+    function keyPress(dir) {
+        const atEdge = dir > 0 ? value >= 0.999 : value <= App.Config.brightness.min + 0.001;
+        O.OsdStore.show("brightness");
+        if (atEdge) {
+            O.OsdStore.edge(dir);
+        } else {
+            O.OsdStore.settle();
+            step(dir * App.Config.brightness.keyStep);
+        }
+    }
+
     function step(delta) {
         set(value + delta);
     }
@@ -64,12 +76,10 @@ Singleton {
     IpcHandler {
         target: "stixshell@brightness"
         function up(): void {
-            store.step(App.Config.brightness.keyStep);
-            O.OsdStore.show("brightness");
+            store.keyPress(1);
         }
         function down(): void {
-            store.step(-App.Config.brightness.keyStep);
-            O.OsdStore.show("brightness");
+            store.keyPress(-1);
         }
     }
 }

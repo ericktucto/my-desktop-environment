@@ -56,8 +56,17 @@ Item {
         return sinkMuted ? "Mute" : A.AudioStore.percent(sink) + "%";
     }
 
+    // Estirado al seguir pulsando con el volumen o el brillo en el tope (OsdStore.edge)
+    property real stretch: !textOnly && showOsd ? O.OsdStore.stretch : 0
+    Behavior on stretch {
+        NumberAnimation {
+            duration: App.Config.anim.pill
+            easing.type: Easing.OutCubic
+        }
+    }
+
     // La pill sigue el ancho del elemento visible
-    implicitWidth: showOsd ? osd.implicitWidth : (circle ? mini.width : clock.implicitWidth)
+    implicitWidth: showOsd ? osd.implicitWidth + stretch : (circle ? mini.width : clock.implicitWidth)
     implicitHeight: Math.max(clock.implicitHeight, osd.implicitHeight)
 
     I.ClockText {
@@ -111,8 +120,9 @@ Item {
         Rectangle {
             visible: !root.textOnly
             anchors.verticalCenter: parent.verticalCenter
-            width: root.cfg.barWidth
-            height: root.cfg.barHeight
+            width: root.cfg.barWidth + root.stretch
+            // El «squash»: se afina hasta 1 px al estirarse
+            height: root.cfg.barHeight - Math.min(1, root.stretch / root.cfg.edgeMax)
             radius: height / 2
             color: App.Theme.track
 

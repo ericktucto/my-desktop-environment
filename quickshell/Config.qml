@@ -342,6 +342,11 @@ Singleton {
         readonly property int barWidth: 96
         readonly property int barHeight: 6
         readonly property int percentWidth: 36      // ancho fijo del "100%", para que la pill no tiemble
+        // Estirado al seguir pulsando con el nivel en el tope (volumen o brillo)
+        readonly property int edgeStep: 12          // px de exceso por pulsación en el tope
+        readonly property int edgeMax: 16           // px máximos que crece la isla
+        readonly property real edgeResistance: 0.55 // la goma: cada pulsación estira menos
+        readonly property int edgeHold: 250         // ms estirada tras la última pulsación
     }
 
     // ===== Brillo de pantalla =====

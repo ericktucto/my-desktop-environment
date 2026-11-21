@@ -118,12 +118,10 @@ Singleton {
     function wheel(id, dir) {
         switch (id) {
         case "volume":
-            A.AudioStore.step(A.AudioStore.sink, dir * A.AudioStore.keyStep);
-            O.OsdStore.show("volume");
+            A.AudioStore.keyPress(dir);
             break;
         case "brightness":
-            B.BrightnessStore.step(dir * App.Config.brightness.keyStep);
-            O.OsdStore.show("brightness");
+            B.BrightnessStore.keyPress(dir);
             break;
         case "workspace":
             // Abajo = siguiente (como la pill de workspaces)
