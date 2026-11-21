@@ -39,14 +39,15 @@ Page {
         defaultValue: "#2979ff"
         onPicked: hex => page.theme.setColor(hex)
     }
-    R.ChoiceRow {
+    R.ComboRow {
         visible: page.theme.mode === "scheme" && page.theme.combos.length > 0
         searchId: "combo"
         label: "Combinación"
-        hint: "Fondo y acento que salen de este wallpaper."
-        keywords: "paleta fondo acento lila verde colores imagen"
-        options: page.theme.combos.map(c => ({ id: c.id, label: c.name }))
+        hint: "Fondo y acento que salen de este wallpaper; se recuerda por wallpaper."
+        keywords: "paleta fondo acento lila verde colores imagen combinaciones"
+        combos: page.theme.combos
         value: page.theme.combo
+        tint: page.theme.tint
         defaultValue: page.theme.combos.length > 0 ? page.theme.combos[0].id : ""
         onPicked: id => page.theme.setCombo(id)
     }
@@ -60,6 +61,32 @@ Page {
         value: page.theme.tint
         defaultValue: "vivid"
         onPicked: id => page.theme.setTint(id)
+    }
+
+    R.Section {
+        text: "Apps"
+    }
+    R.SwitchRow {
+        searchId: "appKitty"
+        label: "kitty toma el fondo"
+        hint: "La terminal usa el fondo y el texto de la combinación; apagado, solo toma el acento."
+        keywords: "terminal kitty colores fondo paleta"
+        enabled: page.theme.mode === "scheme"
+        opacity: enabled ? 1 : 0.5
+        checked: page.theme.cfg.apps.kitty
+        defaultValue: false
+        onToggled: c => page.theme.setApp("kitty", c)
+    }
+    R.SwitchRow {
+        searchId: "appGtk"
+        label: "GTK toma el fondo (adw-gtk3)"
+        hint: "Las apps GTK usan el fondo de la combinación; hace falta adw-gtk3 (system/adw-gtk3.sh). Apagado, solo toman el acento."
+        keywords: "gtk adwaita libadwaita colores fondo paleta"
+        enabled: page.theme.mode === "scheme"
+        opacity: enabled ? 1 : 0.5
+        checked: page.theme.cfg.apps.gtk
+        defaultValue: false
+        onToggled: c => page.theme.setApp("gtk", c)
     }
 
     R.Section {

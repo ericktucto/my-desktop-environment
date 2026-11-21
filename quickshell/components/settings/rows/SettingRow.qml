@@ -18,6 +18,8 @@ Item {
     property real controlWidth: 0
     // Alto mínimo de la fila
     property real minHeight: 52
+    // El control va debajo del nombre y a todo el ancho (para lo que no cabe a la derecha)
+    property bool stacked: false
 
     default property alias control: ctl.data
 
@@ -33,7 +35,7 @@ Item {
     readonly property bool flashing: searchId !== "" && ST.SettingsUi.highlight === searchId && page !== null && ST.SettingsUi.page === page.pageId
 
     width: parent ? parent.width : 0
-    implicitHeight: Math.max(minHeight, texts.implicitHeight + 16)
+    implicitHeight: stacked ? texts.implicitHeight + ctl.childrenRect.height + 32 : Math.max(minHeight, texts.implicitHeight + 16)
 
     Component.onCompleted: {
         if (searchId !== "" && page)
@@ -90,9 +92,11 @@ Item {
         id: texts
         anchors.left: parent.left
         anchors.leftMargin: 18
-        anchors.right: ctl.left
-        anchors.rightMargin: 12
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: root.stacked ? parent.right : ctl.left
+        anchors.rightMargin: root.stacked ? 18 : 12
+        anchors.top: root.stacked ? parent.top : undefined
+        anchors.topMargin: 12
+        anchors.verticalCenter: root.stacked ? undefined : parent.verticalCenter
         spacing: 2
 
         Text {
@@ -117,11 +121,15 @@ Item {
 
     Row {
         id: ctl
-        anchors.right: parent.right
+        anchors.right: root.stacked ? undefined : parent.right
         anchors.rightMargin: 14
-        anchors.verticalCenter: parent.verticalCenter
-        width: root.controlWidth > 0 ? root.controlWidth : implicitWidth
+        anchors.verticalCenter: root.stacked ? undefined : parent.verticalCenter
+        anchors.left: root.stacked ? parent.left : undefined
+        anchors.leftMargin: 18
+        anchors.top: root.stacked ? texts.bottom : undefined
+        anchors.topMargin: 10
+        width: root.stacked ? parent.width - 36 : (root.controlWidth > 0 ? root.controlWidth : implicitWidth)
         spacing: 8
-        layoutDirection: Qt.RightToLeft
+        layoutDirection: root.stacked ? Qt.LeftToRight : Qt.RightToLeft
     }
 }
