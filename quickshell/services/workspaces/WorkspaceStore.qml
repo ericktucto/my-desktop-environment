@@ -20,6 +20,16 @@ Singleton {
     }
     Component.onCompleted: writeCount()
 
+    // Los estilos de la pill (Preferencias → Barra e isla). El primero es el de fábrica.
+    readonly property var styles: [
+        { id: "dots", label: "Puntos", source: "Dots.qml" },
+        { id: "lines", label: "Líneas", source: "Lines.qml" },
+        { id: "numbers", label: "Números con punto", source: "Numbers.qml", numerals: "arabic" },
+        { id: "japanese", label: "Numerales japoneses", source: "Numbers.qml", numerals: "japanese" },
+        { id: "roman", label: "Romanos", source: "Numbers.qml", numerals: "roman" },
+        { id: "minimal", label: "Mínimo", source: "Minimal.qml" }
+    ]
+
     // Los que se muestran: de 1 a `count` y los de más arriba que tengan ventanas (para no esconderlas)
     readonly property var shown: {
         const ids = [];

@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import "../base" as Base
@@ -16,36 +17,25 @@ Base.Island {
 
     preventFocus: true
 
-    Row {
-        id: dots
+    // El estilo elegido en Preferencias → Barra e isla (los que aún no existen caen en Puntos)
+    readonly property var styleDef: S.WorkspaceStore.styles.find(d => d.id === ST.SettingsStore.workspaces.style) ?? S.WorkspaceStore.styles[0]
+
+    Loader {
+        id: styleLoader
         anchors.verticalCenter: parent.verticalCenter
-
-        spacing: App.Config.workspaces.spacing
-        Repeater {
-            model: S.WorkspaceStore.count
-            delegate: Rectangle {
-                id: dot
-                required property int index
-                readonly property var ws: S.WorkspaceStore.workspace(index + 1)
-                readonly property bool active: S.WorkspaceStore.currentId === index + 1
-                readonly property bool hasWindows: (ws?.toplevels?.values?.length ?? 0) > 0
-                readonly property bool hovered: index === area.hoverIndex
-
-                width: active ? App.Config.workspaces.activeWidth : App.Config.workspaces.dotSize
-                height: App.Config.workspaces.dotSize
-                color: active ? App.Theme.primary : hasWindows ? App.Theme.white : (hovered ? App.Theme.surfaceActive : 'transparent')
-                border.color: App.Theme.white
-                border.width: active ? 0 : 1
-                radius: App.Config.workspaces.dotSize
-                opacity: hovered && !active ? 1 : 0.9
-
-                Behavior on width {
-                    NumberAnimation {
-                        duration: App.Config.anim.pill
-                        easing.type: Easing.OutCubic
-                    }
-                }
-            }
+        source: "workspaces/" + root.styleDef.source
+        // La numeración (Números, japoneses y romanos comparten Numbers.qml, así que no se recarga al cambiar)
+        Binding {
+            target: styleLoader.item
+            property: "numerals"
+            value: root.styleDef.numerals ?? "arabic"
+            when: styleLoader.item !== null && root.styleDef.numerals !== undefined
+        }
+        Binding {
+            target: styleLoader.item
+            property: "hoverId"
+            value: area.hoverId
+            when: styleLoader.item !== null
         }
     }
 
@@ -62,31 +52,31 @@ Base.Island {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
         property real wheelAcc: 0
-        readonly property int hoverIndex: containsMouse ? nearest(mouseX) : -1
 
-        // Punto cuyo centro está más cerca de x (x en coordenadas de la pill)
-        function nearest(x) {
-            let best = 0, bestDist = Infinity;
-            for (let i = 0; i < dots.children.length - 1; i++) {
-                const d = dots.children[i];
-                if (!d || d.index === undefined)
-                    continue;
-                const c = dots.mapToItem(root, d.x + d.width / 2, 0).x;
-                const dist = Math.abs(c - x);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    best = d.index;
-                }
-            }
-            return best;
+        // Al pasar el mouse sobre un workspace: su número y sus apps
+        ToolTip.visible: hoverId > 0 && !root.expanded
+        ToolTip.delay: App.Config.activeWindow.tooltipDelay
+        ToolTip.text: {
+            const it = S.WorkspaceStore.items.find(i => i.id === hoverId);
+            if (!it)
+                return "";
+            const names = it.apps.map(a => a.name).filter((n, i, arr) => n !== "" && arr.indexOf(n) === i);
+            return hoverId + " · " + (names.length > 0 ? names.join(", ") : "vacío");
         }
+        // El workspace bajo el mouse (0 = ninguno)
+        readonly property int hoverId: containsMouse && styleLoader.item ? Math.max(0, styleLoader.item.idAt(styleLoader.mapFromItem(area, mouseX, 0).x)) : 0
 
         onClicked: mouse => {
             // Derecho y central según Preferencias → Barra e isla (por defecto: la vista general y nada)
             const id = mouse.button === Qt.RightButton ? ST.SettingsStore.wsPill.right : (mouse.button === Qt.MiddleButton ? ST.SettingsStore.wsPill.middle : "");
-            if (mouse.button === Qt.LeftButton)
-                S.WorkspaceStore.focus(nearest(mouse.x) + 1);
-            else if (id === "workspaces")
+            if (mouse.button === Qt.LeftButton) {
+                // Sin a qué apuntar (estilo Mínimo), el clic abre la vista general
+                const target = styleLoader.item ? styleLoader.item.idAt(styleLoader.mapFromItem(area, mouse.x, 0).x) : -1;
+                if (target > 0)
+                    S.WorkspaceStore.focus(target);
+                else
+                    root.open();
+            } else if (id === "workspaces")
                 root.open();
             else
                 AC.ActionRunner.run(id);
@@ -116,6 +106,16 @@ Base.Island {
                     root.close();
                 else
                     root.open();
+            }
+            // qs ipc call stixshell@workspaces style <id>|next|prev
+            function style(id: string): string {
+                const list = S.WorkspaceStore.styles;
+                const i = Math.max(0, list.findIndex(d => d.id === ST.SettingsStore.workspaces.style));
+                const next = id === "next" ? list[(i + 1) % list.length] : id === "prev" ? list[(i - 1 + list.length) % list.length] : list.find(d => d.id === id);
+                if (!next)
+                    return "estilos: " + list.map(d => d.id).join(", ");
+                ST.SettingsStore.workspaces.style = next.id;
+                return next.id;
             }
         }
     }
