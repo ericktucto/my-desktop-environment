@@ -20,7 +20,7 @@ Singleton {
     readonly property var cfg: ST.SettingsStore.sounds
 
     // Sonidos del tema que se pueden elegir
-    readonly property var themeSounds: ["alarm-clock-elapsed", "bell", "camera-shutter", "complete", "device-added", "device-removed", "dialog-error", "dialog-information", "dialog-warning", "message", "message-new-instant", "network-connectivity-established", "network-connectivity-lost", "phone-incoming-call", "power-plug", "power-unplug", "screen-capture", "service-login", "service-logout", "window-attention"]
+    readonly property var themeSounds: ["alarm-clock-elapsed", "audio-volume-change", "bell", "camera-shutter", "complete", "device-added", "device-removed", "dialog-error", "dialog-information", "dialog-warning", "message", "message-new-instant", "network-connectivity-established", "network-connectivity-lost", "phone-incoming-call", "power-plug", "power-unplug", "screen-capture", "service-login", "service-logout", "window-attention"]
 
     // Eventos: { id, group, label, sound (el de fábrica), on (encendido de fábrica) }
     readonly property var events: [
@@ -39,6 +39,7 @@ Singleton {
         { id: "screenshot", group: "Acciones", label: "Captura de pantalla", sound: "camera-shutter", on: true },
         { id: "recStart", group: "Acciones", label: "Grabación iniciada", sound: "service-login", on: true },
         { id: "recEnd", group: "Acciones", label: "Grabación terminada", sound: "complete", on: true },
+        { id: "volume", group: "Acciones", label: "Cambio de volumen", sound: "audio-volume-change", on: false, gap: 150 },
         { id: "lock", group: "Acciones", label: "Pantalla bloqueada", sound: "service-logout", on: false },
         { id: "unlock", group: "Acciones", label: "Pantalla desbloqueada", sound: "service-login", on: false },
         { id: "netUp", group: "Acciones", label: "Red conectada", sound: "network-connectivity-established", on: false },
@@ -94,14 +95,30 @@ Singleton {
         Quickshell.execDetached(["pw-play", "--volume", String(Math.max(0, Math.min(1, cfg.volume))), path]);
     }
 
-    function play(id) {
+    // `override`: otro sonido en lugar del del evento (el de una app, en las notificaciones)
+    function play(id, override) {
         if (!cfg.enabled || !isOn(id))
             return;
         const now = Date.now();
-        if (now - (last[id] ?? 0) < 1000)
+        if (now - (last[id] ?? 0) < (eventOf(id)?.gap ?? 1000))
             return;
         last[id] = now;
-        playFile(soundOf(id));
+        playFile(override || soundOf(id));
+    }
+
+    // ── Un sonido propio por app (Preferencias → Notificaciones) ──
+    // "" = el de las notificaciones; si no, un sonido del tema o la ruta de un archivo
+    function appSound(app) {
+        return (cfg.apps ?? {})[app] ?? "";
+    }
+
+    function setAppSound(app, sound) {
+        const all = Object.assign({}, cfg.apps ?? {});
+        if (sound === "")
+            delete all[app];
+        else
+            all[app] = sound;
+        cfg.apps = all;
     }
 
     // Una notificación nueva: urgente o normal. NotificationStore ya descarta las normales con No molestar; los
@@ -109,7 +126,10 @@ Singleton {
     function playNotification(urgent, app) {
         if (app === "Batería")
             return;
-        play(urgent ? "notifyUrgent" : "notify");
+        if (urgent)
+            play("notifyUrgent");
+        else
+            play("notify", appSound(app));
     }
 
     // ── Eventos del sistema ──

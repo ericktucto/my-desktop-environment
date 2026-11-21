@@ -194,6 +194,7 @@ Singleton {
             property bool enabled: true
             property real volume: 0.8
             property var events: ({})
+            property var apps: ({})         // app → sonido propio de sus notificaciones
         }
         property JsonObject accounts: JsonObject {
             property string githubClientId: ""      // client_id de una OAuth App de GitHub con «Device flow» activado
@@ -329,6 +330,7 @@ Singleton {
             data.sounds.enabled = true;
             data.sounds.volume = 0.8;
             data.sounds.events = ({});
+            data.sounds.apps = ({});
         } else if (name === "pills") {
             for (const k of ["activeWindow", "zoom", "tray", "network", "bluetooth", "battery", "notifications"])
                 data.pills[k] = true;

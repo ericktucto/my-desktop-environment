@@ -155,6 +155,8 @@ Singleton {
     // Todas las apps que han notificado (y las silenciadas aunque ya no estén en el historial), por nombre
     readonly property var appNames: {
         const set = new Set(ST.SettingsStore.notifications.muted ?? []);
+        for (const app of Object.keys(ST.SettingsStore.sounds.apps ?? {}))
+            set.add(app);
         for (const e of history)
             if (e.appName)
                 set.add(e.appName);

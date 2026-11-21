@@ -2,6 +2,7 @@ import QtQuick
 import "../rows/" as R
 import "../../../services/notify/" as N
 import "../../../services/settings/" as ST
+import "../../../services/sound/" as SND
 import "../../../" as App
 
 // Notificaciones: cuánto dura un popup, cuántos a la vez, No molestar programado y apps silenciadas.
@@ -86,25 +87,42 @@ Page {
     }
 
     R.Section {
-        text: "Apps silenciadas"
+        text: "Apps"
     }
     Text {
         width: page.width - 16
         wrapMode: Text.WordWrap
-        text: N.NotificationStore.appNames.length === 0 ? "Aún no ha notificado ninguna app. Cuando lo hagan aparecerán aquí." : "Una app silenciada llega al historial ya leída, sin popup ni sonido."
+        text: N.NotificationStore.appNames.length === 0 ? "Aún no ha notificado ninguna app. Cuando lo hagan aparecerán aquí." : "Silenciar: llega al historial ya leída, sin popup ni sonido. Sonido: uno propio para las notificaciones de esa app."
         color: App.Theme.gray
         font.family: App.Config.fonts.text
         font.pixelSize: App.Config.fontSize.sm
     }
+    // Las que tienen un ajuste propio (silenciadas o con sonido) van arriba; el resto, plegado
+    property bool showAll: false
+    readonly property var tuned: N.NotificationStore.appNames.filter(a => N.NotificationStore.isMuted(a) || SND.SoundStore.appSound(a) !== "")
+    readonly property var others: N.NotificationStore.appNames.filter(a => !tuned.includes(a))
+
     Repeater {
-        model: N.NotificationStore.appNames
-        R.SwitchRow {
+        model: page.tuned
+        R.NotifyAppRow {
             required property string modelData
-            label: modelData
-            keywords: "silenciar app mute"
-            checked: N.NotificationStore.isMuted(modelData)
-            defaultValue: false
-            onToggled: c => N.NotificationStore.setMuted(modelData, c)
+            app: modelData
+        }
+    }
+    R.ActionRow {
+        visible: page.others.length > 0
+        searchId: "notifMoreApps"
+        label: "Más apps (" + page.others.length + ")"
+        hint: "Las que han notificado y no tienen ajustes propios."
+        keywords: "apps silenciar sonido notificaciones"
+        actionLabel: page.showAll ? "Ocultar" : "Mostrar"
+        onTriggered: page.showAll = !page.showAll
+    }
+    Repeater {
+        model: page.showAll ? page.others : []
+        R.NotifyAppRow {
+            required property string modelData
+            app: modelData
         }
     }
 

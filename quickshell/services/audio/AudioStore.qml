@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 import "../osd/" as O
+import "../sound/" as SND
 
 Singleton {
     id: store
@@ -76,6 +77,9 @@ Singleton {
             O.OsdStore.settle();
             step(sink, dir * keyStep);
         }
+        // El sonido del cambio de volumen (Preferencias → Sonidos; apagado de fábrica), también en el tope
+        if (a && !a.muted)
+            SND.SoundStore.play("volume");
     }
 
     // Paso de las teclas de volumen (el mismo de la rueda sobre la pill)
