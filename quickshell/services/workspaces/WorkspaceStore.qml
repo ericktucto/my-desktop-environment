@@ -27,6 +27,9 @@ Singleton {
         { id: "numbers", label: "Números con punto", source: "Numbers.qml", numerals: "arabic" },
         { id: "japanese", label: "Numerales japoneses", source: "Numbers.qml", numerals: "japanese" },
         { id: "roman", label: "Romanos", source: "Numbers.qml", numerals: "roman" },
+        { id: "circles", label: "Círculos unidos", source: "Circles.qml" },
+        { id: "blocks", label: "Bloques", source: "Blocks.qml" },
+        { id: "icons", label: "Íconos de apps", source: "Icons.qml" },
         { id: "minimal", label: "Mínimo", source: "Minimal.qml" }
     ]
 
