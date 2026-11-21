@@ -33,6 +33,8 @@ Rectangle {
     function escapeBack() {
         if (root.current === 'productivity')
             return productivity.back();
+        if (root.current === 'wallpapers')
+            return wallpapers.back();
         return root.current === 'control' && control.back();
     }
 

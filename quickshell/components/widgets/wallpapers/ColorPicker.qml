@@ -11,8 +11,12 @@ Item {
     // Color de partida ("#rrggbb")
     property string value: "#2979ff"
 
+    // Las muestras de siempre y el gotero (los pone quien lo usa)
+    property var swatches: []
+    property bool eyedropping: false
+
     signal picked(string hex)
-    signal done
+    signal eyedropper
 
     // Tono, saturación y brillo de lo que se ve (0..1)
     property real h: 0
@@ -164,28 +168,53 @@ Item {
         }
     }
 
-    // ── La muestra, el hex y Listo ──
+    // ── La muestra, el hex, las muestras de siempre y el gotero ──
     Column {
         anchors.left: hue.right
         anchors.leftMargin: 18
         anchors.right: parent.right
         anchors.top: parent.top
-        spacing: 12
+        spacing: 10
 
-        Rectangle {
-            width: parent.width
-            height: 64
-            radius: 12
-            color: root.current
-            border.width: 1
-            border.color: App.Theme.islandEdge
+        Row {
+            spacing: 12
+            Rectangle {
+                width: 64
+                height: 40
+                radius: 10
+                color: root.current
+                border.width: 1
+                border.color: App.Theme.islandEdge
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.hex
+                color: App.Theme.white
+                font.family: App.Config.fonts.mono
+                font.pixelSize: App.Config.fontSize.lg
+                font.weight: Font.Medium
+            }
         }
-        Text {
-            text: root.hex
-            color: App.Theme.white
-            font.family: App.Config.fonts.mono
-            font.pixelSize: App.Config.fontSize.lg
-            font.weight: Font.Medium
+        Flow {
+            width: parent.width
+            spacing: 6
+            Repeater {
+                model: root.swatches
+                Rectangle {
+                    required property string modelData
+                    width: 24
+                    height: 24
+                    radius: 12
+                    color: modelData
+                    border.width: root.hex.toLowerCase() === modelData ? 2 : 1
+                    border.color: root.hex.toLowerCase() === modelData ? App.Theme.white : App.Theme.islandEdge
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.picked(parent.modelData)
+                    }
+                }
+            }
         }
         Text {
             width: parent.width
@@ -196,9 +225,10 @@ Item {
             wrapMode: Text.WordWrap
         }
         CC.Chip {
-            label: "Listo"
-            selected: true
-            onClicked: root.done()
+            height: 28
+            radius: 14
+            label: root.eyedropping ? "Elige en la pantalla…" : "Gotero"
+            onClicked: root.eyedropper()
         }
     }
 }

@@ -27,7 +27,6 @@ Singleton {
         readonly property int radius: 8
         readonly property string dir: Quickshell.env("HOME") + "/Pictures/Wallpapers"   // carpeta de wallpapers
         readonly property int themeRow: 44                // fila de colores del wallpaper (arriba del grid)
-        readonly property int tintRow: 36                 // fila «Colorear» (Neutro, Teñido, Intenso)
     }
 
     // ===== Barra =====

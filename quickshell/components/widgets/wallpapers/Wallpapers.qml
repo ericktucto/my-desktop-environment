@@ -16,15 +16,21 @@ Item {
     // Directorio de wallpapers
     readonly property string wallpapersDir: ST.SettingsStore.appearance.wallpaperDir !== "" ? ST.SettingsStore.appearance.wallpaperDir : App.Config.wallpaperPicker.dir
 
-    // El selector completo de color (acento propio) en lugar de la cuadrícula
-    property bool picking: false
-    // Solo tiene sentido con el acento propio
-    Connections {
-        target: T.ThemeStore
-        function onModeChanged() {
-            if (T.ThemeStore.mode !== "custom")
-                root.picking = false;
-        }
+    // La vista de colores (combinaciones o acento propio) en lugar de la cuadrícula
+    property bool colors: false
+    function openColors(on) {
+        colors = on;
+        if (on)
+            colorsView.giveFocus();
+        else
+            gridView.forceActiveFocus();
+    }
+    // Esc: de la vista de colores vuelve a la cuadrícula
+    function back() {
+        if (!colors)
+            return false;
+        openColors(false);
+        return true;
     }
 
     // Lista de archivos de imagen (rutas absolutas)
@@ -63,33 +69,32 @@ Item {
 
     // Permite re-escanear manualmente (p. ej. al abrir el selector)
     function scanWallpapers() {
-        picking = false;
+        colors = false;
         scanner.running = false;
         scanner.running = true;
     }
 
-    // Colores: los tres modos y las opciones de cada uno
+    // Colores: los dos modos y lo elegido
     ColorOptions {
         id: themeRow
-        picking: root.picking
-        onTogglePicker: root.picking = !root.picking
+        open: root.colors
+        onToggleColors: root.openColors(!root.colors)
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        height: App.Config.wallpaperPicker.themeRow + App.Config.wallpaperPicker.tintRow
+        height: App.Config.wallpaperPicker.themeRow
     }
 
-    // Selector completo del acento propio (en lugar de la cuadrícula)
-    ColorPicker {
-        visible: root.picking
+    // La vista de colores (en lugar de la cuadrícula)
+    ColorsView {
+        id: colorsView
+        visible: root.colors
         anchors.top: themeRow.bottom
         anchors.topMargin: 8
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        value: T.ThemeStore.color
-        onPicked: hex => T.ThemeStore.setColor(hex)
-        onDone: root.picking = false
+        onBack: root.openColors(false)
     }
 
     // Grid de wallpapers
@@ -100,7 +105,7 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         flow: GridView.FlowTopToBottom
-        visible: !root.picking
+        visible: !root.colors
 
         readonly property int spacing: App.Config.wallpaperPicker.spacingCell
         readonly property int imgWidth: App.Config.wallpaperPicker.imgWidth
@@ -118,7 +123,7 @@ Item {
         keyNavigationWraps: false
         highlightFollowsCurrentItem: true
 
-        // 1 y 2 cambian el modo de color; p abre el selector completo (acento propio)
+        // 1 y 2 cambian el modo de color; c (o p) abre la vista de colores
         Keys.onPressed: event => {
             if (event.modifiers !== Qt.NoModifier)
                 return;
@@ -126,8 +131,8 @@ Item {
             if (event.key >= Qt.Key_1 && event.key <= Qt.Key_2) {
                 if (event.key === Qt.Key_2 || T.ThemeStore.available)
                     T.ThemeStore.setMode(modes[event.key - Qt.Key_1]);
-            } else if (event.key === Qt.Key_P && T.ThemeStore.mode === "custom") {
-                root.picking = !root.picking;
+            } else if (event.key === Qt.Key_C || event.key === Qt.Key_P) {
+                root.openColors(true);
             } else {
                 return;
             }
