@@ -55,7 +55,7 @@ El panel **Productividad** (`Super+P` o clic izquierdo en el reloj) tiene la bar
 - [ ] **Indicadores de privacidad:** avisar cuando el micrófono, la cámara o la pantalla están en uso. Para el micrófono, con `Pipewire.linkGroups`.
 - [ ] **Clima:** consulta a wttr.in u Open-Meteo con `Process`/`curl`, en el panel de productividad (junto al calendario).
 - [ ] **Agente de polkit propio** con el estilo de la shell, usando `Quickshell.Services.Polkit`. Hoy usas `hyprpolkitagent`.
-- [ ] **Colores del wallpaper, lo que quedó fuera:** modo claro de la shell, Firefox (pywalfox), Neovim y apps Qt (`qt6ct`); y probar hyprlock con los colores nuevos.
+- [ ] **Colores del wallpaper, lo que quedó fuera:** modo claro de la shell (fondos claros con texto oscuro), un segundo acento (por ejemplo el naranja del EVA-01 en la música o los workspaces), elegir el fondo y el acento por separado (hoy solo hay combinaciones), Firefox (pywalfox), Neovim y apps Qt (`qt6ct`); y probar hyprlock con los colores nuevos.
 - [ ] **Widgets de escritorio:** reloj grande sobre el wallpaper.
 - [ ] **Huella digital en la pantalla de bloqueo:** solo si llegas a tener lector (esta laptop no lo tiene); sería con `Quickshell.Services.Pam`.
 - [ ] **Panel de Wi-Fi, lo que quedó fuera:** velocidad ↓ ↑ (`/proc/net/dev`), latencia, canal, dBm y velocidad del enlace (`iw`). Necesitan polling: solo con el panel abierto. El último handshake y los bytes de la VPN piden `wg show` (root).
